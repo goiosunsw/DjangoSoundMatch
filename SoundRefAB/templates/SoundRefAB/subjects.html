@@ -1,0 +1,18 @@
+
+{% extends 'soundrefab/base.html' %}
+
+{% block body_block %}
+<h1>Subject list</h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+{% if subject_list %}
+    <ul>
+    {% for s in subject_list %}
+        <li><a href="{% url 'srefab:subjectdetail' s.pk %}">{{ s.pk }}</a> on {{ s.start_date|date:"r" }} ({{s.trials_done}} trials)</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No subjects are available.</p>
+{% endif %}
+{% endblock %}
+

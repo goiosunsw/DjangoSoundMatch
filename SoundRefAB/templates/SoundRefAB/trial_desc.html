@@ -1,0 +1,23 @@
+{% extends 'soundrefab/base.html' %}
+
+{% block body_block %}
+<h1>Welcome to the {{subject.experiment.description}} experiment</h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+{% if sound_list %}
+    {% for s in sound_list %}
+        <h2>Sound {{forloop.counter}}</h2>
+        <ul>
+        {% for p in s %}
+            <li>{{ p.0 }}: {{p.1}}</li>
+        {% endfor %}
+        </ul>
+    {% endfor %}
+    <form action="{% url 'srefab:process' trial_id %}" method="post">
+        {% csrf_token %}
+        <input type="submit" name="choice" value="1" />
+        <input type="submit" name="choice" value="2" />
+    </form>
+{% else %}
+    <p>No parameters!</p>
+{% endif %}{% endblock %}

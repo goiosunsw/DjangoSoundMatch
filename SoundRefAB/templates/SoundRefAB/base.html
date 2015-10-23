@@ -1,0 +1,16 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'soundrefab/style.css' %}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<div class="container">
+    <div class="header">
+        <h1 class="header-heading">UNSW Sound perception experiments</h1>
+    </div> 
+    <div class="content">
+        <div class="main">
+            {% block body_block %}{% endblock %}
+        </div>     
+    </div>
+</div>
+

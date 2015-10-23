@@ -1,0 +1,22 @@
+{% extends 'soundrefab/base.html' %}
+
+{% block body_block %}
+<h1>Subject {{subject.pk}} </h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+<ul>
+    <li>Date started: {{ subject.start_date|date:"r" }}</li>
+    <li>Date finished: {{ subject.finish_date|date:"r" }}</li>
+    <li>Number of trials: {{ subject.trials_done }}</li>
+    {% for st in subject.soundtriplet_set.all %}
+    <li> Times: {{ st.shown_date|date:"H:i:s" }} - {{st.valid_date|date:"H:i:s"}}
+        <ul>
+        {% for p in st.parameterinstance_set.all %}
+        <li>{{ p.name }} {{p.position}} : {{p.value|floatformat:1}} </li>
+        {% endfor %}
+        <li>Choice: {{st.choice}}</li>
+        <li>Confidence: {{st.confidence}}</li>
+    </ul></li>
+    {% endfor %}
+</ul>
+{% endblock %}
