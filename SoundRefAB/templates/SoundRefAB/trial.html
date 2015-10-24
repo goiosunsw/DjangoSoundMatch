@@ -1,7 +1,7 @@
-{% extends 'soundrefab/base.html' %}
+{% extends 'SoundRefAB/base.html' %}
 
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'soundrefab/style.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
 
 
 {% block body_block %}
@@ -17,7 +17,7 @@
            alert("Please rate before submitting!");
            return false;
        }
-       
+
        return true;
    }
 </script>
@@ -35,19 +35,19 @@
         {% for s in sound_list %}
             <td>
                 <h2>{{ s.name }}</h2>
-            
-            
+
+
             <audio id="audio{{ forloop.counter0 }}">
                 <source type="audio/wav" src="{{ s.file }}" />
                 Your browser does not support the audio element.
             </audio>
             <script type="text/javascript">
                function Play{{ forloop.counter0 }}(){
-                  var v = document.getElementById("audio{{ forloop.counter0 }}");  
-                  v.play(); 
+                  var v = document.getElementById("audio{{ forloop.counter0 }}");
+                  v.play();
                }
             </script>
-        
+
             <input type="button" onclick="Play{{ forloop.counter0 }}();"  value="Play"/>
             {% if s.choice %}
                 <input type="radio" name="choice" value="{{ forloop.counter0 }}" />
@@ -70,7 +70,7 @@
         <script type="text/javascript">
            function ConfidenceMeaning(val){
               var t = document.getElementById("confidence_text");
-              t.style.color="black";  
+              t.style.color="black";
               switch(parseInt(val)){
               case 0:
                   t.innerHTML = 'Indistinguishable';
@@ -90,13 +90,13 @@
                   break;
               default:
                   t.innerHTML = 'oops';
-              
+
               }
            }
         </script>
            <div style="height:10px;clear:both;"></div>
         <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Submit" />
-        
+
     </form>
 {% else %}
     <p>No sounds to diplay!!</p>

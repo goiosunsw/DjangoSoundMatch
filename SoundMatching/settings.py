@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'vkrd*v)fy5a73!2#8%a!1#kf==xqj^(78hw$2%zsb#0duqguob'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1','129.94.162.229']
+ALLOWED_HOSTS = ['agoios.pythonanywhere.com']
 
 
 # Application definition
@@ -77,8 +77,11 @@ WSGI_APPLICATION = 'SoundMatching.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'agoios$DjangoSoundMatching',
+        'USER': 'agoios',
+        'PASSWORD': 'transilala00',
+        'HOST': 'agoios.mysql.pythonanywhere-services.com',
     }
 }
 
@@ -100,12 +103,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
-STATIC_ROOT = ''
 
-STATICFILES_DIRS = ( os.path.join('static'), )
+#STATICFILES_DIRS = ( os.path.join('static'), )
 
 STATIC_URL = '/static/'
-#STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 MEDIA_URL = '/media/'
