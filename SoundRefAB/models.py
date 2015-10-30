@@ -5,6 +5,14 @@ from django.utils import timezone
 
 # Create your models here.
 
+class Scenario(models.Model):
+    description = models.CharField(max_length=200)
+    created_date = models.DateTimeField('date created')
+    experiments = models.ManyToManyField(Experiment)
+    #module = models.CharField('Python module',max_length=100)
+
+    def __str__(self):
+        return self.description
 
 
 class Experiment(models.Model):
@@ -13,6 +21,14 @@ class Experiment(models.Model):
     #module = models.CharField('Python module',max_length=100)
     function = models.CharField('Sound generating function',max_length=100)
     number_of_trials = models.IntegerField('Number of Trials',default=1)
+    # change here when a new design is to be introduced
+    design = models.CharField('Design class',         
+        max_length=100, choices = (
+            ('Reference-A-B','Reference presented with N sounds, single choice'),
+            ('Adjust','Reference presented with single adjustable sound'), 
+            ), default='Reference-A-B'
+    )
+
     #fixed_params = models.ForeignKey(FixedParameter) 
     #variable_params = models.ForeignKey(VariableParameter) 
         
@@ -65,6 +81,8 @@ class SoundTriplet(models.Model):
     trial = models.IntegerField(default=0)
     # chosen instance
     choice = models.IntegerField(default=0)
+    # chosen value if appicable
+    value = models.DecimalField(default=0.0, decimal_places = 2, max_digits = 10)
         
     def __str__(self):
         return '%d'%self.id
