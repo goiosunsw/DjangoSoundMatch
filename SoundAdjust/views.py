@@ -79,7 +79,7 @@ def SoundPage(request, subject_id):
 
 
 
-        template = loader.get_template('SoundRefAB/trial.html')
+        template = loader.get_template('SoundAdjust/trial.html')
         return HttpResponse(template.render(context))
 
     except (KeyError):
