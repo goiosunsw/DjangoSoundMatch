@@ -8,7 +8,6 @@ from django.utils import timezone
 class Scenario(models.Model):
     description = models.CharField(max_length=200)
     created_date = models.DateTimeField('date created')
-    experiments = models.ManyToManyField(Experiment)
     #module = models.CharField('Python module',max_length=100)
 
     def __str__(self):
@@ -28,6 +27,7 @@ class Experiment(models.Model):
             ('Adjust','Reference presented with single adjustable sound'), 
             ), default='Reference-A-B'
     )
+    scenarios = models.ManyToManyField(Scenario)
 
     #fixed_params = models.ForeignKey(FixedParameter) 
     #variable_params = models.ForeignKey(VariableParameter) 
@@ -81,8 +81,6 @@ class SoundTriplet(models.Model):
     trial = models.IntegerField(default=0)
     # chosen instance
     choice = models.IntegerField(default=0)
-    # chosen value if appicable
-    value = models.DecimalField(default=0.0, decimal_places = 2, max_digits = 10)
         
     def __str__(self):
         return '%d'%self.id
