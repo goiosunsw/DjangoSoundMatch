@@ -157,3 +157,14 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
                            amp=0.05)
     
     return sound_data, param_data, difficulty_divider
+    
+def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
+                        prev_param=[], path='.', url_path='/'):
+                        
+    sound_data=[]
+    
+    param_data = {'amplitude': 0.1,
+                  'slope': 0.0}
+    
+    return sound_data, param_data, difficulty_divider
+                        

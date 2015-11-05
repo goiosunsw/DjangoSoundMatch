@@ -5,13 +5,6 @@ from django.utils import timezone
 
 # Create your models here.
 
-class Scenario(models.Model):
-    description = models.CharField(max_length=200)
-    created_date = models.DateTimeField('date created')
-    #module = models.CharField('Python module',max_length=100)
-
-    def __str__(self):
-        return self.description
 
 
 class Experiment(models.Model):
@@ -27,14 +20,28 @@ class Experiment(models.Model):
             ('Adjust','Reference presented with single adjustable sound'), 
             ), default='Reference-A-B'
     )
-    scenarios = models.ManyToManyField(Scenario)
-
     #fixed_params = models.ForeignKey(FixedParameter) 
     #variable_params = models.ForeignKey(VariableParameter) 
         
     def __str__(self):
         return self.description
+
+class Scenario(models.Model):
+    description = models.CharField(max_length=200)
+    created_date = models.DateTimeField('date created')
+    #module = models.CharField('Python module',max_length=100)
+    experiments = models.ManyToManyField(Experiment, through='ExperimentInScenario')
+
     
+
+    def __str__(self):
+        return self.description
+    
+class ExperimentInScenario(models.Model):
+    experiment = models.ForeignKey(Experiment)
+    scenario = models.ForeignKey(Scenario)
+    order = models.IntegerField('Order in Scenario', default=1)
+
     
 class Subject(models.Model):
     start_date = models.DateTimeField('date Started',auto_now_add=True)
@@ -67,8 +74,9 @@ class Subject(models.Model):
             ('EX','External amplified loudspeakers'),
             ('PH','Headphones'), ) , default = 'PH'
     )
-    experiment = models.ForeignKey(Experiment)
+    scenario = models.ForeignKey(Scenario)
     trials_done = models.IntegerField(default=0)
+    stop_experiment = models.BooleanField(default=False)
     difficulty_divider = models.DecimalField(default=1.0,max_digits=10,decimal_places=2)
 
 class SoundTriplet(models.Model):

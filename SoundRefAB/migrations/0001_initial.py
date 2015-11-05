@@ -18,14 +18,33 @@ class Migration(migrations.Migration):
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
                 ('function', models.CharField(max_length=100, verbose_name=b'Sound generating function')),
                 ('number_of_trials', models.IntegerField(default=1, verbose_name=b'Number of Trials')),
+                ('design', models.CharField(default=b'Reference-A-B', max_length=100, verbose_name=b'Design class', choices=[(b'Reference-A-B', b'Reference presented with N sounds, single choice'), (b'Adjust', b'Reference presented with single adjustable sound')])),
+            ],
+        ),
+        migrations.CreateModel(
+            name='ExperimentInScenario',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('order', models.IntegerField(default=1, verbose_name=b'Order in Scenario')),
+                ('experiment', models.ForeignKey(to='SoundRefAB.Experiment')),
             ],
         ),
         migrations.CreateModel(
             name='ParameterInstance',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(default=b'', max_length=100)),
                 ('value', models.DecimalField(default=0.0, verbose_name=b'Value', max_digits=10, decimal_places=2)),
                 ('position', models.IntegerField(default=0)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Scenario',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('description', models.CharField(max_length=200)),
+                ('created_date', models.DateTimeField(verbose_name=b'date created')),
+                ('experiments', models.ManyToManyField(to='SoundRefAB.Experiment', through='SoundRefAB.ExperimentInScenario')),
             ],
         ),
         migrations.CreateModel(
@@ -68,5 +87,10 @@ class Migration(migrations.Migration):
             model_name='parameterinstance',
             name='trial',
             field=models.ForeignKey(to='SoundRefAB.SoundTriplet'),
+        ),
+        migrations.AddField(
+            model_name='experimentinscenario',
+            name='scenario',
+            field=models.ForeignKey(to='SoundRefAB.Scenario'),
         ),
     ]
