@@ -163,8 +163,11 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
                         
     sound_data=[]
     
-    param_data = {'amplitude': 0.1,
-                  'slope': 0.0}
+    param_data = {'ampl': 0.1,
+                  'slope': 0.0,
+                  'dur': 0.8,
+                  'freq': 500.0,
+                  'nharm': 7}
     
     return sound_data, param_data, difficulty_divider
                         
