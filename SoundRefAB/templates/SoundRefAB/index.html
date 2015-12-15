@@ -2,12 +2,12 @@
 {% extends 'SoundRefAB/base.html' %}
 
 {% block body_block %}
-<h1>Welcome to the {{subject.experiment.description}} experiment</h1>
+<h1>Welcome to the {{subject.scenario.description}} experiment</h1>
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-{% if experiment_list %}
+{% if scenario_list %}
     <ul>
-    {% for x in experiment_list %}
+    {% for x in scenario_list %}
         <li><a href="{% url 'srefab:new' x.pk %}">{{ x.description }}</li>
     {% endfor %}
     </ul>

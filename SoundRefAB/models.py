@@ -16,8 +16,8 @@ class Experiment(models.Model):
     # change here when a new design is to be introduced
     design = models.CharField('Design class',         
         max_length=100, choices = (
-            ('Reference-A-B','Reference presented with N sounds, single choice'),
-            ('Adjust','Reference presented with single adjustable sound'), 
+            ('soundpage','Reference presented with N sounds, single choice'),
+            ('soundadjustpage','Reference presented with single adjustable sound'), 
             ), default='Reference-A-B'
     )
     #fixed_params = models.ForeignKey(FixedParameter) 
@@ -41,6 +41,9 @@ class ExperimentInScenario(models.Model):
     experiment = models.ForeignKey(Experiment)
     scenario = models.ForeignKey(Scenario)
     order = models.IntegerField('Order in Scenario', default=1)
+    
+    def __str__(self):
+        return '%s : Nbr %d in %s'%(self.experiment.description, self.order, self.scenario.description)
 
     
 class Subject(models.Model):
@@ -75,6 +78,7 @@ class Subject(models.Model):
             ('PH','Headphones'), ) , default = 'PH'
     )
     scenario = models.ForeignKey(Scenario)
+    exp_id = models.IntegerField(default=0)
     trials_done = models.IntegerField(default=0)
     stop_experiment = models.BooleanField(default=False)
     difficulty_divider = models.DecimalField(default=1.0,max_digits=10,decimal_places=2)

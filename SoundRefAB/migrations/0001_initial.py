@@ -69,8 +69,9 @@ class Migration(migrations.Migration):
                 ('hearing_prob', models.BooleanField(default=False, verbose_name=b'Do you experience hearing loss?')),
                 ('device', models.CharField(default=b'PH', max_length=2, verbose_name=b'How are you listening to the sounds in this test?', choices=[(b'CO', b'Computer loudspeakers'), (b'LA', b'Laptop loudspeakers'), (b'PD', b'Phone or tablet loudspeakers'), (b'EX', b'External amplified loudspeakers'), (b'PH', b'Headphones')])),
                 ('trials_done', models.IntegerField(default=0)),
+                ('stop_experiment', models.BooleanField(default=False)),
                 ('difficulty_divider', models.DecimalField(default=1.0, max_digits=10, decimal_places=2)),
-                ('experiment', models.ForeignKey(to='SoundRefAB.Experiment')),
+                ('scenario', models.ForeignKey(to='SoundRefAB.Scenario')),
             ],
         ),
         migrations.AddField(

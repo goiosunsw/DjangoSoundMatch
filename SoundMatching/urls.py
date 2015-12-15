@@ -19,6 +19,7 @@ from django.conf import settings
 
 urlpatterns = [
     url(r'^subject/', include('SoundRefAB.urls', namespace='srefab')),
+    #url(r'^scenario/', include('SoundRefAB.urls', namespace='srefab')),
     url(r'^experiment/', include('SoundRefAB.urls', namespace='srefab')),
     url(r'^admin/', include(admin.site.urls)),
 ]

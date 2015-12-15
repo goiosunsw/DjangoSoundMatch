@@ -66,17 +66,30 @@ class NewSubjectView(CreateView):
     fields = ['age_group','music_experience','hearing_prob','device']
 
     def get_success_url(self):
-        return reverse('srefab:soundpage', args = (self.object.pk,))
+        return reverse('srefab:next', args = (self.kwargs['pk'],))
 
     def form_valid(self, form):
         # This method is called when valid form data has been POSTed.
         # It should return an HttpResponse.
-        form.instance.experiment = Experiment.objects.get(pk=self.kwargs['pk'])
+        form.instance.scenario = Scenario.objects.get(pk=self.kwargs['pk'])
         form.instance.trials_done = 0
         form.instance.save()
         #print pk
         #self.success_url=
         return super(CreateView, self).form_valid(form)
+
+def NextExp(request, subject_id):
+    
+    this_subj = Subject.objects.get(pk=subject_id)
+    ord_no = this_subj.exp_id + 1
+    this_subj.exp_id = ord_no
+    this_subj.save()
+    
+    this_scenario = this_subj.scenario
+    next_exp = this_scenario.experimentinscenario_set.get(order=ord_no).experiment
+    exprevurl = next_exp.design
+    #return reverse('srefab:'+exprevurl, args = (self.object.pk,))
+    return HttpResponseRedirect(reverse('srefab:'+exprevurl, args = (subject_id,)))
 
 def SoundPage(request, subject_id):
     # get subject
@@ -85,7 +98,9 @@ def SoundPage(request, subject_id):
 
     try:
         # get experiment for subject
-        x = sub.experiment
+        this_subj = Subject.objects.get(pk=subject_id)
+        ord_no = this_subj.exp_id 
+        x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
 
         # create sound_triplet to store in db
         st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub)
