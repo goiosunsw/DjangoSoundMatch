@@ -13,7 +13,7 @@ from random import shuffle
 from decimal import Decimal
 import os
 
-from .models import Subject,Experiment, SoundTriplet
+from .models import Subject,Experiment, Scenario, SoundTriplet
 
 import random
 
@@ -50,6 +50,12 @@ def retrieve_sound_parameters(st):
 class ExperimentListView(ListView):
     template_name='SoundRefAB/index.html'
     model = Experiment
+    fields = ['description','date_created']
+
+
+class ScenarioListView(ListView):
+    template_name='SoundRefAB/index.html'
+    model = Scenario
     fields = ['description','date_created']
 
 
