@@ -82,8 +82,8 @@ class NewSubjectView(CreateView):
 def NextExp(request, subject_id):
     
     this_subj = Subject.objects.get(pk=subject_id)
-    ord_no = this_subj.exp_id + 1
-    this_subj.exp_id = ord_no
+    ord_no = this_subj.exp_id 
+    this_subj.exp_id = ord_no + 1
     this_subj.save()
     
     this_scenario = this_subj.scenario
@@ -95,7 +95,7 @@ def NextExp(request, subject_id):
         #return reverse('srefab:'+exprevurl, args = (self.object.pk,))
         return HttpResponseRedirect(reverse('srefab:'+exprevurl, args = (subject_id,)))
     else: 
-        return HttpResponseRedirect(reverse('srefab:thanks', args=(st.subject.pk,)))
+        return HttpResponseRedirect(reverse('srefab:thanks', args=(subject_id,)))
         
 
 def SoundPage(request, subject_id):
@@ -211,7 +211,15 @@ def SoundAdjustPage(request, subject_id):
             prev_param, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
             confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
         except SoundTriplet.DoesNotExist:
-            prev_param=[]
+            ntrials = x.number_of_trials
+            ampl_list = np.logspace(0.05,0.5,ntrials)
+            random.shuffle(ampl_list)
+            prev_param = {'ampl':0.5,
+                         'nharm':15,
+                         'slope':2,
+                         'dur':0.6,
+                         'ampl_list': ampl_list,
+                         'trial_no':0}
             prev_choice=0
             prev_confidence=0
 
@@ -233,11 +241,11 @@ def SoundAdjustPage(request, subject_id):
         sub.difficulty_divider=difficulty_divider
         sub.save()
 
-
+        #param_dict['trial_no']
         #parameter_vals.append(par.value)
         #parameter_list = zip(parameter_names,parameter_vals)
         context = RequestContext(request, {
-            'param_list': param_data,
+            'param_list': param_dict,
             'subject_id': subject_id,
             'trial_id': st.trial,
             'sample_id': st.pk,
@@ -264,7 +272,9 @@ def ProcessAdjustPage(request, trial_id):
     st.save()
     sub = st.subject
     sub.trials_done += 1
-    x = sub.experiment
+    # get experiment for subject
+    ord_no = sub.exp_id 
+    x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
 
     sub.save()
 
