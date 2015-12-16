@@ -87,10 +87,16 @@ def NextExp(request, subject_id):
     this_subj.save()
     
     this_scenario = this_subj.scenario
-    next_exp = this_scenario.experimentinscenario_set.get(order=ord_no).experiment
-    exprevurl = next_exp.design
-    #return reverse('srefab:'+exprevurl, args = (self.object.pk,))
-    return HttpResponseRedirect(reverse('srefab:'+exprevurl, args = (subject_id,)))
+    n_exp = max(this_scenario.experimentinscenario_set.values_list('order', flat=True))
+    
+    if ord_no <= n_exp:
+        next_exp = this_scenario.experimentinscenario_set.get(order=ord_no).experiment
+        exprevurl = next_exp.design
+        #return reverse('srefab:'+exprevurl, args = (self.object.pk,))
+        return HttpResponseRedirect(reverse('srefab:'+exprevurl, args = (subject_id,)))
+    else: 
+        return HttpResponseRedirect(reverse('srefab:thanks', args=(st.subject.pk,)))
+        
 
 def SoundPage(request, subject_id):
     # get subject
@@ -178,7 +184,7 @@ def ProcessPage(request, trial_id):
     sub.save()
 
     if sub.trials_done >= x.number_of_trials:
-        return HttpResponseRedirect(reverse('srefab:thanks', args=(st.subject.pk,)))
+        return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
         #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
     else:
         return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
@@ -190,8 +196,10 @@ def SoundAdjustPage(request, subject_id):
 
     try:
         # FIXME
-        # needs to be adjusted for multiple experiments in scenario
-        x = sub.experiment
+        # get experiment for subject
+        this_subj = Subject.objects.get(pk=subject_id)
+        ord_no = this_subj.exp_id 
+        x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
 
         # create sound_triplet to store in db
         st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub)
