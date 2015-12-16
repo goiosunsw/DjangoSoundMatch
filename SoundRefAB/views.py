@@ -195,7 +195,6 @@ def SoundAdjustPage(request, subject_id):
     now = timezone.now()
 
     try:
-        # FIXME
         # get experiment for subject
         this_subj = Subject.objects.get(pk=subject_id)
         ord_no = this_subj.exp_id 
@@ -234,14 +233,11 @@ def SoundAdjustPage(request, subject_id):
         sub.difficulty_divider=difficulty_divider
         sub.save()
 
-        # anti-caching
-        for s in sound_data:
-            s['file']+='?v=%06d'%st.trial
 
         #parameter_vals.append(par.value)
         #parameter_list = zip(parameter_names,parameter_vals)
         context = RequestContext(request, {
-            'sound_list': sound_data,
+            'param_list': param_data,
             'subject_id': subject_id,
             'trial_id': st.trial,
             'sample_id': st.pk,

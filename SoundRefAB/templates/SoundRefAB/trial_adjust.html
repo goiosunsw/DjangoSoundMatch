@@ -22,12 +22,14 @@
        return true;
    }
    
+   
+   
    function regenSound(val, id) {
-       var nharm = {{sound_data.nharm}};
-       var slope = {{sound_data.slope}};
-       var ampl = {{sound_data.ampl}};
-       var dur = {{sound_data.dur}};
-       var freq = {{sound_data.freq}};
+       var nharm = {{param_list.nharm}};
+       var slope = {{param_list.slope}};
+       var ampl = val;
+       var dur = {{param_list.dur}};
+       var freq = {{param_list.freq}};
        document.getElementById(id).src = GeneratePeriodic(nharm,slope,ampl,dur,freq);
    }
 </script>
@@ -37,8 +39,7 @@
 <h1>Sample {{ trial_id }} of {{ n_trials }}</h1>
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-{% if sound_list %}
-<form action="{% url 'srefab:process' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
+<form action="{% url 'srefab:processadj' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
     <input type="hidden" id="valid" value="0">
     <h2>Adjust the second sound so that it sounds twice as loud as the reference</h2>
     <p>Difficulty level: {{ difficulty }}</p>
@@ -46,8 +47,7 @@
         <tr>
             <td>
                 <h2>Reference</h2>
-                <audio id="audio0">
-                    <source type="audio/wav" />
+                <audio id="audio0" onload="regenSound({{param_list.amp}},this);">
                     Your browser does not support the audio element.
                 </audio>
                 <script type="text/javascript">
@@ -61,8 +61,7 @@
             </td>
             <td>
                 <h2>Adjust:</h2>
-                <audio id="audio1">
-                    <source type="audio/wav" />
+                <audio id="audio1" onload="regenSound({{param_list.amp}},this);">
                     Your browser does not support the audio element.
                 </audio>
                 <script type="text/javascript">
@@ -72,9 +71,10 @@
                    }
                 </script>
             <input id="slider" name="slider" type="range" style="width:180px"
-                min="0" max="100" step="1" value="0"
-                oninput="RegnSound(this.value, 'audio1')" 
-                onchange="RegenSound(this.value, 'audio1')"/>
+                min="0" max="1" step=".01" value="{{param_list.amp}}"
+                onchange="RegenSound(this.value, 'audio1');"/>
+				
+				<input type="button" onclick="Play0();"  value="Play"/>
         </tr>
     </table>
     <div style="height:20px"></div>
@@ -94,11 +94,11 @@
               t.style.color="black";
               switch(parseInt(val)){
               case 0:
-                  t.innerHTML = 'Indistinguishable';
+                  t.innerHTML = 'Not sure at all';
                   document.getElementById("valid").value="1";
                   break;
               case 1:
-                  t.innerHTML = 'Very hard to distinguish';
+                  t.innerHTML = 'Somewhat unsure';
                   document.getElementById("valid").value="1";
                   break;
               case 2:
@@ -119,6 +119,4 @@
         <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Submit" />
 
     </form>
-{% else %}
-    <p>No sounds to diplay!!</p>
-{% endif %}{% endblock %}
+{{% endblock %}

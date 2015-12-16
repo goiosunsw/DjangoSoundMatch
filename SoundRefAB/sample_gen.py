@@ -163,11 +163,11 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
                         
     sound_data=[]
     
-    param_data = {'ampl': 0.1,
-                  'slope': 0.0,
-                  'dur': 0.8,
-                  'freq': 500.0,
-                  'nharm': 7}
+    param_data = prev_param
+    this_trial_no = prev_param['trial_no']+1
+    param_data['trial_no'] = this_trial_no
+    param_data['ampl'] = param_data['amp_list'][this_trial_no]
+    
     
     return sound_data, param_data, difficulty_divider
                         
