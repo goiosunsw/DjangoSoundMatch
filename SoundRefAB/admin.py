@@ -18,6 +18,17 @@ class SubjectAdmin(admin.ModelAdmin):
 
 class ScenarioAdmin(admin.ModelAdmin):
     inlines = (ExperimentInScenarioInline,)
+    def rewrite_order_nums(self, request, queryset):
+        queryset.order_by('order')
+        for ii,obj in enumerate(queryset):
+            obj.order = ii
+    def save_model(self, request, obj, form, change):
+        eis_set = obj.experimentinscenario_set.all()
+        
+        for ii,eis in enumerate(eis_set.order_by('order')):
+            eis.order = ii
+            eis.save()
+        obj.save()
 
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Experiment)
