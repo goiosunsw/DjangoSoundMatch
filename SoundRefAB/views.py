@@ -66,13 +66,14 @@ class NewSubjectView(CreateView):
     fields = ['age_group','music_experience','hearing_prob','device']
 
     def get_success_url(self):
-        return reverse('srefab:next', args = (self.kwargs['pk'],))
+        return reverse('srefab:next', args = (self.object.pk,))
 
     def form_valid(self, form):
         # This method is called when valid form data has been POSTed.
         # It should return an HttpResponse.
         form.instance.scenario = Scenario.objects.get(pk=self.kwargs['pk'])
         form.instance.trials_done = 0
+        form.instance.exp_id=0
         form.instance.save()
         #print pk
         #self.success_url=
