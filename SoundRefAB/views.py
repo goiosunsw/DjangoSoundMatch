@@ -169,7 +169,11 @@ def ProcessPage(request, trial_id):
     st.save()
     sub = st.subject
     sub.trials_done += 1
-    x = sub.experiment
+    
+    # get experiment for subject
+    ord_no = sub.exp_id 
+    x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
+    
 
     sub.save()
 
@@ -288,7 +292,9 @@ def ThanksPage(request, subject_id):
         sub.save()
 
         # get experiment for subject
-        x = sub.experiment
+        ord_no = sub.exp_id 
+        x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
+        
         context = RequestContext(request, {
             'exp_name': x.description,
             'trials_done': sub.trials_done
