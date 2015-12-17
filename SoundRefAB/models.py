@@ -11,7 +11,14 @@ class Experiment(models.Model):
     description = models.CharField(max_length=200)
     created_date = models.DateTimeField('date created')
     #module = models.CharField('Python module',max_length=100)
-    function = models.CharField('Sound generating function',max_length=100)
+    try:
+        import types
+        import sample_gen as sg
+        fnames = [sg.__dict__.get(a).func_name for a in dir(sg) if isinstance(sg.__dict__.get(a), types.FunctionType)]
+        function = models.CharField('Sound generating function',max_length=100, choices = [(fn,fn) for fn in fnames])
+    except ImportError:
+        function = models.CharField('Sound generating function',max_length=100)
+        
     number_of_trials = models.IntegerField('Number of Trials',default=1)
     # change here when a new design is to be introduced
     design = models.CharField('Design class',         
@@ -89,13 +96,20 @@ class SoundTriplet(models.Model):
     valid_date = models.DateTimeField('date triplet validated by user',auto_now_add=True)
     confidence = models.IntegerField(default=0)
     subject = models.ForeignKey(Subject)
-    # number of trial for the subject
+    # number of trial for the subject and experiment
     trial = models.IntegerField(default=0)
+    experiment = models.ForeignKey(Experiment)
     # chosen instance
     choice = models.IntegerField(default=0)
         
     def __str__(self):
         return '%d'%self.id
+    def was_completed(self):
+        timediff = self.valid_date - self.shown_date
+        if timediff.total_seconds() > 1:
+            return True
+        else:
+            return False
 
 
 class ParameterInstance(models.Model):

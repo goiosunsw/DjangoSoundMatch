@@ -26,7 +26,7 @@ class ScenarioAdmin(admin.ModelAdmin):
         eis_set = obj.experimentinscenario_set.all()
         
         for ii,eis in enumerate(eis_set.order_by('order')):
-            eis.order = ii
+            eis.order = ii + 1
             eis.save()
         obj.save()
 

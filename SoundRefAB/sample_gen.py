@@ -160,16 +160,20 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
     
 def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         prev_param=[], path='.', url_path='/'):
-                        
-    sound_data=[]
+                 
+    # include an empty string so that store params knows what to store
+    sound_data=['Reference','Adjusted']
     
-    param_data = prev_param
-    
+    param_data = []
+    new_param = prev_param
+    #print prev_param
         
     this_trial_no = prev_param['trial_no']+1
-    param_data['trial_no'] = this_trial_no
-    param_data['ampl'] = param_data['amp_list'][this_trial_no]
+    new_param['trial_no'] = this_trial_no
+    new_param['ampl'] = new_param['ampl_list'][this_trial_no]
     
+    for sd in sound_data:
+        param_data.append(new_param)
     
     return sound_data, param_data, difficulty_divider
                         

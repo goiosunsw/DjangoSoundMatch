@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
                 ('function', models.CharField(max_length=100, verbose_name=b'Sound generating function')),
                 ('number_of_trials', models.IntegerField(default=1, verbose_name=b'Number of Trials')),
-                ('design', models.CharField(default=b'Reference-A-B', max_length=100, verbose_name=b'Design class', choices=[(b'Reference-A-B', b'Reference presented with N sounds, single choice'), (b'Adjust', b'Reference presented with single adjustable sound')])),
+                ('design', models.CharField(default=b'Reference-A-B', max_length=100, verbose_name=b'Design class', choices=[(b'soundpage', b'Reference presented with N sounds, single choice'), (b'soundadjustpage', b'Reference presented with single adjustable sound')])),
             ],
         ),
         migrations.CreateModel(
@@ -56,6 +56,7 @@ class Migration(migrations.Migration):
                 ('confidence', models.IntegerField(default=0)),
                 ('trial', models.IntegerField(default=0)),
                 ('choice', models.IntegerField(default=0)),
+                ('experiment', models.ForeignKey(to='SoundRefAB.Experiment')),
             ],
         ),
         migrations.CreateModel(
@@ -68,6 +69,7 @@ class Migration(migrations.Migration):
                 ('music_experience', models.CharField(default=b'NO', max_length=2, verbose_name=b'Which better describes your musical experience?', choices=[(b'NO', b'No experience'), (b'AM', b'Amateur'), (b'ST', b'Music student, less than 8 years'), (b'AD', b'Music student, more than 8 years'), (b'RG', b'Non-professional but perform in public'), (b'PR', b'Professional')])),
                 ('hearing_prob', models.BooleanField(default=False, verbose_name=b'Do you experience hearing loss?')),
                 ('device', models.CharField(default=b'PH', max_length=2, verbose_name=b'How are you listening to the sounds in this test?', choices=[(b'CO', b'Computer loudspeakers'), (b'LA', b'Laptop loudspeakers'), (b'PD', b'Phone or tablet loudspeakers'), (b'EX', b'External amplified loudspeakers'), (b'PH', b'Headphones')])),
+                ('exp_id', models.IntegerField(default=0)),
                 ('trials_done', models.IntegerField(default=0)),
                 ('stop_experiment', models.BooleanField(default=False)),
                 ('difficulty_divider', models.DecimalField(default=1.0, max_digits=10, decimal_places=2)),

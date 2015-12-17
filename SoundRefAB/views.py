@@ -8,10 +8,13 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.utils import timezone
 from django.conf import settings
 from django.conf.urls.static import static
+from django.db.models import F
 
 from random import shuffle
 from decimal import Decimal
+from datetime import timedelta
 import os
+import numpy as np
 
 from .models import Subject,Experiment, Scenario, SoundTriplet
 
@@ -82,8 +85,8 @@ class NewSubjectView(CreateView):
 def NextExp(request, subject_id):
     
     this_subj = Subject.objects.get(pk=subject_id)
-    ord_no = this_subj.exp_id 
-    this_subj.exp_id = ord_no + 1
+    ord_no = this_subj.exp_id + 1
+    this_subj.exp_id = ord_no 
     this_subj.save()
     
     this_scenario = this_subj.scenario
@@ -201,66 +204,78 @@ def SoundAdjustPage(request, subject_id):
         x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
 
         # create sound_triplet to store in db
-        st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub)
+        st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub, experiment_id = x.id)
         st.trial = sub.trials_done + 1
         st.save()
-
-        # retrieve data from previous experiment
-        try:
-            old_st = sub.soundtriplet_set.latest('id')
-            prev_param, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
-            confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
-        except SoundTriplet.DoesNotExist:
-            ntrials = x.number_of_trials
-            ampl_list = np.logspace(0.05,0.5,ntrials)
-            random.shuffle(ampl_list)
-            prev_param = {'ampl':0.5,
-                         'nharm':15,
-                         'slope':2,
-                         'dur':0.6,
-                         'ampl_list': ampl_list,
-                         'trial_no':0}
-            prev_choice=0
-            prev_confidence=0
-
-
-
-        function_name = x.function
-        try:
-            f = getattr(sample_gen, function_name)
-        except AttributeError:
-            raise Http404("Error in sample generating function name: "+function_name)
-
-        sound_data, param_dict, difficulty_divider = f(subject_id, prev_param=prev_param,
-                                   prev_choice=prev_choice, confidence_history=confidence_history,
-                                   difficulty_divider = float(sub.difficulty_divider),
-                                   path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
-
-        #store sound data in db
-        store_sound_parameters(st, sound_data, param_dict)
-        sub.difficulty_divider=difficulty_divider
-        sub.save()
-
-        #param_dict['trial_no']
-        #parameter_vals.append(par.value)
-        #parameter_list = zip(parameter_names,parameter_vals)
-        context = RequestContext(request, {
-            'param_list': param_dict,
-            'subject_id': subject_id,
-            'trial_id': st.trial,
-            'sample_id': st.pk,
-            'n_trials': x.number_of_trials,
-            'difficulty': sub.difficulty_divider
-            }
-        )
-
-
-
-        template = loader.get_template('SoundRefAB/trial_adjust.html')
-        return HttpResponse(template.render(context))
-
+        
     except (KeyError):
         raise Http404("Error in subject or experiment data")
+    
+
+    # retrieve data from previous experiment
+    try:
+        print 'Using data from previous trial'
+        valid_prev_st = sub.soundtriplet_set.filter(experiment_id=x.id, valid_date__gt=F('shown_date')+timedelta(seconds=2))
+        old_st = valid_prev_st.latest('id')
+        #print old_st
+        prev_param, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
+        confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
+    except SoundTriplet.DoesNotExist:
+        print 'Initialising experiment data...'
+        
+        ntrials = x.number_of_trials
+        ampl_list = np.logspace(-1.3,-0.3,ntrials)
+        random.shuffle(ampl_list)
+        prev_param = {'ampl':0.5,
+                     'nharm':15,
+                     'slope':20,
+                     'dur':0.6,
+                     'freq': 500,
+                     'ampl_list': ampl_list,
+                     'trial_no':0}
+        prev_choice=0
+        prev_confidence=0
+        confidence_history = []
+
+
+
+    function_name = x.function
+    try:
+        f = getattr(sample_gen, function_name)
+    except AttributeError:
+        raise Http404("Error in sample generating function name: "+function_name)
+
+    sound_data, param_dict, difficulty_divider = f(subject_id, prev_param=prev_param,
+                               prev_choice=prev_choice, confidence_history=confidence_history,
+                               difficulty_divider = float(sub.difficulty_divider),
+                               path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
+
+    #store sound data in db        
+    print "sound generated"
+    print param_dict
+
+    store_sound_parameters(st, sound_data, param_dict)
+    sub.difficulty_divider=difficulty_divider
+    sub.save()
+
+    #param_dict['trial_no']
+    #parameter_vals.append(par.value)
+    #parameter_list = zip(parameter_names,parameter_vals)
+    context = RequestContext(request, {
+        'param_list': param_dict[0],
+        'ampl_list': ampl_list,
+        'subject_id': subject_id,
+        'trial_id': st.trial,
+        'sample_id': st.pk,
+        'n_trials': x.number_of_trials,
+        'difficulty': sub.difficulty_divider
+        }
+    )
+
+
+    template = loader.get_template('SoundRefAB/trial_adjust.html')
+    return HttpResponse(template.render(context))
+
     # generate parameters
 
 def ProcessAdjustPage(request, trial_id):
@@ -268,6 +283,7 @@ def ProcessAdjustPage(request, trial_id):
     st.choice = 1
     st.value = float(request.POST['adjval'])
     st.confidence = int(request.POST['confidence'])
+    ampl_list=request.POST['ampl_list']
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
