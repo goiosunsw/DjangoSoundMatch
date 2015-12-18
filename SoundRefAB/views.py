@@ -15,6 +15,8 @@ from decimal import Decimal
 from datetime import timedelta
 import os
 import numpy as np
+import tempfile
+
 
 from .models import Subject,Experiment, Scenario, SoundTriplet
 
@@ -48,6 +50,14 @@ def retrieve_sound_parameters(st):
 
     return par, choice, confidence
 
+def store_temp_data_file(data, scenario_id=0, experiment_id=0, subject_id=0):
+    filename=tempfile.gettempdir()+'scen%d_exp%d_subj%d_temp.npy'%(scenario_id,experiment_id,subject_id)
+    np.save(filename,data)
+
+def retrieve_temp_data_file(scenario_id=0, experiment_id=0, subject_id=0):
+    filename=tempfile.gettempdir()+'scen%d_exp%d_subj%d_temp.npy'%(scenario_id,experiment_id,subject_id)
+    data = np.load(filename)
+    return data.tolist()
 
 # Create your views here.
 class ExperimentListView(ListView):
@@ -192,6 +202,7 @@ def ProcessPage(request, trial_id):
     else:
         return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
 
+
 def SoundAdjustPage(request, subject_id):
     # get subject
     sub = get_object_or_404(Subject, pk=subject_id)
@@ -218,7 +229,10 @@ def SoundAdjustPage(request, subject_id):
         valid_prev_st = sub.soundtriplet_set.filter(experiment_id=x.id, valid_date__gt=F('shown_date')+timedelta(seconds=2))
         old_st = valid_prev_st.latest('id')
         #print old_st
-        prev_param, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
+        dummy, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
+        prev_param = retrieve_temp_data_file(scenario_id=sub.scenario.id, 
+                                         experiment_id=x.id,
+                                         subject_id=sub.pk)
         confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
     except SoundTriplet.DoesNotExist:
         print 'Initialising experiment data...'
@@ -254,7 +268,11 @@ def SoundAdjustPage(request, subject_id):
     print "sound generated"
     print param_dict
 
-    store_sound_parameters(st, sound_data, param_dict)
+    #store_sound_parameters(st, sound_data, param_dict)
+    store_temp_data_file(param_dict, scenario_id=sub.scenario.id, 
+                                     experiment_id=x.id,
+                                     subject_id=sub.pk)
+    
     sub.difficulty_divider=difficulty_divider
     sub.save()
 
@@ -262,8 +280,8 @@ def SoundAdjustPage(request, subject_id):
     #parameter_vals.append(par.value)
     #parameter_list = zip(parameter_names,parameter_vals)
     context = RequestContext(request, {
-        'param_list': param_dict[0],
-        'ampl_list': ampl_list,
+        'param_list': param_dict,
+        #'ampl_list': ampl_list,
         'subject_id': subject_id,
         'trial_id': st.trial,
         'sample_id': st.pk,
@@ -283,7 +301,7 @@ def ProcessAdjustPage(request, trial_id):
     st.choice = 1
     st.value = float(request.POST['adjval'])
     st.confidence = int(request.POST['confidence'])
-    ampl_list=request.POST['ampl_list']
+    #ampl_list=request.POST['ampl_list']
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
