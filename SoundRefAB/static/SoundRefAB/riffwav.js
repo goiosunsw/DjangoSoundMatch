@@ -17,6 +17,10 @@
  *
  */
 
+function getRandom(rmin,rmax) {
+    return Math.floor((Math.random() * (rmax-rmin)) + rmin);
+}
+
 var FastBase64 = {
 
     chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -122,7 +126,7 @@ var RIFFWAVE = function(data) {
             u32ToArray(this.header.subChunk2Size),
             (this.header.bitsPerSample == 16) ? split16bitArray(this.data) : this.data
         );
-        this.dataURI = 'data:audio/wav;base64,'+FastBase64.Encode(this.wav);
+        this.dataURI = 'data:audio/wav;rnd=' + getRandom(1,100000) + ';base64,'+FastBase64.Encode(this.wav);
     };
 
     if (data instanceof Array) this.Make(data);
