@@ -27,11 +27,11 @@
 <script type="text/javascript">
    
    function regenSound(val, id) {
-       var nharm = {{param_list.nharm}};
-       var slope = {{param_list.slope}};
+       var nharm = {{param_list.0.nharm}};
+       var slope = {{param_list.0.slope}};
        var ampl = val;
-       var dur = {{param_list.dur}};
-       var freq = {{param_list.freq}};
+       var dur = {{param_list.0.dur}};
+       var freq = {{param_list.0.freq}};
        document.getElementById(id).src = GeneratePeriodic(nharm,slope,ampl,dur,freq);
        return true;
    }
@@ -39,13 +39,19 @@
 
 <script type="text/javascript">
    document.onload = function() {
-       regenSound({{param_list.ampl}},document.getElementById("audio0"));
-       regenSound({{param_list.ampl}},document.getElementById("audio1"));
+       regenSound({{param_list.0.ampl}},document.getElementById("audio0"));
+       regenSound({{param_list.1.ampl}},document.getElementById("audio1"));
    } ;
 </script>
 
 
 <h1>Sample {{ trial_id }} of {{ n_trials }}</h1>
+
+<ul>
+	{% for pp in param_list %}
+		<li>{{ pp }}</li>
+	{% endfor %}
+</ul>
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 <form action="{% url 'srefab:processadj' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
@@ -64,7 +70,7 @@
                    function Play0(){
                       var v = document.getElementById("audio0");
                       if(v.src.length<1000){
-                          regenSound({{param_list.ampl}},"audio0");
+                          regenSound({{param_list.1.ampl}},"audio0");
                       }
                       v.play();
                    }
@@ -135,4 +141,4 @@
         <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Submit" />
 
     </form>
-{{% endblock %}
+{% endblock %}

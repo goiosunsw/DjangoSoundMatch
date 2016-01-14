@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.CharField(max_length=200)),
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
-                ('function', models.CharField(max_length=100, verbose_name=b'Sound generating function')),
+                ('function', models.CharField(max_length=100, verbose_name=b'Sound generating function', choices=[(b'LoudnessAdjust', b'LoudnessAdjust'), (b'SlopeVibratoTripletRefAB', b'SlopeVibratoTripletRefAB'), (b'VibratoTripletRefAB', b'VibratoTripletRefAB'), (b'retrieve_temp_data_file', b'retrieve_temp_data_file'), (b'store_temp_data_file', b'store_temp_data_file')])),
                 ('number_of_trials', models.IntegerField(default=1, verbose_name=b'Number of Trials')),
                 ('design', models.CharField(default=b'Reference-A-B', max_length=100, verbose_name=b'Design class', choices=[(b'soundpage', b'Reference presented with N sounds, single choice'), (b'soundadjustpage', b'Reference presented with single adjustable sound')])),
             ],

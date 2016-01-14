@@ -1,7 +1,9 @@
 import vibrato
 import random
 import os
-from data_file_io import *
+import numpy as np
+
+import data_file_io as dio 
 
 
 def VibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
@@ -175,32 +177,34 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
     subj_no = int(subject_id)
     
     try:
-        const_par = retrieve_temp_data_file(subj_no)
-        # check this is the right data
-        testval = const_par['ampl_list']
+        #const_par = dio.retrieve_temp_data_file(subj_no)
+        ampl_list = dio.retrieve_temp_data_file(subj_no)
     except IOError, KeyError: 
         ampl_list = np.logspace(-1.3,-0.3,ntrials).tolist()
         random.shuffle(ampl_list)
-        const_par = {'ampl_list': ampl_list,
-                 'ampl':0.5,
-                 'nharm':15,
-                 'slope':20,
-                 'dur':0.6,
-                 'freq': 500,
-                 'trial_no':0}
+        
+    if 'nharm' not in prev_param[0].keys():
+        for pp in prev_param:
+            pp['ampl']=0.5
+            pp['nharm']=15
+            pp['slope']=20
+            pp['dur']=0.6
+            pp['freq']= 500
+            #pp['trial_no']=0
     
     
     param_data = []
     new_param = prev_param
     #print prev_param
         
+    newampl = ampl_list.pop()
     for thispar in new_param:
-        thispar['ampl'] = const_par['ampl_list'].pop()
+        thispar['ampl'] = newampl
     
     # for sd in sound_data:
     #     param_data.append(new_param)
     param_data = new_param
-    store_temp_data_file(const_par, subj_no)
+    dio.store_temp_data_file(ampl_list, subj_no)
     
     return sound_data, param_data, difficulty_divider
                         

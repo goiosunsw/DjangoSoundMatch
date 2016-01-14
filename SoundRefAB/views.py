@@ -237,28 +237,23 @@ def SoundAdjustPage(request, subject_id):
         old_st = valid_prev_st.latest('id')
         #print old_st
         dummy, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
-        prev_param = retrieve_temp_data_file(scenario_id=sub.scenario.id, 
-                                         experiment_id=x.id,
-                                         subject_id=sub.pk)
         confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
     except SoundTriplet.DoesNotExist:
         print 'Initialising experiment data...'
         
-        ntrials = x.number_of_trials
-        prev_param = [{'ampl':0.5},{'ampl':0.5}]
         prev_choice=1
         prev_confidence=0
         confidence_history = []
 
-
-    
+    prev_param = [{'ampl':0.5},{'ampl':0.5}]
+    ntrials = x.number_of_trials
     function_name = x.function
     try:
         f = getattr(sample_gen, function_name)
     except AttributeError:
         raise Http404("Error in sample generating function name: "+function_name)
 
-    sound_data, param_dict, difficulty_divider = f(subject_id, prev_param=prev_param, ntrials = ntrials,
+    sound_data, param_dict, difficulty_divider = f(subject_id, ntrials = ntrials, prev_param= prev_param,
                                prev_choice=prev_choice, confidence_history=confidence_history,
                                difficulty_divider = float(sub.difficulty_divider),
                                path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
@@ -306,7 +301,7 @@ def ProcessAdjustPage(request, trial_id):
     ord_no = sub.exp_id 
     x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
     # need to store adjusted value
-    adjparinst = st.parameterinstance_set.get(name=val, position=1)
+    adjparinst = st.parameterinstance_set.get(name='ampl', position=1)
     adjparinst.value = float(request.POST['adjval'])
     adjparinst.save()
 
