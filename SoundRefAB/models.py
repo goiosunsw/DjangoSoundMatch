@@ -123,7 +123,7 @@ class ParameterInstance(models.Model):
     position = models.IntegerField(default=0)
     
     def __str__(self):
-        return self.par_model.description+' in experiment '+self.subject.experiment.description+'(trial %d)'%self.pk
+        return self.name+' in sample %d of trial %d '%(self.position,self.trial.pk)+' of exp. '+self.trial.experiment.description
 
 
    

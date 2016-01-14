@@ -42,22 +42,17 @@ def retrieve_sound_parameters(st):
     confidence = st.confidence
     choice = st.choice
     par=[]
-    for parinst in st.parameterinstance_set.all():
-        sound_nbr = parinst.position
-        par[sound_nbr]['name'] = parinst.name
-        par[sound_nbr]['description'] = parinst.description
-        par[sound_nbr]['value'] = parinst.value
+    pset = st.parameterinstance_set.all().order_by('position')
+    for pos in pset.values_list('position',flat=True).distinct():
+        thisdict=dict()
+        thispar = pset.filter(position=pos)
+        for parinst in thispar:
+            thisdict[parinst.name] = parinst.value
+        
+        par.append(thisdict)
 
     return par, choice, confidence
 
-def store_temp_data_file(data, scenario_id=0, experiment_id=0, subject_id=0):
-    filename=tempfile.gettempdir()+'scen%d_exp%d_subj%d_temp.npy'%(scenario_id,experiment_id,subject_id)
-    np.save(filename,data)
-
-def retrieve_temp_data_file(scenario_id=0, experiment_id=0, subject_id=0):
-    filename=tempfile.gettempdir()+'scen%d_exp%d_subj%d_temp.npy'%(scenario_id,experiment_id,subject_id)
-    data = np.load(filename)
-    return data.tolist()
 
 # Create your views here.
 class ExperimentListView(ListView):
@@ -97,7 +92,6 @@ def NextExp(request, subject_id):
     this_subj = Subject.objects.get(pk=subject_id)
     ord_no = this_subj.exp_id + 1
     this_subj.exp_id = ord_no 
-    this_subj.save()
     
     this_scenario = this_subj.scenario
     n_exp = max(this_scenario.experimentinscenario_set.values_list('order', flat=True))
@@ -106,8 +100,15 @@ def NextExp(request, subject_id):
         next_exp = this_scenario.experimentinscenario_set.get(order=ord_no).experiment
         exprevurl = next_exp.design
         #return reverse('srefab:'+exprevurl, args = (self.object.pk,))
+        # reset number of trials
+        this_subj.trials_done = 0
+        this_subj.save()
+        
         return HttpResponseRedirect(reverse('srefab:'+exprevurl, args = (subject_id,)))
-    else: 
+        
+    else:
+        this_subj.save()
+         
         return HttpResponseRedirect(reverse('srefab:thanks', args=(subject_id,)))
         
 
@@ -122,21 +123,26 @@ def SoundPage(request, subject_id):
         ord_no = this_subj.exp_id 
         x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
 
-        # create sound_triplet to store in db
-        st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub)
-        st.trial = sub.trials_done + 1
-        st.save()
 
         # retrieve data from previous experiment
         try:
-            old_st = sub.soundtriplet_set.latest('id')
+            valid_prev_st = sub.soundtriplet_set.filter(experiment_id=x.id, valid_date__gt=F('shown_date')+timedelta(seconds=2))
+            old_st = valid_prev_st.latest('id')
+            print 'Using data from previous trial no. %d'%(old_st.id)
+            print 'Number of parameter items in it: %d'%(len(old_st.parameterinstance_set.all()))
             prev_param, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
             confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
         except SoundTriplet.DoesNotExist:
             prev_param=[]
             prev_choice=0
             prev_confidence=0
+            confidence_history = []
 
+        # create sound_triplet to store in db
+        st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub, experiment_id = x.id)
+        
+        st.trial = sub.trials_done + 1
+        st.save()
 
 
         function_name = x.function
@@ -195,7 +201,8 @@ def ProcessPage(request, trial_id):
     
 
     sub.save()
-
+    
+    #WRONG: trials is now total in scenario...
     if sub.trials_done >= x.number_of_trials:
         return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
         #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
@@ -238,28 +245,20 @@ def SoundAdjustPage(request, subject_id):
         print 'Initialising experiment data...'
         
         ntrials = x.number_of_trials
-        ampl_list = np.logspace(-1.3,-0.3,ntrials)
-        random.shuffle(ampl_list)
-        prev_param = {'ampl':0.5,
-                     'nharm':15,
-                     'slope':20,
-                     'dur':0.6,
-                     'freq': 500,
-                     'ampl_list': ampl_list,
-                     'trial_no':0}
-        prev_choice=0
+        prev_param = [{'ampl':0.5},{'ampl':0.5}]
+        prev_choice=1
         prev_confidence=0
         confidence_history = []
 
 
-
+    
     function_name = x.function
     try:
         f = getattr(sample_gen, function_name)
     except AttributeError:
         raise Http404("Error in sample generating function name: "+function_name)
 
-    sound_data, param_dict, difficulty_divider = f(subject_id, prev_param=prev_param,
+    sound_data, param_dict, difficulty_divider = f(subject_id, prev_param=prev_param, ntrials = ntrials,
                                prev_choice=prev_choice, confidence_history=confidence_history,
                                difficulty_divider = float(sub.difficulty_divider),
                                path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
@@ -268,10 +267,7 @@ def SoundAdjustPage(request, subject_id):
     print "sound generated"
     print param_dict
 
-    #store_sound_parameters(st, sound_data, param_dict)
-    store_temp_data_file(param_dict, scenario_id=sub.scenario.id, 
-                                     experiment_id=x.id,
-                                     subject_id=sub.pk)
+    store_sound_parameters(st, sound_data, param_dict)
     
     sub.difficulty_divider=difficulty_divider
     sub.save()
@@ -309,11 +305,15 @@ def ProcessAdjustPage(request, trial_id):
     # get experiment for subject
     ord_no = sub.exp_id 
     x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
+    # need to store adjusted value
+    adjparinst = st.parameterinstance_set.get(name=val, position=1)
+    adjparinst.value = float(request.POST['adjval'])
+    adjparinst.save()
 
     sub.save()
 
     if sub.trials_done >= x.number_of_trials:
-        return HttpResponseRedirect(reverse('srefab:thanks', args=(st.subject.pk,)))
+        return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
         #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
     else:
         return HttpResponseRedirect(reverse('srefab:soundadjustpage', args=(sub.pk,)))
@@ -340,11 +340,11 @@ def ThanksPage(request, subject_id):
         sub.save()
 
         # get experiment for subject
-        ord_no = sub.exp_id 
-        x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
+        #ord_no = sub.exp_id 
+        #x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
         
         context = RequestContext(request, {
-            'exp_name': x.description,
+            'exp_name': sub.scenario.description,
             'trials_done': sub.trials_done
         })
 
