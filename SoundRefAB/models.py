@@ -9,6 +9,7 @@ from django.utils import timezone
 
 class Experiment(models.Model):
     description = models.CharField(max_length=200)
+    instruction_file = models.FilePathField(path=)
     created_date = models.DateTimeField('date created')
     #module = models.CharField('Python module',max_length=100)
     try:
@@ -24,8 +25,10 @@ class Experiment(models.Model):
     design = models.CharField('Design class',         
         max_length=100, choices = (
             ('soundpage','Reference presented with N sounds, single choice'),
-            ('soundadjustpage','Reference presented with single adjustable sound'), 
-            ), default='Reference-A-B'
+            ('soundadjustpage','Reference presented with single adjustable sound'),
+            ('paridemopage','Demo with two sound samples'),
+            ('textpage','Instruction text page')
+            ), default='textpage'
     )
     #fixed_params = models.ForeignKey(FixedParameter) 
     #variable_params = models.ForeignKey(VariableParameter) 

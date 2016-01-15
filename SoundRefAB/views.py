@@ -209,6 +209,155 @@ def ProcessPage(request, trial_id):
     else:
         return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
 
+##############
+# Sound demo page
+
+def PairDemoPage(request, subject_id):
+    # get subject
+    sub = get_object_or_404(Subject, pk=subject_id)
+    now = timezone.now()
+
+    try:
+        # get experiment for subject
+        this_subj = Subject.objects.get(pk=subject_id)
+        ord_no = this_subj.exp_id 
+        x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
+
+        function_name = x.function
+        try:
+            f = getattr(sample_gen, function_name)
+        except AttributeError:
+            raise Http404("Error in sample generating function name: "+function_name)
+
+        sound_data, param_dict, difficulty_divider = f(subject_id, prev_param=prev_param,
+                                   prev_choice=prev_choice, confidence_history=confidence_history,
+                                   difficulty_divider = float(sub.difficulty_divider),
+                                   path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
+
+        # anti-caching
+        for s in sound_data:
+            s['file']+='?v=%06d'%st.trial
+
+        #parameter_vals.append(par.value)
+        #parameter_list = zip(parameter_names,parameter_vals)
+        context = RequestContext(request, {
+            'sound_list': sound_data,
+            'subject_id': subject_id,
+            'trial_id': st.trial,
+            'sample_id': st.pk,
+            'n_trials': x.number_of_trials,
+            'difficulty': sub.difficulty_divider
+            }
+        )
+
+
+
+        template = loader.get_template('SoundRefAB/trial.html')
+        return HttpResponse(template.render(context))
+
+    except (KeyError):
+        raise Http404("Error in subject or experiment data")
+    # generate parameters
+
+def PairDemoProcessPage(request, trial_id):
+    st = get_object_or_404(SoundTriplet, pk=trial_id)
+    st.choice = int(request.POST['choice'])
+    st.confidence = int(request.POST['slider'])
+    st.valid_date = timezone.now()
+    st.save()
+    sub = st.subject
+    sub.trials_done += 1
+    
+    # get experiment for subject
+    ord_no = sub.exp_id 
+    x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
+    
+
+    sub.save()
+    
+    #WRONG: trials is now total in scenario...
+    if sub.trials_done >= x.number_of_trials:
+        return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
+        #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
+    else:
+        return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
+
+
+##############
+# Sound demo page
+
+def TextPage(request, subject_id):
+    # get subject
+    sub = get_object_or_404(Subject, pk=subject_id)
+    now = timezone.now()
+
+    try:
+        # get experiment for subject
+        this_subj = Subject.objects.get(pk=subject_id)
+        ord_no = this_subj.exp_id 
+        x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
+
+        function_name = x.function
+        try:
+            f = getattr(sample_gen, function_name)
+        except AttributeError:
+            raise Http404("Error in sample generating function name: "+function_name)
+
+        sound_data, param_dict, difficulty_divider = f(subject_id, prev_param=prev_param,
+                                   prev_choice=prev_choice, confidence_history=confidence_history,
+                                   difficulty_divider = float(sub.difficulty_divider),
+                                   path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
+
+        # anti-caching
+        for s in sound_data:
+            s['file']+='?v=%06d'%st.trial
+
+        #parameter_vals.append(par.value)
+        #parameter_list = zip(parameter_names,parameter_vals)
+        context = RequestContext(request, {
+            'sound_list': sound_data,
+            'subject_id': subject_id,
+            'trial_id': st.trial,
+            'sample_id': st.pk,
+            'n_trials': x.number_of_trials,
+            'difficulty': sub.difficulty_divider
+            }
+        )
+
+
+
+        template = loader.get_template('SoundRefAB/trial.html')
+        return HttpResponse(template.render(context))
+
+    except (KeyError):
+        raise Http404("Error in subject or experiment data")
+    # generate parameters
+
+def TextProcessPage(request, trial_id):
+    st = get_object_or_404(SoundTriplet, pk=trial_id)
+    st.choice = int(request.POST['choice'])
+    st.confidence = int(request.POST['slider'])
+    st.valid_date = timezone.now()
+    st.save()
+    sub = st.subject
+    sub.trials_done += 1
+    
+    # get experiment for subject
+    ord_no = sub.exp_id 
+    x = sub.scenario.experimentinscenario_set.get(order=ord_no).experiment
+    
+
+    sub.save()
+    
+    #WRONG: trials is now total in scenario...
+    if sub.trials_done >= x.number_of_trials:
+        return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
+        #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
+    else:
+        return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
+
+
+
 
 def SoundAdjustPage(request, subject_id):
     # get subject

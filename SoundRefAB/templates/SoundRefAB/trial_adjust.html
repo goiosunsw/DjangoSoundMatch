@@ -47,11 +47,6 @@
 
 <h1>Sample {{ trial_id }} of {{ n_trials }}</h1>
 
-<ul>
-	{% for pp in param_list %}
-		<li>{{ pp }}</li>
-	{% endfor %}
-</ul>
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 <form action="{% url 'srefab:processadj' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
