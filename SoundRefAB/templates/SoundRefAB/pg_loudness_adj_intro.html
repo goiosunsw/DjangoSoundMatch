@@ -1,0 +1,65 @@
+{% extends 'SoundRefAB/base.html' %}
+
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
+
+
+{% block body_block %}
+
+<h1>Sound level adjust</h1>
+
+<p>In the next few experiments we will ask you to listen to a first tone</p>
+
+    <table border="1px" margin="10px">
+        <tr>
+            <td>
+                <h2>Reference</h2>
+                <audio id="audio0" src='pg_loudness_adj_ref.wav'>
+                    Your browser does not support the audio element.
+                </audio>
+                <script type="text/javascript">
+                   function Play0(){
+                      var v = document.getElementById("audio0");
+                      if(v.src.length<1000){
+                          regenSound({{param_list.1.ampl}},"audio0");
+                      }
+                      v.play();
+                   }
+                </script>
+            <input type="button" onclick="Play0();"  value="Play"/>
+            </td>
+        </tr>
+    </table>
+
+
+<p>And then, with a slider adjust a second tone so that it sounds <b>twice as loud</b> as the first sound.</p>
+
+<p>For example, the next sound is considered by most people to be twice as loud as the one above:</p>
+
+    <table border="1px" margin="10px">
+        <tr>
+            <td>
+                <h2>Reference</h2>
+                <audio id="audio1" src='pg_loudness_adj_refX2.wav'>
+                    Your browser does not support the audio element.
+                </audio>
+                <script type="text/javascript">
+                   function Play0(){
+                      var v = document.getElementById("audio1");
+                      if(v.src.length<1000){
+                          regenSound({{param_list.1.ampl}},"audio1");
+                      }
+                      v.play();
+                   }
+                </script>
+            <input type="button" onclick="Play1();"  value="Play"/>
+            </td>
+        </tr>
+    </table>
+
+
+<form action="{% url 'srefab:next' subject_id %}"  method="post">
+     <input type="button" style="font-size:24;width:100px;height:50px" type="submit" name="submit"  value="Next"/>
+</form>
+
+{% endblock %}

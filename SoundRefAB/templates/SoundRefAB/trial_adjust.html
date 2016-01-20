@@ -51,6 +51,7 @@
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 <form action="{% url 'srefab:processadj' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
     <input type="hidden" id="valid" value="0">
+    <input type="hidden" id="playseq" value="">
     <input type="hidden" id="ampl_list" value="{{ampl_list}}">
     <h2>Adjust the second sound so that it sounds twice as loud as the reference</h2>
     <p>Difficulty level: {{ difficulty }}</p>
@@ -66,6 +67,7 @@
                       var v = document.getElementById("audio0");
                       if(v.src.length<1000){
                           regenSound({{param_list.1.ampl}},"audio0");
+                          document.getElementById("playseq") += "0"
                       }
                       v.play();
                    }
@@ -83,6 +85,7 @@
                       var v = document.getElementById("audio1");
                       if(v.src.length<1000){
                           regenSound(document.getElementById("adjval").value,"audio1");
+                          document.getElementById("playseq") += "1"
                       }
                       v.play();
                    }

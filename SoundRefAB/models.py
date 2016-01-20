@@ -3,15 +3,23 @@ import datetime
 from django.db import models
 from django.utils import timezone
 
-# Create your models here.
+# generic relations for item sequence
+from django.contrib.contenttypes.models import ContentType
+#from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
+from django.conf import settings
+
+import os
+import string
+MODEL_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 
 
 class Experiment(models.Model):
     description = models.CharField(max_length=200)
-    instruction_file = models.FilePathField(path=)
     created_date = models.DateTimeField('date created')
     #module = models.CharField('Python module',max_length=100)
+    item = GenericRelation('ItemInScenario')
     try:
         import types
         import sample_gen as sg
@@ -36,20 +44,74 @@ class Experiment(models.Model):
     def __str__(self):
         return self.description
 
+class SoundDemo(models.Model):
+    description = models.CharField(max_length=200)
+    created_date = models.DateTimeField('date created')
+    #module = models.CharField('Python module',max_length=100)
+    item = GenericRelation('ItemInScenario')
+    try:
+        import types
+        import demo_gen as dg
+        fnames = [dg.__dict__.get(a).func_name for a in dir(dg) if isinstance(dg.__dict__.get(a), types.FunctionType)]
+        function = models.CharField('Sound demo generating function',max_length=100, choices = [(fn,fn) for fn in fnames])
+    except ImportError:
+        function = models.CharField('Sound demo generating function',max_length=100)
+                
+    def __str__(self):
+        return self.description
+
+
+class Page(models.Model):
+    description = models.CharField(max_length=200)
+    created_date = models.DateTimeField('date created')
+    #module = models.CharField('Python module',max_length=100)
+    item = GenericRelation('ItemInScenario')
+    try:
+        from django.template.loaders.app_directories import get_app_template_dirs
+        rawdirs = get_app_template_dirs(os.path.dirname(__file__))
+        uniquedirs = list(set(rawdirs))
+        app_template_dir = [ss for ss in uniquedirs if string.find(ss,MODEL_ROOT)>-1 ]
+        template_files = []
+        for template_dir in app_template_dir:
+            for dir, dirnames, filenames in os.walk(template_dir):
+                for filename in filenames:
+                    if (filename[0:2]=='pg') & (filename[-4:]=='html') :
+                        template_files.append(filename)
+        template = models.CharField('Page file',max_length=100, choices = [(fn,fn) for fn in template_files], default='')
+    except ImportError:
+        template = models.CharField('Page file',max_length=100, default='')
+                
+    def __str__(self):
+        return self.description
+
 class Scenario(models.Model):
     description = models.CharField(max_length=200)
     created_date = models.DateTimeField('date created')
     #module = models.CharField('Python module',max_length=100)
-    experiments = models.ManyToManyField(Experiment, through='ExperimentInScenario')
-
+    items = models.ManyToManyField('ItemInScenario')
     
-
     def __str__(self):
         return self.description
     
-class ExperimentInScenario(models.Model):
-    experiment = models.ForeignKey(Experiment)
-    scenario = models.ForeignKey(Scenario)
+# class ExperimentInScenario(models.Model):
+#     experiment = models.ForeignKey(Experiment)
+#     scenario = models.ForeignKey(Scenario)
+#     order = models.IntegerField('Order in Scenario', default=1)
+#
+#     def __str__(self):
+#         return '%s : Nbr %d in %s'%(self.experiment.description, self.order, self.scenario.description)
+class ItemInScenario(models.Model):
+    appl = u'SoundRefAB'
+    limit = models.Q(app_label = appl, model = u'experiment') | models.Q(app_label = appl, model = u'page') 
+    content_type = models.ForeignKey(ContentType, limit_choices_to = limit)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    
+    #scenario = models.ForeignKey('Scenario')
+    #gen = models.
+    # experiment = models.ForeignKey('Experiment',null=True)
+    # page = models.ForeignKey('Page',null=True)
+    # sound_demo = models.ForeignKey('SoundDemo',null=True)
     order = models.IntegerField('Order in Scenario', default=1)
     
     def __str__(self):
@@ -99,6 +161,7 @@ class SoundTriplet(models.Model):
     valid_date = models.DateTimeField('date triplet validated by user',auto_now_add=True)
     confidence = models.IntegerField(default=0)
     subject = models.ForeignKey(Subject)
+    playseq = models.SlugField(default='')
     # number of trial for the subject and experiment
     trial = models.IntegerField(default=0)
     experiment = models.ForeignKey(Experiment)

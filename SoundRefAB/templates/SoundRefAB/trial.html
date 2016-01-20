@@ -28,6 +28,7 @@
 {% if sound_list %}
 <form action="{% url 'srefab:process' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
     <input type="hidden" id="valid" value="0">
+    <input type="hidden" id="playseq" value="">
     <h2>Which sound is closer to the reference?</h2>
     <p>Difficulty level: {{ difficulty }}</p>
     <table border="1px" margin="10px">
@@ -45,6 +46,7 @@
                function Play{{ forloop.counter0 }}(){
                   var v = document.getElementById("audio{{ forloop.counter0 }}");
                   v.play();
+                  document.getElementById("playseq") += "{{ forloop.counter0 }}"
                }
             </script>
 

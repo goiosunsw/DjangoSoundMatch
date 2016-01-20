@@ -7,6 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('contenttypes', '0002_remove_content_type_name'),
     ]
 
     operations = [
@@ -16,17 +17,27 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.CharField(max_length=200)),
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
-                ('function', models.CharField(max_length=100, verbose_name=b'Sound generating function', choices=[(b'LoudnessAdjust', b'LoudnessAdjust'), (b'SlopeVibratoTripletRefAB', b'SlopeVibratoTripletRefAB'), (b'VibratoTripletRefAB', b'VibratoTripletRefAB'), (b'retrieve_temp_data_file', b'retrieve_temp_data_file'), (b'store_temp_data_file', b'store_temp_data_file')])),
+                ('function', models.CharField(max_length=100, verbose_name=b'Sound generating function', choices=[(b'LoudnessAdjust', b'LoudnessAdjust'), (b'SlopeVibratoTripletRefAB', b'SlopeVibratoTripletRefAB'), (b'VibratoTripletRefAB', b'VibratoTripletRefAB')])),
                 ('number_of_trials', models.IntegerField(default=1, verbose_name=b'Number of Trials')),
-                ('design', models.CharField(default=b'Reference-A-B', max_length=100, verbose_name=b'Design class', choices=[(b'soundpage', b'Reference presented with N sounds, single choice'), (b'soundadjustpage', b'Reference presented with single adjustable sound')])),
+                ('design', models.CharField(default=b'textpage', max_length=100, verbose_name=b'Design class', choices=[(b'soundpage', b'Reference presented with N sounds, single choice'), (b'soundadjustpage', b'Reference presented with single adjustable sound'), (b'paridemopage', b'Demo with two sound samples'), (b'textpage', b'Instruction text page')])),
             ],
         ),
         migrations.CreateModel(
-            name='ExperimentInScenario',
+            name='ItemInScenario',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('object_id', models.PositiveIntegerField()),
                 ('order', models.IntegerField(default=1, verbose_name=b'Order in Scenario')),
-                ('experiment', models.ForeignKey(to='SoundRefAB.Experiment')),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Page',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('description', models.CharField(max_length=200)),
+                ('created_date', models.DateTimeField(verbose_name=b'date created')),
+                ('function', models.CharField(max_length=100, verbose_name=b'Page generating function')),
             ],
         ),
         migrations.CreateModel(
@@ -44,7 +55,16 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.CharField(max_length=200)),
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
-                ('experiments', models.ManyToManyField(to='SoundRefAB.Experiment', through='SoundRefAB.ExperimentInScenario')),
+                ('items', models.ManyToManyField(to='SoundRefAB.ItemInScenario')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='SoundDemo',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('description', models.CharField(max_length=200)),
+                ('created_date', models.DateTimeField(verbose_name=b'date created')),
+                ('function', models.CharField(max_length=100, verbose_name=b'Sound demo generating function')),
             ],
         ),
         migrations.CreateModel(
@@ -90,10 +110,5 @@ class Migration(migrations.Migration):
             model_name='parameterinstance',
             name='trial',
             field=models.ForeignKey(to='SoundRefAB.SoundTriplet'),
-        ),
-        migrations.AddField(
-            model_name='experimentinscenario',
-            name='scenario',
-            field=models.ForeignKey(to='SoundRefAB.Scenario'),
         ),
     ]
