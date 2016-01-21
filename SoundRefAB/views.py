@@ -18,7 +18,7 @@ import numpy as np
 import tempfile
 
 
-from .models import Subject,Experiment, Scenario, SoundTriplet
+from .models import Subject,Experiment, Scenario, SoundTriplet, Page, ItemInScenario
 
 import random
 
@@ -97,14 +97,15 @@ def NextExp(request, subject_id):
     n_exp = max(this_scenario.iteminscenario_set.values_list('order', flat=True))
     
     if ord_no <= n_exp:
-        next_exp = this_scenario.iteminscenario_set.get(order=ord_no).experiment
-        exprevurl = next_exp.design
+        #next_exp = this_scenario.iteminscenario_set.get(order=ord_no).experiment
+        #exprevurl = next_exp.design
+        exprevurl = this_scenario.iteminscenario_set.get(order=ord_no).get_url_for_subject_id(subject_id)
         #return reverse('srefab:'+exprevurl, args = (self.object.pk,))
         # reset number of trials
         this_subj.trials_done = 0
         this_subj.save()
         
-        return HttpResponseRedirect(reverse('srefab:'+exprevurl, args = (subject_id,)))
+        return HttpResponseRedirect(exprevurl)
         
     else:
         this_subj.save()
@@ -121,7 +122,7 @@ def SoundPage(request, subject_id):
         # get experiment for subject
         this_subj = Subject.objects.get(pk=subject_id)
         ord_no = this_subj.exp_id 
-        x = sub.scenario.iteminscenario_set.get(order=ord_no).experiment
+        x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
 
 
         # retrieve data from previous experiment
@@ -197,7 +198,7 @@ def ProcessPage(request, trial_id):
     
     # get experiment for subject
     ord_no = sub.exp_id 
-    x = sub.scenario.iteminscenario_set.get(order=ord_no).experiment
+    x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
     
 
     sub.save()
@@ -213,51 +214,27 @@ def ProcessPage(request, trial_id):
 ##############
 # Text / Sound demo page
 
-def TextPage(request, subject_id):
+def TextPage(request, subject_id, page_id):
     # get subject
     sub = get_object_or_404(Subject, pk=subject_id)
+    pag = get_object_or_404(Page, pk=page_id)
     now = timezone.now()
 
     try:
         # get experiment for subject
         this_subj = Subject.objects.get(pk=subject_id)
-        ord_no = this_subj.exp_id 
-        x = sub.scenario.iteminscenario_set.get(order=ord_no).experiment
 
-        function_name = x.function
-        try:
-            f = getattr(sample_gen, function_name)
-        except AttributeError:
-            raise Http404("Error in sample generating function name: "+function_name)
 
-        sound_data, param_dict, difficulty_divider = f(subject_id, prev_param=prev_param,
-                                   prev_choice=prev_choice, confidence_history=confidence_history,
-                                   difficulty_divider = float(sub.difficulty_divider),
-                                   path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
-
-        # anti-caching
-        for s in sound_data:
-            s['file']+='?v=%06d'%st.trial
-
-        #parameter_vals.append(par.value)
-        #parameter_list = zip(parameter_names,parameter_vals)
+        template = loader.get_template('SoundRefAB/'+pag.template)
         context = RequestContext(request, {
-            'sound_list': sound_data,
-            'subject_id': subject_id,
-            'trial_id': st.trial,
-            'sample_id': st.pk,
-            'n_trials': x.number_of_trials,
-            'difficulty': sub.difficulty_divider
+            'subject_id': subject_id
             }
         )
-
-
-
-        template = loader.get_template('SoundRefAB/trial.html')
+        
         return HttpResponse(template.render(context))
 
     except (KeyError):
-        raise Http404("Error in subject or experiment data")
+        raise Http404("Error fetching info page")
     # generate parameters
 
 
@@ -273,7 +250,7 @@ def SoundAdjustPage(request, subject_id):
         # get experiment for subject
         this_subj = Subject.objects.get(pk=subject_id)
         ord_no = this_subj.exp_id 
-        x = sub.scenario.iteminscenario_set.get(order=ord_no).experiment
+        x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
 
         # create sound_triplet to store in db
         st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub, experiment_id = x.id)
@@ -353,7 +330,7 @@ def ProcessAdjustPage(request, trial_id):
     sub.trials_done += 1
     # get experiment for subject
     ord_no = sub.exp_id 
-    x = sub.scenario.iteminscenario_set.get(order=ord_no).experiment
+    x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
     # need to store adjusted value
     adjparinst = st.parameterinstance_set.get(name='ampl', position=1)
     adjparinst.value = float(request.POST['adjval'])

@@ -8,6 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 #from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.conf import settings
+from django.core.urlresolvers import reverse
+
 
 import os
 import string
@@ -34,29 +36,15 @@ class Experiment(models.Model):
         max_length=100, choices = (
             ('soundpage','Reference presented with N sounds, single choice'),
             ('soundadjustpage','Reference presented with single adjustable sound'),
-            ('paridemopage','Demo with two sound samples'),
-            ('textpage','Instruction text page')
-            ), default='textpage'
+            ), default='soundpage'
     )
     #fixed_params = models.ForeignKey(FixedParameter) 
     #variable_params = models.ForeignKey(VariableParameter) 
-        
-    def __str__(self):
-        return self.description
-
-class SoundDemo(models.Model):
-    description = models.CharField(max_length=200)
-    created_date = models.DateTimeField('date created')
-    #module = models.CharField('Python module',max_length=100)
-    item = GenericRelation('ItemInScenario')
-    try:
-        import types
-        import demo_gen as dg
-        fnames = [dg.__dict__.get(a).func_name for a in dir(dg) if isinstance(dg.__dict__.get(a), types.FunctionType)]
-        function = models.CharField('Sound demo generating function',max_length=100, choices = [(fn,fn) for fn in fnames])
-    except ImportError:
-        function = models.CharField('Sound demo generating function',max_length=100)
-                
+    
+    def get_url_for_subject_id(self, subject_pk):
+        return reverse('srefab:'+self.design, args=(subject_pk,))
+    
+    
     def __str__(self):
         return self.description
 
@@ -80,6 +68,10 @@ class Page(models.Model):
         template = models.CharField('Page file',max_length=100, choices = [(fn,fn) for fn in template_files], default='')
     except ImportError:
         template = models.CharField('Page file',max_length=100, default='')
+    
+    def get_url_for_subject_id(self, subject_pk):
+        return reverse('srefab:textpage', args=(subject_pk,self.pk,))
+    
                 
     def __str__(self):
         return self.description
@@ -88,10 +80,10 @@ class Scenario(models.Model):
     description = models.CharField(max_length=200)
     created_date = models.DateTimeField('date created')
     #module = models.CharField('Python module',max_length=100)
-    items = models.ManyToManyField('ItemInScenario')
+    #items = models.ManyToManyField('ItemInScenario')
     
     def __str__(self):
-        return self.description
+        return '%d:%s'%(self.id,self.description)
     
 # class ExperimentInScenario(models.Model):
 #     experiment = models.ForeignKey(Experiment)
@@ -107,15 +99,19 @@ class ItemInScenario(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     
-    #scenario = models.ForeignKey('Scenario')
+    scenario = models.ForeignKey('Scenario')
     #gen = models.
     # experiment = models.ForeignKey('Experiment',null=True)
     # page = models.ForeignKey('Page',null=True)
     # sound_demo = models.ForeignKey('SoundDemo',null=True)
     order = models.IntegerField('Order in Scenario', default=1)
     
+    def get_url_for_subject_id(self, subject_pk):
+        return self.content_object.get_url_for_subject_id(subject_pk)
+    
     def __str__(self):
-        return '%s : Nbr %d in %s'%(self.experiment.description, self.order, self.scenario.description)
+        ct = self.content_type.model
+        return '%s (%s): Nbr %d in %s'%(self.content_object.description, ct, self.order, self.scenario.description)
 
     
 class Subject(models.Model):

@@ -29,9 +29,10 @@
    function regenSound(val, id) {
        var nharm = {{param_list.0.nharm}};
        var slope = {{param_list.0.slope}};
-       var ampl = val;
+       var ampl = {{param_list.0.ampl}};
        var dur = {{param_list.0.dur}};
        var freq = {{param_list.0.freq}};
+       {{param_list.adj_par_name}} = val
        document.getElementById(id).src = GeneratePeriodic(nharm,slope,ampl,dur,freq);
        return true;
    }
@@ -59,15 +60,15 @@
         <tr>
             <td>
                 <h2>Reference</h2>
-                <audio id="audio0" onload="regenSound({{param_list.ampl}},this);">
+                <audio id="audio0" onload="regenSound({{param_list.val0}},this);">
                     Your browser does not support the audio element.
                 </audio>
                 <script type="text/javascript">
                    function Play0(){
                       var v = document.getElementById("audio0");
                       if(v.src.length<1000){
-                          regenSound({{param_list.1.ampl}},"audio0");
-                          document.getElementById("playseq") += "0"
+                          regenSound({{param_list.0.val0}},"audio0");
+                          document.getElementById("playseq").value += "0"
                       }
                       v.play();
                    }
@@ -77,7 +78,7 @@
             </td>
             <td>
                 <h2>Adjust:</h2>
-                <audio id="audio1" onload="regenSound({{param_list.ampl}},this);">
+                <audio id="audio1" onload="regenSound({{param_list.val0}},this);">
                     Your browser does not support the audio element.
                 </audio>
                 <script type="text/javascript">
@@ -85,13 +86,13 @@
                       var v = document.getElementById("audio1");
                       if(v.src.length<1000){
                           regenSound(document.getElementById("adjval").value,"audio1");
-                          document.getElementById("playseq") += "1"
+                          document.getElementById("playseq").value += "1"
                       }
                       v.play();
                    }
                 </script>
             <input id="adjval" name="adjval" type="range" style="width:180px"
-                min="0" max="1" step=".01" value="{{param_list.ampl}}"
+                min="0" max="1" step=".01" value="{{param_list.val0}}"
                 onchange="regenSound(this.value, 'audio1');"/>
 				
 				<input type="button" onclick="Play1();"  value="Play"/>

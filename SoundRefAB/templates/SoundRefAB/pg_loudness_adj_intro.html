@@ -57,9 +57,13 @@
         </tr>
     </table>
 
-
-<form action="{% url 'srefab:next' subject_id %}"  method="post">
+<div style="height:10px;clear:both;"></div>
+<!--  
+<form action="{% url 'srefab:next' subject_id %}"  method="post" id="next_page">
      <input type="button" style="font-size:24;width:100px;height:50px" type="submit" name="submit"  value="Next"/>
 </form>
+-->
+<input type="button" style="font-size:24;width:100px;height:50px" name="next_button" value="Next" onclick="location.href='{% url 'srefab:next' subject_id %}'">
+
 
 {% endblock %}

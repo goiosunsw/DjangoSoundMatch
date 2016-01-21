@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
                 ('function', models.CharField(max_length=100, verbose_name=b'Sound generating function', choices=[(b'LoudnessAdjust', b'LoudnessAdjust'), (b'SlopeVibratoTripletRefAB', b'SlopeVibratoTripletRefAB'), (b'VibratoTripletRefAB', b'VibratoTripletRefAB')])),
                 ('number_of_trials', models.IntegerField(default=1, verbose_name=b'Number of Trials')),
-                ('design', models.CharField(default=b'textpage', max_length=100, verbose_name=b'Design class', choices=[(b'soundpage', b'Reference presented with N sounds, single choice'), (b'soundadjustpage', b'Reference presented with single adjustable sound'), (b'paridemopage', b'Demo with two sound samples'), (b'textpage', b'Instruction text page')])),
+                ('design', models.CharField(default=b'soundpage', max_length=100, verbose_name=b'Design class', choices=[(b'soundpage', b'Reference presented with N sounds, single choice'), (b'soundadjustpage', b'Reference presented with single adjustable sound')])),
             ],
         ),
         migrations.CreateModel(
@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.CharField(max_length=200)),
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
-                ('function', models.CharField(max_length=100, verbose_name=b'Page generating function')),
+                ('template', models.CharField(default=b'', max_length=100, verbose_name=b'Page file', choices=[('pg_brightness_adj_intro.html', 'pg_brightness_adj_intro.html'), ('pg_loudness_adj_intro.html', 'pg_loudness_adj_intro.html'), ('pg_vibrato_intro.html', 'pg_vibrato_intro.html'), ('pg_welcome.html', 'pg_welcome.html')])),
             ],
         ),
         migrations.CreateModel(
@@ -55,16 +55,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.CharField(max_length=200)),
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
-                ('items', models.ManyToManyField(to='SoundRefAB.ItemInScenario')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='SoundDemo',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('description', models.CharField(max_length=200)),
-                ('created_date', models.DateTimeField(verbose_name=b'date created')),
-                ('function', models.CharField(max_length=100, verbose_name=b'Sound demo generating function')),
             ],
         ),
         migrations.CreateModel(
@@ -74,6 +64,7 @@ class Migration(migrations.Migration):
                 ('shown_date', models.DateTimeField(auto_now_add=True, verbose_name=b'date triplet shown to user')),
                 ('valid_date', models.DateTimeField(auto_now_add=True, verbose_name=b'date triplet validated by user')),
                 ('confidence', models.IntegerField(default=0)),
+                ('playseq', models.SlugField(default=b'')),
                 ('trial', models.IntegerField(default=0)),
                 ('choice', models.IntegerField(default=0)),
                 ('experiment', models.ForeignKey(to='SoundRefAB.Experiment')),
@@ -110,5 +101,10 @@ class Migration(migrations.Migration):
             model_name='parameterinstance',
             name='trial',
             field=models.ForeignKey(to='SoundRefAB.SoundTriplet'),
+        ),
+        migrations.AddField(
+            model_name='iteminscenario',
+            name='scenario',
+            field=models.ForeignKey(to='SoundRefAB.Scenario'),
         ),
     ]

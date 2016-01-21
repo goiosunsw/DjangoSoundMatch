@@ -200,11 +200,64 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
     newampl = ampl_list.pop()
     for thispar in new_param:
         thispar['ampl'] = newampl
+        thispar['adj_par_name'] = 'ampl'
+        thispar['val0'] = newampl
     
     # for sd in sound_data:
     #     param_data.append(new_param)
     param_data = new_param
     dio.store_temp_data_file(ampl_list, subj_no)
+    
+    return sound_data, param_data, difficulty_divider
+
+def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
+                        ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):
+                 
+    # include an empty string so that store params knows what to store
+    ref_sd = {'name': 'Reference',
+                'file': '',
+                'choice': False}
+    adj_sd = {'name': 'Adjusted',
+                'file': '',
+                'choice': True}
+    sound_data=[ref_sd,adj_sd]
+    
+    subj_no = int(subject_id)
+    
+    try:
+        #const_par = dio.retrieve_temp_data_file(subj_no)
+        slope_list = dio.retrieve_temp_data_file(subj_no)
+        # check that list is not empty
+        dummy=slope_list[0]
+    except (IOError, KeyError, IndexError) as e: 
+        slope_list = np.linspace(-1,10,ntrials).tolist()
+        random.shuffle(slope_list)
+        
+    if 'nharm' not in prev_param[0].keys():
+        for pp in prev_param:
+            pp['ampl']=0.5
+            pp['nharm']=15
+            pp['slope']=20
+            pp['dur']=0.6
+            pp['freq']= 500
+            #pp['trial_no']=0
+    
+    
+    param_data = []
+    new_param = prev_param
+    #print prev_param
+    newslope = slope_list.pop()
+    
+        
+    for thispar in new_param:
+        thispar['slope'] = newslope
+        thispar['adj_par_name'] = 'slope'
+        thispar['val0'] = newslope
+    
+    # for sd in sound_data:
+    #     param_data.append(new_param)
+    param_data = new_param
+    dio.store_temp_data_file(slope_list, subj_no)
     
     return sound_data, param_data, difficulty_divider
                         

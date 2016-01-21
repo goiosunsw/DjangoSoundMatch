@@ -1,0 +1,12 @@
+{% extends 'SoundRefAB/base.html' %}
+
+{% block body_block %}
+<h1>Done! </h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<p> Thank you for helping in {{ exp_name }} </p>
+<p> You completed {{ trials_done }} trials </p>
+
+
+{% endblock %}

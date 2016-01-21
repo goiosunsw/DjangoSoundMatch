@@ -11,9 +11,7 @@
 <p>The next task is similar, but we now ask you to adjust the second sound so that it sounds <b>twice as bright</b> as the reference.</p>
 <p> This may be more difficult, let us know with the last slider how easy you found the task.</p>
 
+<input type="button" style="font-size:24;width:100px;height:50px" name="next_button" value="Next" onclick="location.href='{% url 'srefab:next' subject_id %}'">
 
-<form action="{% url 'srefab:next' subject_id %}"  method="post">
-     <input type="button" style="font-size:24;width:100px;height:50px" type="submit" name="submit"  value="Next"/>
-</form>
 
 {% endblock %}
