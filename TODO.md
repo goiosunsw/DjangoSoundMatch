@@ -1,9 +1,17 @@
 # TODO: 
 
+## 22/1/2016:
+
+
+- add sound samples to instruction pages
+- Fix  headers in brightness adjust
+- Add questionnaire to the end of the experiment
+
+
 ## 21/1/2016:
 
-- Fix the use of soundadjustpage to be able to adjust for different parameters
-- add sound samples to instruction pages
+> Fix the use of soundadjustpage to be able to adjust for different parameters
+Fixed! 
 
 ## 15/1/2016: 
 
