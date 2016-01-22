@@ -1,7 +1,21 @@
 {% extends 'SoundRefAB/base.html' %}
 
+
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
+
+<script type="text/javascript">
+   window.onload = function(){
+       window.document.body.onload = init_things;
+   };
+   
+    function init_things()
+    {
+       regenSound({{param_list.0.ampl}},document.getElementById("audio0"));
+       regenSound({{param_list.1.ampl}},document.getElementById("audio1"));
+   } ;
+</script>
+
 
 
 {% block body_block %}
@@ -33,18 +47,20 @@
        var dur = {{param_list.0.dur}};
        var freq = {{param_list.0.freq}};
        {{param_list.0.adj_par_name}} = val
-       realslope = slope * 6 - 1
+       realslope = (1-slope) * 6 - 1
        document.getElementById(id).src = GeneratePeriodic(nharm,realslope,ampl,dur,freq);
        return true;
    }
+   
+   function timestamp(label) {
+       var showndate = document.getElementById("showndate").value;
+       var datedelay = Math.floor(((new Date().valueOf())-showndate)/1000);
+       document.getElementById("playseq").value += (label+":"+datedelay+";");
+       
+       
+   }
 </script>
 
-<script type="text/javascript">
-   document.onload = function() {
-       regenSound({{param_list.0.ampl}},document.getElementById("audio0"));
-       regenSound({{param_list.1.ampl}},document.getElementById("audio1"));
-   } ;
-</script>
 
 
 <h1>Sample {{ trial_id }} of {{ n_trials }}</h1>
@@ -53,7 +69,12 @@
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 <form action="{% url 'srefab:processadj' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
     <input type="hidden" id="valid" value="0">
-    <input type="hidden" id="playseq" value="">
+    <input name="playseq" type="hidden" id="playseq" value="">
+    <input type="hidden" id="showndate" value="0" onload="this.value=(new Date()).valueOf();">
+    <script>
+        var showndate = new Date();
+        document.getElementById("showndate").value = showndate.valueOf();
+    </script>
     <input type="hidden" id="ampl_list" value="{{ampl_list}}">
     <h2>Adjust the second sound so that it sounds twice as loud as the reference</h2>
     <p>Difficulty level: {{ difficulty }}</p>
@@ -61,7 +82,7 @@
         <tr>
             <td>
                 <h2>Reference</h2>
-                <audio id="audio0" onload="regenSound({{param_list.val0}},this);">
+                <audio id="audio0" >
                     Your browser does not support the audio element.
                 </audio>
                 <script type="text/javascript">
@@ -69,8 +90,8 @@
                       var v = document.getElementById("audio0");
                       if(v.src.length<1000){
                           regenSound({{param_list.0.val0}},"audio0");
-                          document.getElementById("playseq").value += "0"
                       }
+                      timestamp('0');
                       v.play();
                    }
                 </script>
@@ -79,7 +100,7 @@
             </td>
             <td>
                 <h2>Adjust:</h2>
-                <audio id="audio1" onload="regenSound({{param_list.val0}},this);">
+                <audio id="audio1">
                     Your browser does not support the audio element.
                 </audio>
                 <script type="text/javascript">
@@ -87,14 +108,16 @@
                       var v = document.getElementById("audio1");
                       if(v.src.length<1000){
                           regenSound(document.getElementById("adjval").value,"audio1");
-                          document.getElementById("playseq").value += "1"
                       }
+                      timestamp('1');
+                      
                       v.play();
                    }
                 </script>
             <input id="adjval" name="adjval" type="range" style="width:180px"
-                min="0" max="1" step=".01" value="{{param_list.val0}}"
-                onchange="regenSound(this.value, 'audio1');"/>
+                min="0" max="1" step=".01" value="{{param_list.0.val}}"
+                onchange="regenSound(this.value, 'audio1'); timestamp('A');
+"/>
 				
 				<input type="button" onclick="Play1();"  value="Play"/>
         </tr>
@@ -137,6 +160,9 @@
               }
            }
         </script>
+           <div style="height:10px;clear:both;"></div>
+           <p>Any comments?</p>
+           <textarea rows="4" cols="50" name="comment"></textarea>
            <div style="height:10px;clear:both;"></div>
         <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Submit" />
 

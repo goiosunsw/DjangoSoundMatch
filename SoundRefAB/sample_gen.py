@@ -187,7 +187,7 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
         for pp in prev_param:
             pp['ampl']=0.5
             pp['nharm']=15
-            pp['slope']=20
+            pp['slope']=0.1
             pp['dur']=0.6
             pp['freq']= 500
             #pp['trial_no']=0
@@ -196,12 +196,19 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
     param_data = []
     new_param = prev_param
     #print prev_param
-        
-    newampl = ampl_list.pop()
+    
+    try:    
+        newampl = ampl_list.pop()
+    except IndexError:
+        # something went wrong wit sequence, maybe user has clicked reload
+        temp_list = np.linspace(0,1,ntrials).tolist()
+        random.shuffle(temp_list)
+        newampl = temp_list.pop()
+    
     for thispar in new_param:
         thispar['ampl'] = newampl
         thispar['adj_par_name'] = 'ampl'
-        thispar['val0'] = newampl
+        #thispar['val0'] = newampl
     
     # for sd in sound_data:
     #     param_data.append(new_param)
@@ -230,7 +237,7 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         # check that list is not empty
         dummy=slope_list[0]
     except (IOError, KeyError, IndexError) as e: 
-        slope_list = np.linspace(-1,10,ntrials).tolist()
+        slope_list = np.linspace(0,1,ntrials).tolist()
         random.shuffle(slope_list)
         
     if 'nharm' not in prev_param[0].keys():
@@ -246,13 +253,19 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     param_data = []
     new_param = prev_param
     #print prev_param
-    newslope = slope_list.pop()
-    
+    try:
+        newslope = slope_list.pop()
+    except IndexError:
+        # something went wrong wit sequence, maybe user has clicked reload
+        temp_list = np.linspace(0,1,ntrials).tolist()
+        random.shuffle(temp_list)
+        newslope = temp_list.pop()
+        
         
     for thispar in new_param:
         thispar['slope'] = newslope
         thispar['adj_par_name'] = 'slope'
-        thispar['val0'] = newslope
+        #thispar['val0'] = newslope
     
     # for sd in sound_data:
     #     param_data.append(new_param)

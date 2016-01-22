@@ -76,8 +76,13 @@ class ScenarioListView(ListView):
     model = Scenario
     fields = ['description','date_created']
 
-
-class NewSubjectView(CreateView):
+def  NewSubjectView(request, pk=0):
+    scen = Scenario.objects.get(pk=pk)
+    sub = scen.subject_set.create(trials_done=0, exp_id=0)
+    subject_id = sub.id
+    return HttpResponseRedirect(reverse('srefab:next', args = (subject_id,)))
+    
+class SubjectQuestionnaire(CreateView):
     template_name='SoundRefAB/subject_form.html'
 
     model = Subject
@@ -198,14 +203,19 @@ def SoundPage(request, subject_id):
     # generate parameters
 
 def ProcessPage(request, trial_id):
+    #print request.POST
     st = get_object_or_404(SoundTriplet, pk=trial_id)
     st.choice = int(request.POST['choice'])
     st.confidence = int(request.POST['slider'])
+    st.playseq = request.POST.get('playseq','')
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
     sub.trials_done += 1
     
+    comment = request.POST.get('comment','')
+    if len(comment)>0:
+        st.comment_set.create(text=comment, subject = sub)
     # get experiment for subject
     ord_no = sub.exp_id 
     x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
@@ -330,19 +340,27 @@ def SoundAdjustPage(request, subject_id):
 
 def ProcessAdjustPage(request, trial_id):
     st = get_object_or_404(SoundTriplet, pk=trial_id)
+    print request.POST
     st.choice = 1
     st.value = float(request.POST['adjval'])
     st.confidence = int(request.POST['confidence'])
+    st.playseq = request.POST.get('playseq','')
     #ampl_list=request.POST['ampl_list']
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
     sub.trials_done += 1
+
+    comment = request.POST.get('comment','')
+    if len(comment)>0:
+        st.comment_set.create(text=comment, subject = sub)
     # get experiment for subject
     ord_no = sub.exp_id 
     x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
     # need to store adjusted value
-    adjparinst = st.parameterinstance_set.get(name='ampl', position=1)
+    adjparname = st.stringparameterinstance_set.get(name='adj_par_name', position=1).value
+    print "Adjusted parameter: "+adjparname
+    adjparinst = st.parameterinstance_set.get(name=adjparname, position=1)
     adjparinst.value = float(request.POST['adjval'])
     adjparinst.save()
 

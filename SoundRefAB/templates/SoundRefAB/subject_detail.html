@@ -12,13 +12,22 @@
     <li> Times: {{ st.shown_date|date:"H:i:s" }} - {{st.valid_date|date:"H:i:s"}}
         <ul>
         {% for p in st.parameterinstance_set.all %}
-        <li>{{ p.name }} {{p.position}} : {{p.value|floatformat:1}} </li>
+        <li>{{ p.name }} {{p.position}} : {{p.value|floatformat:3}} </li>
         {% endfor %}
         {% for p in st.stringparameterinstance_set.all %}
         <li>{{ p.name }} {{p.position}} : {{p.value}} </li>
         {% endfor %}
         <li>Choice: {{st.choice}}</li>
         <li>Confidence: {{st.confidence}}</li>
+        <li>Play sequence: {{st.playseq}}</li>
+        <li>Comment: 
+            <ul>
+                {% for c in st.comment_set.all %}
+                <li>{{c.text}}</li>
+                {% endfor %}
+                
+            </ul>
+        </li>
     </ul></li>
     {% endfor %}
 </ul>
