@@ -187,5 +187,25 @@ class ParameterInstance(models.Model):
     def __str__(self):
         return self.name+' in sample %d of trial %d '%(self.position,self.trial.pk)+' of exp. '+self.trial.experiment.description
 
+class StringParameterInstance(models.Model):
+    # holds the actual value of a parameter
+    # a parameter instance or value belongs to a particular experiment
+    # and a particular parameter model
+    name = models.CharField(max_length=100, default = '')
+    value = models.CharField('Value', max_length=50, default = '')
+    subject = models.ForeignKey(Subject)
+    trial = models.ForeignKey(SoundTriplet)
+    position = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return self.name+' in sample %d of trial %d '%(self.position,self.trial.pk)+' of exp. '+self.trial.experiment.description
 
+class Comment(models.Model):
+    # holds a comment associated with an experimental trial
+    text = models.TextField(default='')
+    subject = models.ForeignKey(Subject)
+    trial = models.ForeignKey(SoundTriplet)
+    
+    def __str__(self):
+        return self.name+' in sample %d of trial %d '%(self.position,self.trial.pk)+' of exp. '+self.trial.experiment.description
    

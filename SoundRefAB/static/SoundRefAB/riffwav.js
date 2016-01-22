@@ -157,8 +157,9 @@ function GeneratePeriodic(nharm, slope, ampl, dur, freq) {
 	var hn = 1;
 	while(hn++<nharm) {
 	    i = 0
+        div = Math.pow(hn,slope);
 		while (i<sampPerPeriod) {
-		  period[i++] += Math.round(maxAmp/slope/hn*Math.sin(i/argdiv*hn)); 
+		  period[i++] += Math.round(maxAmp/div*Math.sin(i/argdiv*hn)); 
 		}
 	}
 	

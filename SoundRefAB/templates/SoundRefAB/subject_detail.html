@@ -14,6 +14,9 @@
         {% for p in st.parameterinstance_set.all %}
         <li>{{ p.name }} {{p.position}} : {{p.value|floatformat:1}} </li>
         {% endfor %}
+        {% for p in st.stringparameterinstance_set.all %}
+        <li>{{ p.name }} {{p.position}} : {{p.value}} </li>
+        {% endfor %}
         <li>Choice: {{st.choice}}</li>
         <li>Confidence: {{st.confidence}}</li>
     </ul></li>

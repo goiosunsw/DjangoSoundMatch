@@ -13,6 +13,7 @@ from django.db.models import F
 from random import shuffle
 from decimal import Decimal
 from datetime import timedelta
+from numbers import Number
 import os
 import numpy as np
 import tempfile
@@ -30,7 +31,10 @@ def store_sound_parameters(st, sound_data, param_list):
     for sound_nbr, data in enumerate(zip(sound_data,param_list)):
         sounddata, soundpar = data
         for parkey,parval in soundpar.items():
-            parinst = st.parameterinstance_set.create(subject=st.subject)
+            if isinstance(parval, Number):
+                parinst = st.parameterinstance_set.create(subject=st.subject)
+            else:
+                parinst = st.stringparameterinstance_set.create(subject=st.subject)
             parinst.name = parkey
             #parinst.description = par['description']
             parinst.value = parval
@@ -42,10 +46,16 @@ def retrieve_sound_parameters(st):
     confidence = st.confidence
     choice = st.choice
     par=[]
+    # Unpack numeric parameters
     pset = st.parameterinstance_set.all().order_by('position')
+    # and string parameters
+    spset = st.stringparameterinstance_set.all().order_by('position')
     for pos in pset.values_list('position',flat=True).distinct():
         thisdict=dict()
         thispar = pset.filter(position=pos)
+        for parinst in thispar:
+            thisdict[parinst.name] = parinst.value
+        thispar = spset.filter(position=pos)
         for parinst in thispar:
             thisdict[parinst.name] = parinst.value
         

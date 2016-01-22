@@ -32,8 +32,9 @@
        var ampl = {{param_list.0.ampl}};
        var dur = {{param_list.0.dur}};
        var freq = {{param_list.0.freq}};
-       {{param_list.adj_par_name}} = val
-       document.getElementById(id).src = GeneratePeriodic(nharm,slope,ampl,dur,freq);
+       {{param_list.0.adj_par_name}} = val
+       realslope = slope * 6 - 1
+       document.getElementById(id).src = GeneratePeriodic(nharm,realslope,ampl,dur,freq);
        return true;
    }
 </script>
