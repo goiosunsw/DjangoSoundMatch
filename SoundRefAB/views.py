@@ -77,6 +77,12 @@ def store_experiment_results(result_dict, exp, subj):
 
             expresult.save()
 
+def get_experiment_results(subj):
+    erd = dict()
+    for er in subj.experimentresults_set.all():
+        erd[er.name] = er.value
+    
+    return erd
 
 # Create your views here.
 class ExperimentListView(ListView):
@@ -200,11 +206,14 @@ def SoundPage(request, subject_id):
             f = getattr(sample_gen, function_name)
         except AttributeError:
             raise Http404("Error in sample generating function name: "+function_name)
-
+        
+        prev_exp = get_experiment_results(this_subj)
+        
         sound_data, param_dict, difficulty_divider = f(subject_id, prev_param=prev_param,
                                    prev_choice=prev_choice, confidence_history=confidence_history,
                                    difficulty_divider = float(sub.difficulty_divider),
-                                   path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
+                                   path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL,
+                                   prev_exp_dict=prev_exp)
 
         #store sound data in db
         store_sound_parameters(st, sound_data, param_dict)

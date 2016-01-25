@@ -77,7 +77,7 @@ def VibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_history=[
     return sound_data, param_data, difficulty_divider
     
 def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
-                        prev_param=[], path='.', url_path='/'):
+                        prev_param=[], path='.', url_path='/', prev_exp_dict=prev_exp):
                         
     # use confidence history to increase or decrease difficulty
     avg_last_confidence = sum([xx*2-3 for ii,xx in enumerate(confidence_history) 
@@ -92,7 +92,11 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
 
     if difficulty_divider > 8:
         difficulty_divider = 8.0
-
+    
+    try:
+        twice_brigth = prev_exp['med_twice_brightness']
+    except KeyError:
+        twice_brigth = 2
     
     n_sounds = 3
     
