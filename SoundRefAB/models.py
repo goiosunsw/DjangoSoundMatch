@@ -17,7 +17,11 @@ MODEL_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 
 
-class Experiment(models.Model):
+class Experiment(models.Model): 
+    '''Holds information for a particular experiment, 
+    based on a design given by the parameter "design" and a
+    particular instance of the design given by "generating function"'''
+    
     description = models.CharField(max_length=200)
     created_date = models.DateTimeField('date created')
     #module = models.CharField('Python module',max_length=100)
@@ -42,14 +46,28 @@ class Experiment(models.Model):
     #variable_params = models.ForeignKey(VariableParameter) 
     
     def get_url_for_subject_id(self, subject_pk):
+        '''Return the url for this page, for subject referred to by "subject id"'''
         return reverse('srefab:'+self.design, args=(subject_pk,))
     
     
     def __str__(self):
         return self.description
 
+class Questionnaire(models.Model):
+    '''Dummy model to link to the subject questionnaire'''
+    item = GenericRelation('ItemInScenario')
+    description = models.CharField(max_length=200)
+    created_date = models.DateTimeField('date created')
+    
+    def get_url_for_subject_id(self, subject_pk):
+        '''Return the url for this page, for subject referred to by "subject id"'''
+        return reverse('srefab:subjectupdate', args=(subject_pk,))
 
 class Page(models.Model):
+    '''Pages do not return information to the database, 
+    they link to a template and show it to the user, 
+    and then redirect to the next item on the scenario'''
+    
     description = models.CharField(max_length=200)
     created_date = models.DateTimeField('date created')
     #module = models.CharField('Python module',max_length=100)
@@ -70,6 +88,7 @@ class Page(models.Model):
         template = models.CharField('Page file',max_length=100, default='')
     
     def get_url_for_subject_id(self, subject_pk):
+        '''Return the url for this page, for subject referred to by "subject id"'''
         return reverse('srefab:textpage', args=(subject_pk,self.pk,))
     
                 
@@ -77,6 +96,7 @@ class Page(models.Model):
         return self.description
 
 class Scenario(models.Model):
+    '''Scenarios hold a sequence of info pages, demo pages and/or experiments'''
     description = models.CharField(max_length=200)
     created_date = models.DateTimeField('date created')
     #module = models.CharField('Python module',max_length=100)
@@ -93,8 +113,12 @@ class Scenario(models.Model):
 #     def __str__(self):
 #         return '%s : Nbr %d in %s'%(self.experiment.description, self.order, self.scenario.description)
 class ItemInScenario(models.Model):
+    '''Abstraction to refer to a single page (info, experiment or questionnaire)'''
+    
     appl = u'SoundRefAB'
-    limit = models.Q(app_label = appl, model = u'experiment') | models.Q(app_label = appl, model = u'page') 
+    limit = (models.Q(app_label = appl, model = u'experiment') | 
+            models.Q(app_label = appl, model = u'page') |
+            models.Q(app_label = appl, model = u'questionnaire'))
     content_type = models.ForeignKey(ContentType, limit_choices_to = limit)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
@@ -107,6 +131,8 @@ class ItemInScenario(models.Model):
     order = models.IntegerField('Order in Scenario', default=1)
     
     def get_url_for_subject_id(self, subject_pk):
+        '''Return the url for this page, for subject referred to by "subject id"'''
+        
         return self.content_object.get_url_for_subject_id(subject_pk)
     
     def __str__(self):
@@ -115,24 +141,15 @@ class ItemInScenario(models.Model):
 
     
 class Subject(models.Model):
+    '''Subject data'''
     start_date = models.DateTimeField('date Started',auto_now_add=True)
     finish_date = models.DateTimeField('date Finished',auto_now_add=True)
-    age_group = models.CharField('What is your age group?', 
-        max_length=2, choices = (
-            ('15','under 15'),
-            ('25','15-25'),
-            ('35','25-35'),
-            ('45','35-45'),
-            ('55','55-65'),
-            ('65','65-75'),
-            ('75','75 or more'), ), default='25'
-    )
+    age = models.IntegerField('How old are you?', default=20)
     music_experience = models.CharField('Which better describes your musical experience?',
         max_length=2, choices = (
             ('NO','No experience'),
             ('AM','Amateur'),
-            ('ST','Music student, less than 8 years'),
-            ('AD','Music student, more than 8 years'),
+            ('ST','Music student'),
             ('RG','Non-professional but perform in public'),
             ('PR','Professional'), ), default='NO'
     )
@@ -145,6 +162,7 @@ class Subject(models.Model):
             ('EX','External amplified loudspeakers'),
             ('PH','Headphones'), ) , default = 'PH'
     )
+    final_comment = models.TextField('Any final comments about the experiment?', default='')
     scenario = models.ForeignKey(Scenario)
     exp_id = models.IntegerField(default=0)
     trials_done = models.IntegerField(default=0)
@@ -152,6 +170,7 @@ class Subject(models.Model):
     difficulty_divider = models.DecimalField(default=1.0,max_digits=10,decimal_places=2)
 
 class SoundTriplet(models.Model):
+    '''Data corresponding to a single sample presented to the user'''
     #var_params = models.ForeignModel(ParameterInstance)
     shown_date = models.DateTimeField('date triplet shown to user',auto_now_add=True)
     valid_date = models.DateTimeField('date triplet validated by user',auto_now_add=True)
@@ -175,9 +194,9 @@ class SoundTriplet(models.Model):
 
 
 class ParameterInstance(models.Model):
-    # holds the actual value of a parameter
-    # a parameter instance or value belongs to a particular experiment
-    # and a particular parameter model
+    '''Holds the actual value of a parameter
+    a parameter instance or value belongs to a particular experiment
+    and a particular parameter model'''
     name = models.CharField(max_length=100, default = '')
     value = models.DecimalField('Value', max_digits=10, decimal_places=2, default=0.0)
     subject = models.ForeignKey(Subject)
@@ -188,9 +207,9 @@ class ParameterInstance(models.Model):
         return self.name+' in sample %d of trial %d '%(self.position,self.trial.pk)+' of exp. '+self.trial.experiment.description
 
 class StringParameterInstance(models.Model):
-    # holds the actual value of a parameter
-    # a parameter instance or value belongs to a particular experiment
-    # and a particular parameter model
+    '''Holds the actual (string) value of a parameter
+    a parameter instance or value belongs to a particular experiment
+    and a particular parameter model'''
     name = models.CharField(max_length=100, default = '')
     value = models.CharField('Value', max_length=50, default = '')
     subject = models.ForeignKey(Subject)
@@ -200,8 +219,16 @@ class StringParameterInstance(models.Model):
     def __str__(self):
         return self.name+' in sample %d of trial %d '%(self.position,self.trial.pk)+' of exp. '+self.trial.experiment.description
 
+class ExperimentResults(models.Model):
+    '''Holds some post-experiment results that may be useful for initialising further experiments'''
+    name = models.CharField(max_length=100, default = '')
+    value = models.DecimalField('Value', max_digits=10, decimal_places=2, default=0.0)
+    subject = models.ForeignKey(Subject)
+    experiment = models.ForeignKey(Experiment)
+    subject = models.ForeignKey(Subject)
+
 class Comment(models.Model):
-    # holds a comment associated with an experimental trial
+    '''Holds a comment associated with an experimental trial'''
     text = models.TextField(default='')
     subject = models.ForeignKey(Subject)
     trial = models.ForeignKey(SoundTriplet)

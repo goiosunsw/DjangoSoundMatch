@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render
 
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import ListView, DetailView
 from django.core.urlresolvers import reverse
 from django.template import RequestContext, loader
@@ -82,11 +82,31 @@ def  NewSubjectView(request, pk=0):
     subject_id = sub.id
     return HttpResponseRedirect(reverse('srefab:next', args = (subject_id,)))
     
+class SubjectQuestionnaireUpdate(UpdateView):
+    template_name='SoundRefAB/subject_form.html'
+
+    model = Subject
+    fields = ['age','music_experience','hearing_prob','device','final_comment']
+
+    def get_success_url(self):
+        return reverse('srefab:next', args = (self.object.pk,))
+
+    def form_valid(self, form):
+        # This method is called when valid form data has been POSTed.
+        # It should return an HttpResponse.
+        #form.instance.scenario = Scenario.objects.get(pk=self.kwargs['pk'])
+        #form.instance.trials_done = 0
+        #form.instance.exp_id=0
+        #form.instance.save()
+        #print pk
+        #self.success_url=
+        return super(UpdateView, self).form_valid(form)
+    
 class SubjectQuestionnaire(CreateView):
     template_name='SoundRefAB/subject_form.html'
 
     model = Subject
-    fields = ['age_group','music_experience','hearing_prob','device']
+    fields = ['age','music_experience','hearing_prob','device','comment']
 
     def get_success_url(self):
         return reverse('srefab:next', args = (self.object.pk,))
@@ -125,7 +145,7 @@ def NextExp(request, subject_id):
     else:
         this_subj.save()
          
-        return HttpResponseRedirect(reverse('srefab:thanks', args=(subject_id,)))
+        return HttpResponseRedirect(reverse('srefab:list', args=(subject_id,)))
         
 
 def SoundPage(request, subject_id):

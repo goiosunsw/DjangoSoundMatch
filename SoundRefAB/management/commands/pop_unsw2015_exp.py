@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from SoundRefAB.models import Experiment, Page, Scenario, ItemInScenario
+from SoundRefAB.models import Experiment, Page, Scenario, ItemInScenario, Questionnaire
 from django.contrib.contenttypes.models import ContentType
 import datetime
 
@@ -42,6 +42,11 @@ class Command(BaseCommand):
                      'design': 'soundpage',
                      'function': 'SlopeVibratoTripletRefAB',
                       'number_of_trials': 5},
+                    {'model': Page,
+                     'description': 'Pre-questionnaire page',
+                     'template': 'pg_quest_info.html'},
+                    {'model': Questionnaire,
+                     'description': 'Subject questionnaire'},
                     {'model': Page,
                      'description': 'Thanks page',
                      'template': 'pg_thanks.html'})
