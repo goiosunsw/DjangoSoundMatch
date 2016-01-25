@@ -1,0 +1,16 @@
+{% extends 'SoundRefAB/base.html' %}
+
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
+
+
+{% block body_block %}
+
+<h1>Almost done</h1>
+
+<p>The experiment is now over. Please answer to the following questions about yourself and your relation with music.</p>
+
+
+<input type="button" style="font-size:24;width:100px;height:50px" name="next_button" value="Next" onclick="location.href='{% url 'srefab:next' subject_id %}'">
+
+{% endblock %}
