@@ -208,7 +208,7 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
     for thispar in new_param:
         thispar['ampl'] = newampl
         thispar['adj_par_name'] = 'ampl'
-        #thispar['val0'] = newampl
+        thispar['val0'] = newampl
     
     # for sd in sound_data:
     #     param_data.append(new_param)
@@ -265,7 +265,7 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     for thispar in new_param:
         thispar['slope'] = newslope
         thispar['adj_par_name'] = 'slope'
-        #thispar['val0'] = newslope
+        thispar['val0'] = newslope
     
     # for sd in sound_data:
     #     param_data.append(new_param)
