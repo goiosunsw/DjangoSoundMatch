@@ -24,6 +24,7 @@ class Experiment(models.Model):
     
     description = models.CharField(max_length=200)
     created_date = models.DateTimeField('date created')
+    instruction_text = models.CharField(max_length=1000, default='Please pick a sound')
     #module = models.CharField('Python module',max_length=100)
     item = GenericRelation('ItemInScenario')
     try:

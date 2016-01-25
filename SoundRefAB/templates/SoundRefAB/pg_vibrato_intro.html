@@ -21,7 +21,7 @@
 
 
             <audio id="audio0">
-                <source type="audio/wav" src="vibrato_ref.wav" />
+                <source type="audio/wav" src='{% static 'SoundRefAB/pg_vibrato_match_ref.wav' %}' />
                 Your browser does not support the audio element.
             </audio>
             <script type="text/javascript">
@@ -31,14 +31,14 @@
                }
             </script>
 
-            <input type="button" onclick="Play0();"  value="Play0"/>
+            <input type="button" onclick="Play0();"  value="Play"/>
         </td>
             <td>
                 <h2>Sample 1</h2>
 
 
             <audio id="audio1">
-                <source type="audio/wav" src="vibrato_smpl1.wav" />
+                <source type="audio/wav" src='{% static 'SoundRefAB/pg_vibrato_match_smpl1.wav' %}' />
                 Your browser does not support the audio element.
             </audio>
             <script type="text/javascript">
@@ -48,14 +48,14 @@
                }
             </script>
 
-            <input type="button" onclick="Play1();"  value="Play1"/>
+            <input type="button" onclick="Play1();"  value="Play"/>
         </td>
             <td>
                 <h2>Sample 2</h2>
 
 
             <audio id="audio2">
-                <source type="audio/wav" src="vibrato_smpl2.wav" />
+                <source type="audio/wav" src='{% static 'SoundRefAB/pg_vibrato_match_smpl2.wav' %}' />
                 Your browser does not support the audio element.
             </audio>
             <script type="text/javascript">
@@ -65,13 +65,13 @@
                }
             </script>
 
-            <input type="button" onclick="Play2();"  value="Play2"/>
+            <input type="button" onclick="Play2();"  value="Play"/>
         </td>
     </tr>
     </table>
 
 
-<p>Here the first trial tone should clearly seem closer to the reference. This may not always be the case, so let us know with the confidence slider, how easy it was to give an answer for you.</p>
+<p>Here <b>sample 1</b> should clearly sound closer to the reference than <b>sample 2</b>. This may not always be the case, so let us know with the confidence slider, how easy it was to give an answer for you.</p>
 
 <input type="button" style="font-size:24;width:100px;height:50px" name="next_button" value="Next" onclick="location.href='{% url 'srefab:next' subject_id %}'">
 

@@ -204,6 +204,7 @@ def SoundPage(request, subject_id):
         #parameter_vals.append(par.value)
         #parameter_list = zip(parameter_names,parameter_vals)
         context = RequestContext(request, {
+            'instruction_text': x.instruction_text,
             'sound_list': sound_data,
             'subject_id': subject_id,
             'trial_id': st.trial,
@@ -342,6 +343,7 @@ def SoundAdjustPage(request, subject_id):
     #parameter_vals.append(par.value)
     #parameter_list = zip(parameter_names,parameter_vals)
     context = RequestContext(request, {
+        'instruction_text': x.instruction_text,
         'param_list': param_dict,
         #'ampl_list': ampl_list,
         'subject_id': subject_id,

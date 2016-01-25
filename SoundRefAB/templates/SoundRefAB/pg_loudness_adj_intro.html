@@ -14,15 +14,12 @@
         <tr>
             <td>
                 <h2>Reference</h2>
-                <audio id="audio0" src='pg_loudness_adj_ref.wav'>
+                <audio id="audio0" src='{% static 'SoundRefAB/pg_loudness_adj_ref.wav' %}'>
                     Your browser does not support the audio element.
                 </audio>
                 <script type="text/javascript">
                    function Play0(){
                       var v = document.getElementById("audio0");
-                      if(v.src.length<1000){
-                          regenSound({{param_list.1.ampl}},"audio0");
-                      }
                       v.play();
                    }
                 </script>
@@ -40,15 +37,12 @@
         <tr>
             <td>
                 <h2>Reference</h2>
-                <audio id="audio1" src='pg_loudness_adj_refX2.wav'>
+                <audio id="audio1" src='{% static 'SoundRefAB/pg_loudness_adj_refX2.wav' %}'>
                     Your browser does not support the audio element.
                 </audio>
                 <script type="text/javascript">
-                   function Play0(){
+                   function Play1(){
                       var v = document.getElementById("audio1");
-                      if(v.src.length<1000){
-                          regenSound({{param_list.1.ampl}},"audio1");
-                      }
                       v.play();
                    }
                 </script>
