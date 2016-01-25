@@ -30,5 +30,12 @@
         </li>
     </ul></li>
     {% endfor %}
+    <li>Calculated results:
+        <ul>
+    {% for er in subject.experimentresults_set.all %}
+        <li>{{er.name}}: {{er.value}}</li>
+    {% endfor %}
+    </ul></li>
+    <li>Comment: {{subject.final_comment}}</li>
 </ul>
 {% endblock %}

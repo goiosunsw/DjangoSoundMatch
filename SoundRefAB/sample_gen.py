@@ -216,6 +216,21 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
     dio.store_temp_data_file(ampl_list, subj_no)
     
     return sound_data, param_data, difficulty_divider
+    
+def LoudnessAdjust_process(param_dict):
+    '''processes the results from the experiment 
+       to get an indication of the 2x brightness value
+    '''
+       
+    try:
+        med_twice_loudness = np.median([pp[1]['ampl']/pp[0]['ampl'] for pp in param_dict])
+    except KeyError:
+        med_twice_loudness = -1
+    
+    result_dict = {'med_twice_loudness' : med_twice_loudness}
+    
+    return result_dict
+
 
 def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):
@@ -273,4 +288,18 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     dio.store_temp_data_file(slope_list, subj_no)
     
     return sound_data, param_data, difficulty_divider
+
+def BrightnessAdjust_process(param_dict):
+    '''processes the results from the experiment 
+       to get an indication of the 2x brightness value
+    '''
+       
+    try:
+        med_twice_brightness = np.median([pp[1]['slope']-pp[0]['slope'] for pp in param_dict])
+    except KeyError:
+        med_twice_brightness = -1
+    
+    result_dict = {'med_twice_brightness': med_twice_brightness}
+    
+    return result_dict
                         

@@ -50,6 +50,26 @@ class Experiment(models.Model):
         '''Return the url for this page, for subject referred to by "subject id"'''
         return reverse('srefab:'+self.design, args=(subject_pk,))
     
+    def get_all_trial_data(self, subject_pk):
+        stnum = 0
+        parnum = 0
+        allpar = []
+        allst = self.soundtriplet_set.filter(subject__id=subject_pk)
+        for st in allst:
+            trialpar = []
+            samples = st.parameterinstance_set.values_list('position',flat=True).distinct()
+            for sam in samples:
+                stpar=dict()
+                for par in st.parameterinstance_set.filter(position = sam):
+                    stpar[par.name] = par.value
+                    parnum += 1
+                for par in st.stringparameterinstance_set.filter(position = sam):
+                    stpar[par.name] = par.value
+                    parnum += 1
+                trialpar.append(stpar)
+            stnum +=1
+            allpar.append(trialpar)
+        return allpar
     
     def __str__(self):
         return self.description
@@ -226,7 +246,6 @@ class ExperimentResults(models.Model):
     value = models.DecimalField('Value', max_digits=10, decimal_places=2, default=0.0)
     subject = models.ForeignKey(Subject)
     experiment = models.ForeignKey(Experiment)
-    subject = models.ForeignKey(Subject)
 
 class Comment(models.Model):
     '''Holds a comment associated with an experimental trial'''

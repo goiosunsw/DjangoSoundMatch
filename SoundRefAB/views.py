@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.conf.urls.static import static
 from django.db.models import F
+from django.utils.datastructures import MultiValueDictKeyError
 
 from random import shuffle
 from decimal import Decimal
@@ -63,6 +64,18 @@ def retrieve_sound_parameters(st):
         par.append(thisdict)
 
     return par, choice, confidence
+
+
+def store_experiment_results(result_dict, exp, subj):
+    sys.stderr.write('Storing results for experiment "'+exp.description+'", subject no.'+str(subj.id)+'\n')
+    for name, value in result_dict.items():
+        if isinstance(value, Number):
+            expresult = exp.experimentresults_set.create(subject=subj)
+            expresult.name = name
+            #parinst.description = par['description']
+            expresult.value = value
+
+            expresult.save()
 
 
 # Create your views here.
@@ -165,8 +178,8 @@ def SoundPage(request, subject_id):
         try:
             valid_prev_st = sub.soundtriplet_set.filter(experiment_id=x.id, valid_date__gt=F('shown_date')+timedelta(seconds=2))
             old_st = valid_prev_st.latest('id')
-            sys.stderr.write('Using data from previous trial no. %d'%(old_st.id))
-            sys.stderr.write('Number of parameter items in it: %d'%(len(old_st.parameterinstance_set.all())))
+            sys.stderr.write('Using data from previous trial no. %d\n'%(old_st.id))
+            sys.stderr.write('Number of parameter items in it: %d\n'%(len(old_st.parameterinstance_set.all())))
             prev_param, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
             confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
         except SoundTriplet.DoesNotExist:
@@ -305,14 +318,14 @@ def SoundAdjustPage(request, subject_id):
 
     # retrieve data from previous trials
     try:
-        sys.stderr.write('Using data from previous trial')
+        sys.stderr.write('Using data from previous trial\n')
         valid_prev_st = sub.soundtriplet_set.filter(experiment_id=x.id, valid_date__gt=F('shown_date')+timedelta(seconds=2))
         old_st = valid_prev_st.latest('id')
         #print old_st
         dummy, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
         confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
     except SoundTriplet.DoesNotExist:
-        sys.stderr.write('Initialising experiment data...')
+        sys.stderr.write('Initialising experiment data...\n')
         
         prev_choice=1
         prev_confidence=0
@@ -324,7 +337,7 @@ def SoundAdjustPage(request, subject_id):
     try:
         f = getattr(sample_gen, function_name)
     except AttributeError:
-        raise Http404("Error in sample generating function name: "+function_name)
+        raise Http404("Error in sample generating function name: "+function_name+'\n')
 
     sound_data, param_dict, difficulty_divider = f(subject_id, ntrials = ntrials, prev_param= prev_param,
                                prev_choice=prev_choice, confidence_history=confidence_history,
@@ -332,9 +345,12 @@ def SoundAdjustPage(request, subject_id):
                                path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
 
     #store sound data in db        
-    sys.stderr.write("sound generated. parameters:")
-    for name,val in param_dict.items:
-        sys.stderr.write(name+': '+str(val))
+    sys.stderr.write("sound generated. parameters:\n")
+    smpl_no=0
+    for sample_pdict in param_dict:
+        for name,val in sample_pdict.items():
+            sys.stderr.write(name+' '+str(smpl_no)+': '+str(val)+'\n')
+        smpl_no += 1
 
     store_sound_parameters(st, sound_data, param_dict)
     
@@ -364,8 +380,11 @@ def SoundAdjustPage(request, subject_id):
 
 def ProcessAdjustPage(request, trial_id):
     st = get_object_or_404(SoundTriplet, pk=trial_id)
-    for name,val in request.POST:
-        sys.stdout(name+': '+ str(val))
+    for name,val in request.POST.items():
+        try:
+            sys.stderr.write(name+': '+ str(val)+'\n')
+        except MultiValueDictKeyError as e:
+            sys.stderr.write(name+': '+ 'ERROR\n')
     st.choice = 1
     st.value = float(request.POST['adjval'])
     st.confidence = int(request.POST['confidence'])
@@ -384,7 +403,7 @@ def ProcessAdjustPage(request, trial_id):
     x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
     # need to store adjusted value
     adjparname = st.stringparameterinstance_set.get(name='adj_par_name', position=1).value
-    sys.stderr.write("Adjusted parameter: "+adjparname)
+    sys.stderr.write("Adjusted parameter: "+adjparname+"\n")
     adjparinst = st.parameterinstance_set.get(name=adjparname, position=1)
     adjparinst.value = float(request.POST['adjval'])
     adjparinst.save()
@@ -395,9 +414,10 @@ def ProcessAdjustPage(request, trial_id):
         function_name = x.function
         try:
             f = getattr(sample_gen, function_name+'_process')
-            result_dict = f()
+            result_dict = f(x.get_all_trial_data(subject_pk=sub.pk))
+            store_experiment_results(result_dict, x, sub)
         except AttributeError:
-            sys.stderr.write('No processing done')
+            sys.stderr.write('No processing done\n')
         
         return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
         #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
