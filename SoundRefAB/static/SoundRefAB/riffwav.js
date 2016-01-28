@@ -140,38 +140,58 @@ function GeneratePeriodic(nharm, slope, ampl, dur, freq) {
 	var wave = new RIFFWAVE(data); // create the wave file
 	wave.header.sampleRate = 44100; // set sample rate to 44KHz
 	wave.header.numChannels = 2; // two channels (stereo)
-	var maxAmp = 32767
+	var maxAmp = 32767;
     
 	var nsamp = Math.round(dur * wave.header.sampleRate);
 	var sampPerPeriod = Math.round(wave.header.sampleRate / freq);
 	var argdiv = sampPerPeriod / 2 / Math.PI;
+    
+    // base for power operation (math)
+	var base = Math.exp(slope);
+    
+    // auxiliary calculations
+    var wf = 0.0;
+    var at = 0.0;
+    var sc = 0.0;
+    var sqamp = 0.0;
+
 
 	// Calculate one period
-	var period = []
+	var period = [];
 	
+    // Initialisation: needed?
 	var i = 0;
 	while (i<sampPerPeriod) {
 	  period[i++] = Math.round(maxAmp*Math.sin(i/argdiv)); // left speaker
 	}
 	
-	var hn = 1;
+	var hn = 0;
 	while(hn++<nharm) {
-	    i = 0
-        div = Math.pow(hn,slope);
+	    var i = 0;
+        var div = Math.pow(base,(hn-(nharm+1.0)/2.0));;
 		while (i<sampPerPeriod) {
-		  period[i++] += Math.round(maxAmp/div*Math.sin(i/argdiv*hn)); 
+            period[i++] += Math.round(maxAmp/div*Math.sin(i/argdiv*hn));
+            //wf += maxAmp/div * hn;
+            //at += maxAmp/div;
+            sqamp += 1.0/div/div;
 		}
 	}
-	
-    var div = Math.max.apply(null, period) / (maxAmp * ampl) 
-
-    i=0;
+    
+    //console.log('Period peak '+Math.max.apply(null,period)/maxAmp);
+    //console.log('Total amplitude: '+at/maxAmp);
+    //console.log('Spectral centroid (harm nbr): '+wf/at);
+    
+	// Normalise period values
+    //var ampdiv = Math.max.apply(null, period) / (maxAmp * ampl) ;
+    var ampdiv = Math.sqrt(sqamp)/(ampl);
+    
+    var i=0;
 	while (i<sampPerPeriod) {
-	  period[i] = Math.round(period[i++]/div); 
+	  period[i] = Math.round(period[i++]/ampdiv); 
 	}
     
     
-	i = -1;
+	var i = -1;
 	while (++i<nsamp) {
 	  data.push(period[i%sampPerPeriod]); // left speaker
 	  data.push(period[i%sampPerPeriod]); // right speaker

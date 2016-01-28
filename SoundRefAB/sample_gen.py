@@ -77,7 +77,7 @@ def VibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_history=[
     return sound_data, param_data, difficulty_divider
     
 def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
-                        prev_param=[], path='.', url_path='/', prev_exp_dict=prev_exp):
+                        prev_param=[], path='.', url_path='/', prev_exp_dict=[]):
                         
     # use confidence history to increase or decrease difficulty
     avg_last_confidence = sum([xx*2-3 for ii,xx in enumerate(confidence_history) 
@@ -165,6 +165,88 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
                            amp=0.05)
     
     return sound_data, param_data, difficulty_divider
+
+def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
+                        prev_param=[], path='.', url_path='/', prev_exp_dict=[]):
+                        
+    
+    try:
+        twice_brigth = prev_exp['med_twice_brightness']
+    except KeyError:
+        twice_brigth = 2
+    
+    n_sounds = 4
+    
+    # max amplitude fluctuation (max)
+    max_amp = 6.0
+    max_slope = 3.0
+    
+    # base values
+    base_phase = [-1,1][random.randint(0,1)]
+    if prev_param==[]:
+        base_amp_depth = max_amp * random.random()
+    else:
+        base_amp_depth = prev_param[-1][0]['ampl']
+        
+    sound_data=[] 
+    param_data=[] 
+    filename=[]
+    
+    # reference sound
+    basename = 'Sample0_Subj%d.wav'%int(subject_id)
+    filename.append(os.path.join(path,basename))
+    this_sd = {'name': 'Reference',
+               'file': url_path+basename,
+               'choice': False}
+               
+    this_pd = {'hdepth': base_amp_depth,
+               'vib_slope': base_phase}
+               
+    sound_data.append(this_sd)
+    param_data.append(this_pd)
+    
+    # vibrato.VibratoWAV(filename=sound_data[0]['filename'],
+    #                    hdepth=param_data[0]['hdepth'],
+    #                    phrel=param_data[0]['phrel'])
+    
+    # test sounds
+    amplitude = []
+    new_phase =  - base_phase
+    amplitude.append(base_amp_depth)
+    
+    range_around = twice_bright/range_divider
+    multipliers = np.array[1./range_around,1,range_around]
+    amplitudes = base_amp_depth*multipliers
+
+    
+    # randomize sample order
+    order = range(nsamples-1)
+    random.shuffle(order)
+    
+    # one of the new sounds has the same amplitude as ref
+    # the other one is different
+    # but in random order
+    for i in xrange(1,nsamples):
+        this_pd = {'hdepth': amplitudes[order[i-1]],
+                   'vib_slope': new_phase}
+                   
+        basename = 'Sample%d_Subj%d.wav'%(i,int(subject_id))
+        filename.append(os.path.join(path,basename))
+        this_sd = {'name': 'Sample %d'%i,
+                   'file': url_path+basename,
+                   'choice': True}
+        
+        sound_data.append(this_sd)
+        param_data.append(this_pd)
+    
+    for i in [0,1,2]:
+        vibrato.SlopeVibratoWAV(filename=filename[i], 
+                           hdepth=param_data[i]['hdepth'], 
+                           vib_slope=param_data[i]['vib_slope'],
+                           amp=0.05)
+    
+    return sound_data, param_data, difficulty_divider
+
     
 def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):

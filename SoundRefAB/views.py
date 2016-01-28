@@ -65,6 +65,33 @@ def retrieve_sound_parameters(st):
 
     return par, choice, confidence
 
+def retrieve_all_prev_parameters(exp, subj):
+    
+    confidence=[]
+    choice=[]
+    allpar=[]
+    
+    for st in subj.soundtriplet_set.filter(experiment=exp):
+        confidence.append(st.confidence)
+        choice.append(st.choice)
+        par=[]
+        # Unpack numeric parameters
+        pset = st.parameterinstance_set.all().order_by('position')
+        # and string parameters
+        spset = st.stringparameterinstance_set.all().order_by('position')
+        for pos in pset.values_list('position',flat=True).distinct():
+            thisdict=dict()
+            thispar = pset.filter(position=pos)
+            for parinst in thispar:
+                thisdict[parinst.name] = parinst.value
+            thispar = spset.filter(position=pos)
+            for parinst in thispar:
+                thisdict[parinst.name] = parinst.value
+        
+            par.append(thisdict)
+        allpar.append(par)
+    return allpar, choice, confidence
+
 
 def store_experiment_results(result_dict, exp, subj):
     sys.stderr.write('Storing results for experiment "'+exp.description+'", subject no.'+str(subj.id)+'\n')
