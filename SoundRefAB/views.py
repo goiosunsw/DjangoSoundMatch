@@ -43,6 +43,7 @@ def store_sound_parameters(st, sound_data, param_list):
             parinst.position = sound_nbr
 
             parinst.save()
+    st.save()
 
 def retrieve_sound_parameters(st):
     confidence = st.confidence
@@ -205,6 +206,7 @@ def SoundPage(request, subject_id):
         this_subj = Subject.objects.get(pk=subject_id)
         ord_no = this_subj.exp_id 
         x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
+        #sys.stderr.write('Here\n')
 
 
         # retrieve data from previous experiment
@@ -213,8 +215,8 @@ def SoundPage(request, subject_id):
             old_st = valid_prev_st.latest('id')
             sys.stderr.write('Using data from previous trial no. %d\n'%(old_st.id))
             sys.stderr.write('Number of parameter items in it: %d\n'%(len(old_st.parameterinstance_set.all())))
-            prev_param, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
-            confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
+            prev_param, prev_choice, confidence_history = retrieve_all_prev_parameters(x,sub)
+            #confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
         except SoundTriplet.DoesNotExist:
             prev_param=[]
             prev_choice=0
@@ -269,8 +271,10 @@ def SoundPage(request, subject_id):
         template = loader.get_template('SoundRefAB/trial.html')
         return HttpResponse(template.render(context))
 
-    except (KeyError):
-        raise Http404("Error in subject or experiment data")
+    except (KeyError) as e:
+        #exargs = ', '.join([str(ii) for ii in e.args])
+        #raise Http404("Error in subject or experiment data\n"+e.__str__()+"\n"+exargs)
+        raise
     # generate parameters
 
 def ProcessPage(request, trial_id):

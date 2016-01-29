@@ -3,8 +3,9 @@ import random
 import os
 import numpy as np
 
-import data_file_io as dio 
+from decimal import Decimal
 
+import data_file_io as dio 
 
 def VibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         prev_param=[], path='.', url_path='/'):
@@ -169,11 +170,12 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
 def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         prev_param=[], path='.', url_path='/', prev_exp_dict=[]):
                         
+    subj_no = int(subject_id)
     
     try:
-        twice_brigth = prev_exp['med_twice_brightness']
+        twice_brigth = prev_exp_dict['med_twice_brightness']
     except KeyError:
-        twice_brigth = 2
+        twice_bright = 2.0
     
     n_sounds = 4
     
@@ -185,15 +187,19 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     base_phase = [-1,1][random.randint(0,1)]
     if prev_param==[]:
         base_amp_depth = max_amp * random.random()
+        range_divider=1
     else:
-        base_amp_depth = prev_param[-1][0]['ampl']
+        range_divider = dio.retrieve_temp_data_file(subj_no)
+        base_amp_depth = prev_param[-1][0]['hdepth']
+        if confidence_history[-1]>1:
+            range_divider *= 1.3
         
     sound_data=[] 
     param_data=[] 
     filename=[]
     
     # reference sound
-    basename = 'Sample0_Subj%d.wav'%int(subject_id)
+    basename = 'Sample0_Subj%d.wav'%subj_no
     filename.append(os.path.join(path,basename))
     this_sd = {'name': 'Reference',
                'file': url_path+basename,
@@ -215,22 +221,22 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     amplitude.append(base_amp_depth)
     
     range_around = twice_bright/range_divider
-    multipliers = np.array[1./range_around,1,range_around]
-    amplitudes = base_amp_depth*multipliers
+    multipliers = np.array([1./range_around,1.,range_around])
+    amplitudes = float(base_amp_depth) * multipliers
 
     
     # randomize sample order
-    order = range(nsamples-1)
+    order = range(n_sounds-1)
     random.shuffle(order)
     
     # one of the new sounds has the same amplitude as ref
     # the other one is different
     # but in random order
-    for i in xrange(1,nsamples):
+    for i in xrange(1,n_sounds):
         this_pd = {'hdepth': amplitudes[order[i-1]],
                    'vib_slope': new_phase}
                    
-        basename = 'Sample%d_Subj%d.wav'%(i,int(subject_id))
+        basename = 'Sample%d_Subj%d.wav'%(i,subj_no)
         filename.append(os.path.join(path,basename))
         this_sd = {'name': 'Sample %d'%i,
                    'file': url_path+basename,
@@ -239,11 +245,13 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         sound_data.append(this_sd)
         param_data.append(this_pd)
     
-    for i in [0,1,2]:
+    for i in xrange(n_sounds):
         vibrato.SlopeVibratoWAV(filename=filename[i], 
-                           hdepth=param_data[i]['hdepth'], 
+                           hdepth=float(param_data[i]['hdepth']), 
                            vib_slope=param_data[i]['vib_slope'],
                            amp=0.05)
+                           
+    dio.store_temp_data_file(range_divider, subj_no)
     
     return sound_data, param_data, difficulty_divider
 
