@@ -10,6 +10,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.db.models import F
 from django.utils.datastructures import MultiValueDictKeyError
+#from django.core.exceptions import DoesNotExist
 
 from random import shuffle
 from decimal import Decimal
@@ -21,7 +22,7 @@ import tempfile
 import sys
 
 
-from .models import Subject,Experiment, Scenario, SoundTriplet, Page, ItemInScenario
+from .models import Subject,Experiment, Scenario, SoundTriplet, Page, ItemInScenario, ParameterInstance
 
 import random
 
@@ -73,8 +74,6 @@ def retrieve_all_prev_parameters(exp, subj):
     allpar=[]
     
     for st in subj.soundtriplet_set.filter(experiment=exp):
-        confidence.append(st.confidence)
-        choice.append(st.choice)
         par=[]
         # Unpack numeric parameters
         pset = st.parameterinstance_set.all().order_by('position')
@@ -88,9 +87,14 @@ def retrieve_all_prev_parameters(exp, subj):
             thispar = spset.filter(position=pos)
             for parinst in thispar:
                 thisdict[parinst.name] = parinst.value
-        
             par.append(thisdict)
-        allpar.append(par)
+            
+        if par:
+            allpar.append(par)
+            confidence.append(st.confidence)
+            choice.append(st.choice)
+            
+            
     return allpar, choice, confidence
 
 
@@ -179,6 +183,8 @@ def NextExp(request, subject_id):
     this_scenario = this_subj.scenario
     n_exp = max(this_scenario.iteminscenario_set.values_list('order', flat=True))
     
+    sys.stderr.write('Redirecting to experiment %d of %d\n'%(ord_no,n_exp))
+    
     if ord_no <= n_exp:
         #next_exp = this_scenario.iteminscenario_set.get(order=ord_no).experiment
         #exprevurl = next_exp.design
@@ -193,7 +199,8 @@ def NextExp(request, subject_id):
     else:
         this_subj.save()
          
-        return HttpResponseRedirect(reverse('srefab:list', args=(subject_id,)))
+        #return HttpResponseRedirect(reverse('srefab:list', args=(subject_id,)))
+        return HttpResponseRedirect(reverse('srefab:list'))
         
 
 def SoundPage(request, subject_id):
@@ -211,6 +218,9 @@ def SoundPage(request, subject_id):
 
         # retrieve data from previous experiment
         try:
+            if not this_subj.trials_done:
+                raise SoundTriplet.DoesNotExist
+            
             valid_prev_st = sub.soundtriplet_set.filter(experiment_id=x.id, valid_date__gt=F('shown_date')+timedelta(seconds=2))
             old_st = valid_prev_st.latest('id')
             sys.stderr.write('Using data from previous trial no. %d\n'%(old_st.id))
@@ -279,6 +289,7 @@ def SoundPage(request, subject_id):
 
 def ProcessPage(request, trial_id):
     #print request.POST
+    stop = False
     st = get_object_or_404(SoundTriplet, pk=trial_id)
     st.choice = int(request.POST['choice'])
     st.confidence = int(request.POST['slider'])
@@ -295,12 +306,18 @@ def ProcessPage(request, trial_id):
     ord_no = sub.exp_id 
     x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
     
+    try:
+        stop_confidence = st.parameterinstance_set.get(name='stop_conf', position=0)
+        if st.confidence <= stop_confidence:
+            stop = True
+    except (KeyError, ParameterInstance.DoesNotExist) as e:
+        pass
 
     sub.save()
     
     #WRONG: trials is now total in scenario...
-    if sub.trials_done >= x.number_of_trials:
-        return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
+    if sub.trials_done >= x.number_of_trials or stop:
+        return HttpResponseRedirect(reverse('srefab:next', args=(sub.pk,)))
         #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
     else:
         return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
@@ -363,7 +380,9 @@ def SoundAdjustPage(request, subject_id):
         old_st = valid_prev_st.latest('id')
         #print old_st
         dummy, prev_choice, prev_confidence = retrieve_sound_parameters(old_st)
-        confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
+        #confidence_history = sub.soundtriplet_set.order_by('id').values_list('confidence',flat=True)
+        prev_param, prev_choice, confidence_history = retrieve_all_prev_parameters(x,sub)
+        
     except SoundTriplet.DoesNotExist:
         sys.stderr.write('Initialising experiment data...\n')
         
@@ -371,7 +390,8 @@ def SoundAdjustPage(request, subject_id):
         prev_confidence=0
         confidence_history = []
 
-    prev_param = [{'ampl':0.5},{'ampl':0.5}]
+        prev_param = [[{'ampl':0.5},{'ampl':0.5}]]
+        
     ntrials = x.number_of_trials
     function_name = x.function
     try:

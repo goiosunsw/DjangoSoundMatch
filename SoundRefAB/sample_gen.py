@@ -2,6 +2,7 @@ import vibrato
 import random
 import os
 import numpy as np
+import sys
 
 from decimal import Decimal
 
@@ -95,7 +96,7 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
         difficulty_divider = 8.0
     
     try:
-        twice_brigth = prev_exp['med_twice_brightness']
+        twice_brigth = prev_exp_dict['med_twice_brightness']
     except KeyError:
         twice_brigth = 2
     
@@ -173,7 +174,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     subj_no = int(subject_id)
     
     try:
-        twice_brigth = prev_exp_dict['med_twice_brightness']
+        twice_bright = float(prev_exp_dict['med_twice_brightness'])
     except KeyError:
         twice_bright = 2.0
     
@@ -181,18 +182,35 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     
     # max amplitude fluctuation (max)
     max_amp = 6.0
+    min_amp = 2.0
     max_slope = 3.0
+    stop = False
+    stop_confidence = 2
+    
     
     # base values
-    base_phase = [-1,1][random.randint(0,1)]
     if prev_param==[]:
-        base_amp_depth = max_amp * random.random()
+        base_amp_depth = min_amp + (max_amp-min_amp) * random.random()
         range_divider=1
+        base_phase = [-1,1][random.randint(0,1)]
+        last_chosen_amp = base_amp_depth
+        
     else:
+        # Last chosen amplitude
+        last_chosen_amp = prev_param[-1][prev_choice[-1]]['hdepth']
+        
         range_divider = dio.retrieve_temp_data_file(subj_no)
         base_amp_depth = prev_param[-1][0]['hdepth']
+        base_phase = prev_param[-1][0]['vib_slope']
         if confidence_history[-1]>1:
             range_divider *= 1.3
+        # if user has not been confident in last answers stop
+        try:
+            if confidence_history[-1]<stop_confidence :
+                stop = True
+        except KeyError:
+            stop=False
+        
         
     sound_data=[] 
     param_data=[] 
@@ -207,7 +225,10 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
                
     this_pd = {'hdepth': base_amp_depth,
                'vib_slope': base_phase}
-               
+    
+    if stop:
+        this_pd['stop_conf'] = stop_confidence
+    
     sound_data.append(this_sd)
     param_data.append(this_pd)
     
@@ -218,11 +239,11 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     # test sounds
     amplitude = []
     new_phase =  - base_phase
-    amplitude.append(base_amp_depth)
+    amplitude.append(last_chosen_amp)
     
     range_around = twice_bright/range_divider
     multipliers = np.array([1./range_around,1.,range_around])
-    amplitudes = float(base_amp_depth) * multipliers
+    amplitudes = float(last_chosen_amp) * multipliers
 
     
     # randomize sample order
@@ -270,32 +291,40 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
     
     subj_no = int(subject_id)
     
-    try:
-        #const_par = dio.retrieve_temp_data_file(subj_no)
-        ampl_list = dio.retrieve_temp_data_file(subj_no)
-    except IOError, KeyError: 
-        ampl_list = np.logspace(-1.3,-0.3,ntrials).tolist()
-        random.shuffle(ampl_list)
         
-    if 'nharm' not in prev_param[0].keys():
-        for pp in prev_param:
+    try:
+        nharm = prev_param[-1][0]['nharm']
+        ampl_list = dio.retrieve_temp_data_file(subj_no)
+        
+    except (IOError, KeyError, IndexError) as e:
+        # first trial
+        sys.stderr.write('First trial in LoudnessAdjust\n')
+        ampl_list = np.logspace(-1.3,-0.6,ntrials).tolist()
+        random.shuffle(ampl_list)
+        dio.erase_temp_data_file(subj_no)
+        for pp in prev_param[-1]:
             pp['ampl']=0.5
             pp['nharm']=15
             pp['slope']=0.1
             pp['dur']=0.6
             pp['freq']= 500
             #pp['trial_no']=0
+        
+        
+        
     
     
     param_data = []
-    new_param = prev_param
+    new_param = prev_param[-1]
     #print prev_param
     
     try:    
         newampl = ampl_list.pop()
     except IndexError:
         # something went wrong wit sequence, maybe user has clicked reload
-        temp_list = np.linspace(0,1,ntrials).tolist()
+        #temp_list = np.linspace(0,1,ntrials).tolist()
+        sys.stderr.write('Couldn''t get an amplitude value from original list\n')
+        temp_list = np.logspace(-1.3,-0.3,ntrials).tolist()
         random.shuffle(temp_list)
         newampl = temp_list.pop()
     
@@ -316,10 +345,18 @@ def LoudnessAdjust_process(param_dict):
        to get an indication of the 2x brightness value
     '''
        
-    try:
-        med_twice_loudness = np.median([pp[1]['ampl']/pp[0]['ampl'] for pp in param_dict])
-    except KeyError:
-        med_twice_loudness = -1
+    vals = []
+    
+    for pp in param_dict:
+        try:
+            vals.append(pp[1]['ampl']/pp[0]['ampl'])
+        except (KeyError, IndexError,ZeroDivisionError) as e:
+            pass
+    
+    if vals:
+        med_twice_loudness = np.median(vals)
+    else:
+        med_twice_loudness = 3.16
     
     result_dict = {'med_twice_loudness' : med_twice_loudness}
     
@@ -341,16 +378,14 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     subj_no = int(subject_id)
     
     try:
-        #const_par = dio.retrieve_temp_data_file(subj_no)
+        nharm = prev_param[-1][0]['nharm']
         slope_list = dio.retrieve_temp_data_file(subj_no)
-        # check that list is not empty
-        dummy=slope_list[0]
     except (IOError, KeyError, IndexError) as e: 
-        slope_list = np.linspace(0,1,ntrials).tolist()
+        sys.stderr.write('First trial in BrightnessAdjust\n')
+        slope_list = np.linspace(0,.7,ntrials).tolist()
         random.shuffle(slope_list)
-        
-    if 'nharm' not in prev_param[0].keys():
-        for pp in prev_param:
+        dio.erase_temp_data_file(subj_no)
+        for pp in prev_param[-1]:
             pp['ampl']=0.5
             pp['nharm']=15
             pp['slope']=20
@@ -360,12 +395,13 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     
     
     param_data = []
-    new_param = prev_param
+    new_param = prev_param[-1]
     #print prev_param
     try:
         newslope = slope_list.pop()
     except IndexError:
         # something went wrong wit sequence, maybe user has clicked reload
+        sys.stderr.write('Couldn''t get a slope value from original list\n')
         temp_list = np.linspace(0,1,ntrials).tolist()
         random.shuffle(temp_list)
         newslope = temp_list.pop()
@@ -387,11 +423,22 @@ def BrightnessAdjust_process(param_dict):
     '''processes the results from the experiment 
        to get an indication of the 2x brightness value
     '''
+    
+    vals = []
+    
+    for pp in param_dict:
+        try:
+            vals.append(pp[1]['slope']-pp[0]['slope'])
+        except (KeyError, IndexError,ZeroDivisionError) as e:
+            pass
        
-    try:
-        med_twice_brightness = np.median([pp[1]['slope']-pp[0]['slope'] for pp in param_dict])
-    except KeyError:
-        med_twice_brightness = -1
+    if vals:
+        #med_twice_brightness = np.median(vals)
+        # FIXME: brightness scaling cannot work now because 
+        # slider is not linear
+        med_twice_brightness = 2.0
+    else:
+        med_twice_brightness = 2.0
     
     result_dict = {'med_twice_brightness': med_twice_brightness}
     
