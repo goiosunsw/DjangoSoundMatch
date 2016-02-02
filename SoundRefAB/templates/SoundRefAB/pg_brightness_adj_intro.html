@@ -6,6 +6,20 @@
 
 {% block body_block %}
 
+<script type="text/javascript">
+   function validateFormOnSubmit(theForm){
+       if (theForm.valid.value == "0") {
+           alert("Please rate before submitting!");
+           return false;
+       }
+
+       return true;
+   }
+   
+   
+</script>
+
+
 <h1>Brightness adjust</h1>
 
 <p>The next task is similar, but we now ask you to adjust the second sound so that it sounds <b>twice as bright</b> as the reference.</p>
@@ -54,7 +68,55 @@
 <p> Up to you to define what  <b>twice as bright</b> means to you!</p>
 <p> This may be more difficult, let us know with the last slider how easy you found the task.</p>
 
-<input type="button" style="font-size:24;width:100px;height:50px" name="next_button" value="Next" onclick="location.href='{% url 'srefab:next' subject_id %}'">
+<!-- FIXME: this should become a questionnaire and data sent into the db-->
+<form action="{% url 'srefab:next' subject_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
+    <input type="hidden" id="valid" value="0">
+    
+    <div style="height:20px"></div>
+        {% csrf_token %}
+        <p>How confident are you about judging sounds "twice as bright"?</p>
+        <div>
+            <div style="width:200px;float:left">
+                <input id="slider" name="slider" type="range" style="width:180px"
+                min="0" max="3" step="1" value="0"
+                oninput="ConfidenceMeaning(this.value)" onchange="ConfidenceMeaning(this.value)"/>
+            </div>
+            <div style="float:left;color:red" id="confidence_text">Rate me!</div>
+        </div>
+        <script type="text/javascript">
+           function ConfidenceMeaning(val){
+              var t = document.getElementById("confidence_text");
+              t.style.color="black";
+              switch(parseInt(val)){
+              case 0:
+                  t.innerHTML = 'Not confident at all';
+                  document.getElementById("valid").value="1";
+                  break;
+              case 1:
+                  t.innerHTML = 'Mostly unsure';
+                  document.getElementById("valid").value="1";
+                  break;
+              case 2:
+                  t.innerHTML = 'Pretty confident';
+                  document.getElementById("valid").value="1";
+                  break;
+              case 3:
+                  t.innerHTML = "I completely understand";
+                  document.getElementById("valid").value="1";
+                  break;
+              default:
+                  t.innerHTML = 'oops';
+
+              }
+           }
+        </script>
+    <div style="height:10px;clear:both;"></div>
+    <p>Please comment on what brightness means to you:</p>
+    <textarea rows="4" cols="50" name="comment"></textarea>
+    <div style="height:10px;clear:both;"></div>
+
+    <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Next" />
+</form>
 
 
 {% endblock %}
