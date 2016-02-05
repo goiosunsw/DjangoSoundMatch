@@ -1,0 +1,17 @@
+<script>
+    function getConfidenceVal() {
+        var i, r = document.getElementsByName('confidence');
+        for (i = 0; i < r.length; i++) {
+            if (r[i].checked) return r[i].value;
+        }
+        return '';
+    }
+</script>
+<div>
+    <input type="radio" name="confidence" value="4"> Sure<br>
+    <input type="radio" name="confidence" value="3"> Farily confident<br>
+    <input type="radio" name="confidence" value="2"> Slightly confident<br>
+    <input type="radio" name="confidence" value="1"> Not confident<br>
+    <input type="radio" name="confidence" value="0"> Guessing<br>
+</div>
+

@@ -1,0 +1,39 @@
+<div>
+    <div style="width:200px;float:left">
+        <input id="slider" name="slider" type="range" style="width:180px"
+        min="0" max="3" step="1" value="0"
+        oninput="ConfidenceMeaning(this.value)" onchange="ConfidenceMeaning(this.value)"/>
+    </div>
+    <div style="float:left;color:red" id="confidence_text">Rate me!</div>
+</div>
+<script type="text/javascript">
+   function ConfidenceMeaning(val){
+      var t = document.getElementById("confidence_text");
+      t.style.color="black";
+      switch(parseInt(val)){
+      case 0:
+          t.innerHTML = 'Guessing';
+          document.getElementById("valid").value="1";
+          break;
+      case 1:
+          t.innerHTML = 'Not confident';
+          document.getElementById("valid").value="1";
+          break;
+      case 2:
+          t.innerHTML = 'Slightly confident';
+          document.getElementById("valid").value="1";
+          break;
+      case 3:
+          t.innerHTML = "Fairly confident";
+          document.getElementById("valid").value="1";
+          break;
+      case 4:
+          t.innerHTML = "Sure";
+          document.getElementById("valid").value="1";
+          break;
+      default:
+          t.innerHTML = 'oops';
+
+      }
+   }
+</script>

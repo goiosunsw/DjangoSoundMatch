@@ -1,0 +1,112 @@
+{% extends 'SoundRefAB/base.html' %}
+
+
+{% load staticfiles %}
+
+{% block head_block %}
+    <script type="text/javascript">
+       function validateFormOnSubmit(theForm){
+           if (getConfidenceVal() == "") {
+               alert("Please rate before submitting!");
+               return false;
+           }
+           
+           var x = document.getElementsByClassName("played");
+           var i;
+           for (i = 0; i < x.length; i++) {
+               if (! x[i].value) {
+                   alert("Please listen to all sounds before submitting!");
+                   return false;
+               };
+           }
+           
+           return true;
+       }
+   
+   
+    </script>
+
+{% endblock %}
+
+{% block body_block %}
+
+
+
+<h1>Brightness adjust</h1>
+
+<p>The next task is similar, but we now ask you to adjust the second sound so that it sounds <b>twice as bright</b> as the reference.</p>
+
+<p>There is no scientific consensus as to what <b>twice as bright</b> means. However, in order to have an idea of what brightness means, the first sound...</p>
+
+    <table border="1px" margin="10px">
+        <tr>
+            <td>
+                <h2>Reference</h2>
+                <input class="played" type="hidden" id="played_ref" value="">
+                <audio id="audio0" src='{% static 'SoundRefAB/pg_brightness_adj_bright.wav' %}'>
+                    Your browser does not support the audio element.
+                </audio>
+                <script type="text/javascript">
+                   function Play0(){
+                      var v = document.getElementById("audio0");
+                      v.play();
+                      document.getElementById("played_ref").value="1";
+                   }
+                </script>
+            <input type="button" onclick="Play0();"  value="Play"/>
+            </td>
+        </tr>
+    </table>
+
+
+<p>... should sound <b>brighter</b> than the next sound:</p>
+
+    <table border="1px" margin="10px">
+        <tr>
+            <td>
+                <h2>Sample 1</h2>
+                <input class="played" type="hidden" id="played_sam1" value="">
+                <audio id="audio1" src='{% static 'SoundRefAB/pg_brightness_adj_dark.wav' %}'>
+                    Your browser does not support the audio element.
+                </audio>
+                <script type="text/javascript">
+                   function Play1(){
+                      var v = document.getElementById("audio1");
+                      v.play();
+                      document.getElementById("played_sam1").value="1";
+                   }
+                </script>
+            <input type="button" onclick="Play1();"  value="Play"/>
+            </td>
+        </tr>
+    </table>
+
+<p> Up to you to define what  <b>twice as bright</b> means to you!</p>
+<p> This may be more difficult, let us know with the last slider how easy you found the task.</p>
+
+<!-- FIXME: this should become a questionnaire and data sent into the db-->
+<form action="{% url 'srefab:processintro' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="brightIntroForm">
+    {% csrf_token %}
+    
+    <input type="hidden" id="valid" value="0">
+    
+    <table border="1px" margin="10px">
+        <tr>
+            <td>
+                <p>How confident are you about judging sounds "twice as bright"?</p>
+                {% include 'SoundRefAB/confidence_radio.html' %}
+            </td>
+            <td>
+                <p>Please comment on what brightness means to you:</p>
+                <textarea rows="4" cols="50" name="comment"></textarea>
+            </td>
+        </tr>
+    </table>
+    <div style="height:20px"></div>
+    <div style="height:10px;clear:both;"></div>
+
+    <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Next" />
+</form>
+
+
+{% endblock %}
