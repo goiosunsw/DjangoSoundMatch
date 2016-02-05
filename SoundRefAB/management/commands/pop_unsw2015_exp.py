@@ -27,9 +27,12 @@ class Command(BaseCommand):
                       'design': 'soundadjustpage',
                       'function': 'LoudnessAdjust',
                       'number_of_trials': 5},
-                    {'model': Page,
+                    {'model': Experiment,
                      'description': 'Brightness adjusting explanation',
-                     'template': 'pg_brightness_adj_intro.html'},
+                     'instruction_text': 'What is brightness?',
+                     'design': 'intropage',
+                     'function': 'BrightnessInfo',
+                      'number_of_trials': 1},
                     {'model': Experiment,
                      'description': 'Brightness adjust experiment',
                      'instruction_text': 'Adjust the second sound so that it sounds twice as bright as the first',
@@ -45,6 +48,9 @@ class Command(BaseCommand):
                      'design': 'soundpage',
                      'function': 'SlopeVibratoTripletRefAB',
                       'number_of_trials': 5},
+                    {'model': 'Repeat',
+                     'description': 'Vibrato matching experiment',
+                     'number': 1},
                     {'model': Page,
                      'description': 'Pre-questionnaire page',
                      'template': 'pg_quest_info.html'},
@@ -53,18 +59,32 @@ class Command(BaseCommand):
                     {'model': Page,
                      'description': 'Thanks page',
                      'template': 'pg_thanks.html'})
-        for count, itd in enumerate(itemdata):
+                     
+        count = 0
+        for itd in itemdata:
             # create db object
             thismodel = itd['model']
-            del itd['model']
-            ii = thismodel(created_date = datetime.datetime.now(), **itd)
-            ii.save()
-            # link model to scenario
-            ll = ItemInScenario(content_type=ContentType.objects.get_for_model(thismodel), 
-                                object_id=ii.id,
-                                order=count+1,
-                                scenario=ss)
-            ll.save()
+            if thismodel == 'Repeat':
+                for ii in xrange(itd['number']):
+                    content = ContentType.objects.get_for_model(thismodel)
+                    ii = content.get_object_for_this_type(description = itd['description'])
+                    ll = ItemInScenario(content_type=ContentType.objects.get_for_model(thismodel), 
+                                        object_id=ii.id,
+                                        order=count+1,
+                                        scenario=ss)
+                    ll.save()
+                    count += 1
+            else:
+                del itd['model']
+                ii = thismodel(created_date = datetime.datetime.now(), **itd)
+                ii.save()
+                # link model to scenario
+                ll = ItemInScenario(content_type=ContentType.objects.get_for_model(thismodel), 
+                                    object_id=ii.id,
+                                    order=count+1,
+                                    scenario=ss)
+                ll.save()
+                count += 1
         
         ss.save()
 

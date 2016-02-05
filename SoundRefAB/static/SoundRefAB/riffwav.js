@@ -198,5 +198,5 @@ function GeneratePeriodic(nharm, slope, ampl, dur, freq) {
 	}
 	
 	wave.Make(data);
-	return wave.dataURI
-}
+	return wave.dataURI;
+};

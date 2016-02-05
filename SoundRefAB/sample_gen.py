@@ -443,4 +443,15 @@ def BrightnessAdjust_process(param_dict):
     result_dict = {'med_twice_brightness': med_twice_brightness}
     
     return result_dict
+        
+def BrightnessIntro(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
+                        ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):       
                         
+    param_data = [{'html_template': 'trial_brightness_intro.html'}]
+    sound_data = [{}]
+    dificulty_divider = 1.
+    
+    return sound_data, param_data, difficulty_divider
+    
+def BrightnessIntro_process(param_dict):
+    pass

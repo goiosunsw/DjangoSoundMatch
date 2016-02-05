@@ -3,10 +3,7 @@
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
 
-
-{% block body_block %}
-
-
+{% block head_block %}
 <script type="text/javascript">
    function validateFormOnSubmit(theForm){
        if (theForm.choice.value == "") {
@@ -16,6 +13,14 @@
        if (theForm.valid.value == "0") {
            alert("Please rate before submitting!");
            return false;
+       }
+       var x = document.getElementsByClassName("played");
+       var i;
+       for (i = 0; i < x.length; i++) {
+           if (! x[i].value) {
+               alert("Please listen to all sounds before submitting!");
+               return false;
+           };
        }
 
        return true;
@@ -30,6 +35,11 @@
    }
    
 </script>
+{% endblock %}
+
+{% block body_block %}
+
+
 
 <h1>Sample {{ trial_id }} of {{ n_trials }}</h1>
 
@@ -52,7 +62,7 @@
             <td>
                 <h2>{{ s.name }}</h2>
 
-
+            <input class="played" type="hidden" id="played_sam{{ forloop.counter0 }}" value="">
             <audio id="audio{{ forloop.counter0 }}">
                 <source type="audio/wav" src="{{ s.file }}" />
                 Your browser does not support the audio element.
@@ -62,6 +72,7 @@
                   var v = document.getElementById("audio{{ forloop.counter0 }}");
                   v.play();
                   timestamp('{{ forloop.counter0 }}');
+                  document.getElementById("played_sam{{ forloop.counter0 }}").value="1";
                }
             </script>
 

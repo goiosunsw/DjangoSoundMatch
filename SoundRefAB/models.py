@@ -41,6 +41,7 @@ class Experiment(models.Model):
         max_length=100, choices = (
             ('soundpage','Reference presented with N sounds, single choice'),
             ('soundadjustpage','Reference presented with single adjustable sound'),
+            ('intropage', 'Intro page collecting confidence and comment'),
             ), default='soundpage'
     )
     #fixed_params = models.ForeignKey(FixedParameter) 
@@ -174,7 +175,15 @@ class Subject(models.Model):
             ('RG','Non-professional but perform in public'),
             ('PR','Professional'), ), default='NO'
     )
-    hearing_prob = models.BooleanField('Do you experience hearing loss?', default=False)
+    #hearing_prob = models.BooleanField('Do you experience hearing loss?', default=False)
+    hearing_prob = models.CharField('Do you experience any hearing problems?'
+        ,max_length=2, choices = (
+            ('NH','I have normal hearing'),
+            ('SL','I have slight hearing loss'),
+            ('HL','I have considerable hearing loss'),
+        ) , default = 'NH'
+    )
+    
     device = models.CharField('How are you listening to the sounds in this test?'
         ,max_length=2, choices = (
             ('CO','Computer loudspeakers'),
@@ -189,6 +198,8 @@ class Subject(models.Model):
     trials_done = models.IntegerField(default=0)
     stop_experiment = models.BooleanField(default=False)
     difficulty_divider = models.DecimalField(default=1.0,max_digits=10,decimal_places=2)
+    student_ID = models.CharField('Student ID',max_length=100, default='')
+    instrument = models.CharField('Sing or play any instrument? Which?',max_length=100, default='')
 
 class SoundTriplet(models.Model):
     '''Data corresponding to a single sample presented to the user'''

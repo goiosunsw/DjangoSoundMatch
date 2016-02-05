@@ -192,8 +192,16 @@ def NextExp(request, subject_id):
         #return reverse('srefab:'+exprevurl, args = (self.object.pk,))
         # reset number of trials
         this_subj.trials_done = 0
-        this_subj.save()
         
+        
+        if ord_no == n_exp:
+            now = timezone.now()
+
+            # record finished date
+            this_subj.finish_date = now
+
+        this_subj.save()
+            
         return HttpResponseRedirect(exprevurl)
         
     else:
@@ -483,6 +491,107 @@ def ProcessAdjustPage(request, trial_id):
         #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
     else:
         return HttpResponseRedirect(reverse('srefab:soundadjustpage', args=(sub.pk,)))
+
+def SoundIntro(request, subject_id):
+    # get subject
+    sub = get_object_or_404(Subject, pk=subject_id)
+    now = timezone.now()
+
+    try:
+        # get experiment for subject
+        this_subj = Subject.objects.get(pk=subject_id)
+        ord_no = this_subj.exp_id 
+        x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
+        ntrials = x.number_of_trials
+
+        # create sound_triplet to store in db
+        st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub, experiment_id = x.id)
+        st.trial = sub.trials_done + 1
+        st.save()
+        
+    except (KeyError):
+        raise Http404("Error in subject or experiment data")
+    
+
+    sys.stderr.write('Initialising intro page data...\n')
+    
+    prev_choice=0
+    prev_confidence=0
+    confidence_history = []
+        
+    function_name = x.function
+    try:
+        f = getattr(sample_gen, function_name)
+    except AttributeError:
+        raise Http404("Error in sample generating function name: "+function_name+'\n')
+
+    sound_data, param_dict, difficulty_divider = f(subject_id, ntrials = ntrials, prev_param= [],
+                               prev_choice=prev_choice, confidence_history=confidence_history,
+                               difficulty_divider = float(sub.difficulty_divider),
+                               path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
+
+    #store sound data in db        
+    sys.stderr.write("sound generated. parameters:\n")
+    smpl_no=0
+    for sample_pdict in param_dict:
+        for name,val in sample_pdict.items():
+            sys.stderr.write(name+' '+str(smpl_no)+': '+str(val)+'\n')
+        smpl_no += 1
+
+    store_sound_parameters(st, sound_data, param_dict)
+    
+    sub.difficulty_divider=difficulty_divider
+    sub.save()
+
+    context = RequestContext(request, {
+        'instruction_text': x.instruction_text,
+        'param_list': param_dict,
+        'trial_id': st.trial,
+        'sample_id': st.pk,
+        'subject_id': subject_id,
+        'n_trials': x.number_of_trials,
+        'difficulty': sub.difficulty_divider
+        }
+    )
+    
+    template_name = param_dict[0]['html_template']
+
+    template = loader.get_template('SoundRefAB/'+template_name)
+    return HttpResponse(template.render(context))
+    
+def ProcessIntro(request, trial_id):
+    st = get_object_or_404(SoundTriplet, pk=trial_id)
+            
+    # mandatory parameters
+    st.choice = 0
+    st.confidence = int(request.POST['confidence'])
+    st.valid_date = timezone.now()
+    st.save()
+    sub = st.subject
+    sub.trials_done += 1
+
+    comment = request.POST.get('comment','')
+    if len(comment)>0:
+        st.comment_set.create(text=comment, subject = sub)
+    # get experiment for subject
+    ord_no = sub.exp_id 
+    x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
+    sub.save()
+
+    if sub.trials_done >= x.number_of_trials:
+        function_name = x.function
+        try:
+            f = getattr(sample_gen, function_name+'_process')
+            result_dict = f(x.get_all_trial_data(subject_pk=sub.pk))
+            store_experiment_results(result_dict, x, sub)
+        except AttributeError:
+            sys.stderr.write('No processing done\n')
+        
+        return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
+        #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
+    else:
+        return HttpResponseRedirect(reverse('srefab:intropage', args=(sub.pk,)))
+    
 
 class SubjectList(ListView):
     template_name='SoundRefAB/subjects.html'

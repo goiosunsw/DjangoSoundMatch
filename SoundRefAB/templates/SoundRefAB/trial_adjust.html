@@ -2,65 +2,69 @@
 
 
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
 
-<script type="text/javascript">
-   window.onload = function(){
-       window.document.body.onload = init_things;
-   };
+{% block head_block %}
+    <script type="text/javascript" src="{% static 'SoundRefAB/riffwav.js' %}" />
+
+    <script type="text/javascript">
+       window.onload = function(){
+           window.document.body.onload = init_things;
+       };
    
-    function init_things()
-    {
-       regenSound({{param_list.0.ampl}},document.getElementById("audio0"));
-       regenSound({{param_list.1.ampl}},document.getElementById("audio1"));
-   } ;
-</script>
+        function init_things()
+        {
+           regenSound({{param_list.0.ampl}},document.getElementById("audio0"));
+           regenSound({{param_list.1.ampl}},document.getElementById("audio1"));
+       } ;
+    </script>
 
 
+    <script type="text/javascript">
+
+        function validateFormOnSubmit(theForm){
+            if (theForm.confidence.value == "0") {
+                alert("Please rate before submitting!");
+                return false;
+            };
+            var x = document.getElementsByClassName("played");
+            var i;
+            for (i = 0; i < x.length; i++) {
+                if (! x[i].value) {
+                    alert("Please listen to all sounds before submitting!");
+                    return false;
+                };
+            }
+            
+            return true;
+        };
+   
+       function regenSound(val, id) {
+           var nharm = {{param_list.0.nharm}};
+           var slope = {{param_list.0.slope}};
+           var ampl = {{param_list.0.ampl}};
+           var dur = {{param_list.0.dur}};
+           var freq = {{param_list.0.freq}};
+           {{param_list.0.adj_par_name}} = val
+           realslope = (1-slope) * 6 - 1
+           document.getElementById(id).src = GeneratePeriodic(nharm,realslope,ampl,dur,freq);
+           return true;
+       }
+   
+       function timestamp(label) {
+           var showndate = document.getElementById("showndate").value;
+           var datedelay = Math.floor(((new Date().valueOf())-showndate)/1000);
+           document.getElementById("playseq").value += (label+":"+datedelay+";");
+       
+       
+       }
+    </script>
+{% endblock %}
 
 {% block body_block %}
 
-<script type="text/javascript" src="{% static 'SoundRefAB/riffwav.js' %}">
 
-<script type="text/javascript">
-   function validateFormOnSubmit(theForm){
-       if (theForm.choice.value == "") {
-           alert("Please pick a sound!");
-           return false;
-       }
-       if (theForm.valid.value == "0") {
-           alert("Please rate before submitting!");
-           return false;
-       }
-
-       return true;
-   }
-</script>
    
    
-<script type="text/javascript">
-   
-   function regenSound(val, id) {
-       var nharm = {{param_list.0.nharm}};
-       var slope = {{param_list.0.slope}};
-       var ampl = {{param_list.0.ampl}};
-       var dur = {{param_list.0.dur}};
-       var freq = {{param_list.0.freq}};
-       {{param_list.0.adj_par_name}} = val
-       realslope = (1-slope) * 6 - 1
-       document.getElementById(id).src = GeneratePeriodic(nharm,realslope,ampl,dur,freq);
-       return true;
-   }
-   
-   function timestamp(label) {
-       var showndate = document.getElementById("showndate").value;
-       var datedelay = Math.floor(((new Date().valueOf())-showndate)/1000);
-       document.getElementById("playseq").value += (label+":"+datedelay+";");
-       
-       
-   }
-</script>
-
 
 
 <h1>Sample {{ trial_id }} of {{ n_trials }}</h1>
@@ -82,6 +86,7 @@
         <tr>
             <td>
                 <h2>Reference</h2>
+                <input class="played" type="hidden" id="played_ref" value="">
                 <audio id="audio0" >
                     Your browser does not support the audio element.
                 </audio>
@@ -92,6 +97,7 @@
                           regenSound({{param_list.0.val0}},"audio0");
                       }
                       timestamp('0');
+                      document.getElementById("played_ref").value="1";
                       v.play();
                    }
                 </script>
@@ -100,6 +106,7 @@
             </td>
             <td>
                 <h2>Adjust:</h2>
+                <input class="played" type="hidden" id="played_sam1" value="">
                 <audio id="audio1">
                     Your browser does not support the audio element.
                 </audio>
@@ -110,7 +117,7 @@
                           regenSound(document.getElementById("adjval").value,"audio1");
                       }
                       timestamp('1');
-                      
+                      document.getElementById("played_sam1").value="1";
                       v.play();
                    }
                 </script>
