@@ -87,45 +87,19 @@
     <div style="height:20px"></div>
         {% csrf_token %}
         <p>How confident are you of this answer?</p>
-        <div>
-            <div style="width:200px;float:left">
-                <input id="slider" name="slider" type="range" style="width:180px"
-                min="0" max="3" step="1" value="0"
-                oninput="ConfidenceMeaning(this.value)" onchange="ConfidenceMeaning(this.value)"/>
-            </div>
-            <div style="float:left;color:red" id="confidence_text">Rate me!</div>
-        </div>
-        <script type="text/javascript">
-           function ConfidenceMeaning(val){
-              var t = document.getElementById("confidence_text");
-              t.style.color="black";
-              switch(parseInt(val)){
-              case 0:
-                  t.innerHTML = 'Indistinguishable';
-                  document.getElementById("valid").value="1";
-                  break;
-              case 1:
-                  t.innerHTML = 'Very hard to distinguish';
-                  document.getElementById("valid").value="1";
-                  break;
-              case 2:
-                  t.innerHTML = 'Pretty confident';
-                  document.getElementById("valid").value="1";
-                  break;
-              case 3:
-                  t.innerHTML = "I'm sure";
-                  document.getElementById("valid").value="1";
-                  break;
-              default:
-                  t.innerHTML = 'oops';
-
-              }
-           }
-        </script>
-           <div style="height:10px;clear:both;"></div>
-           <p>Any comments?</p>
-           <textarea rows="4" cols="50" name="comment"></textarea>
-           <div style="height:10px;clear:both;"></div>
+        <table border="1px" margin="10px">
+            <tr>
+                <td>
+                    <p>How confident are you about judging sounds "twice as bright"?</p>
+                    {% include 'SoundRefAB/confidence_radio.html' %}
+                </td>
+                <td>
+                    <p>Any comments?</p>
+                    <textarea rows="4" cols="50" name="comment"></textarea>
+                </td>
+            </tr>
+        </table>
+        <div style="height:20px"></div>
         <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Submit" />
 
     </form>
