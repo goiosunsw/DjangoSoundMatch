@@ -138,7 +138,7 @@ class SubjectQuestionnaireUpdate(UpdateView):
     template_name='SoundRefAB/subject_form.html'
 
     model = Subject
-    fields = ['age','music_experience','hearing_prob','device','final_comment']
+    fields = ['age','music_experience','hearing_prob','device','instrument','student_ID','final_comment']
 
     def get_success_url(self):
         return reverse('srefab:next', args = (self.object.pk,))
@@ -158,7 +158,7 @@ class SubjectQuestionnaire(CreateView):
     template_name='SoundRefAB/subject_form.html'
 
     model = Subject
-    fields = ['age','music_experience','hearing_prob','device','comment']
+    fields = ['age','music_experience','hearing_prob','device','instrument','student_ID','comment']
 
     def get_success_url(self):
         return reverse('srefab:next', args = (self.object.pk,))
@@ -303,7 +303,7 @@ def ProcessPage(request, trial_id):
     stop = False
     st = get_object_or_404(SoundTriplet, pk=trial_id)
     st.choice = int(request.POST['choice'])
-    st.confidence = int(request.POST['slider'])
+    st.confidence = int(request.POST['confidence'])
     st.playseq = request.POST.get('playseq','')
     st.valid_date = timezone.now()
     st.save()

@@ -10,7 +10,7 @@
            alert("Please pick a sound!");
            return false;
        }
-       if (theForm.valid.value == "0") {
+       if (getConfidenceVal() == "") {
            alert("Please rate before submitting!");
            return false;
        }

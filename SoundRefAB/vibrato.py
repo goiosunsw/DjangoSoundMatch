@@ -124,7 +124,9 @@ def VibratoWAV(filename='out.wav',
     '''
     #sr=44100
 
-    hamp = np.array([(1.)**xx/xx**slope for xx in xrange(1,nharm)])
+    #hamp = np.array([(1.)**xx/xx**slope for xx in xrange(0,nharm-1)])
+    base = np.exp(slope)
+    hamp = [(hn-(nharm+1.0)/2.0) for hn in xrange(nharm-1)]
     #hamp = np.zeros(nharm)
     #f0tonic = 500.
     #amp=0.05
@@ -157,22 +159,34 @@ def SlopeVibratoWAV(filename='out.wav',
     '''Generate a sequence of similar vibrato notes:fluctuating in amplitude or slope
     '''
     #sr=44100
-
+    base = np.exp(slope)
+    
+    print vib_slope
+    fact = 20./np.log(10)
+    if vib_slope>0.0:
+        hvib = [(float(hn)-(nharm-2.0)/2.0)*hdepth for hn in xrange(nharm-1)]
+    else:
+        hvib = [hdepth for hn in xrange(nharm-1)]
+    print hvib
+    #hvib = [fact*np.log10((hn-(nharm+1.0)/2.0)*slope) for hn in xrange(nharm-1)]
+    
     hamp = np.array([(1.)**xx/xx**slope for xx in xrange(1,nharm)])
     #hamp = np.concatenate(([0],hamp))
     #hamp = np.zeros(nharm)
     #f0tonic = 500.
     #amp=0.05
     #amp=0.1
+    #hamp = amp*np.ones(nharm)
+    #hamp[0]=0.0
 
 
-    hvib = np.zeros(len(hamp))
-    if vib_slope > 0.0:
-        for nn in range(nharm-1):
-            hvib[nn] = hdepth * (nharm/2. - float(nn))
-    else:
-        for nn in range(nharm-1):
-            hvib[nn] = hdepth
+    #hvib = np.zeros(len(hamp))
+    # if vib_slope > 0.0:
+    #     for nn in range(nharm-1):
+    #         hvib[nn] = hdepth * (nharm/2. - float(nn))
+    # else:
+    #for nn in range(nharm-1):
+    #    hvib[nn] = hdepth
 
     sig = HarmonicVibrato(ampseq=hamp,hvib=hvib,f0vib=0.00,f0=f0tonic,
                         vib_prof_t=[0.0,0.3,0.7,1.5,1.6],vib_prof_a=[0.0,0.0,0.5,1.0,0.0],vibfreq=6.0,

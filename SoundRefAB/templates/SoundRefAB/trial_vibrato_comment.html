@@ -1,0 +1,64 @@
+{% extends 'SoundRefAB/base.html' %}
+
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
+
+{% block head_block %}
+<script type="text/javascript">
+   function validateFormOnSubmit(theForm){
+       if (theForm.choice.value == "") {
+           alert("Please pick a sound!");
+           return false;
+       }
+       if (getConfidenceVal() == "") {
+           alert("Please rate before submitting!");
+           return false;
+       }
+       var x = document.getElementsByClassName("played");
+       var i;
+       for (i = 0; i < x.length; i++) {
+           if (! x[i].value) {
+               alert("Please listen to all sounds before submitting!");
+               return false;
+           };
+       }
+
+       return true;
+   }
+   
+   function timestamp(label) {
+       var showndate = document.getElementById("showndate").value;
+       var datedelay = Math.floor(((new Date().valueOf())-showndate)/1000);
+       document.getElementById("playseq").value += (label+":"+datedelay+";");
+       
+       
+   }
+   
+</script>
+{% endblock %}
+
+{% block body_block %}
+
+
+
+<h1>Describe vibrato</h1>
+
+<form action="{% url 'srefab:process' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
+    {% csrf_token %}
+    <input type="hidden" id="valid" value="0">
+    <input type="radio" name="confidence" value="0" hidden="1" checked/>
+    <input type="radio" name="choice" value="0" hidden="1" checked />
+    <input type="hidden" id="showndate" value="0" onload="this.value=(new Date()).valueOf();">
+    <script>
+        var showndate = new Date();
+        document.getElementById("showndate").value = showndate.valueOf();
+    </script>
+    
+    <p>Based on the sounds the previous sounds, how would you describe vibrato?</p>
+    <textarea rows="4" cols="50" name="comment"></textarea>
+
+        <div style="height:20px"></div>
+        <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Submit" />
+
+    </form>
+{% endblock %}

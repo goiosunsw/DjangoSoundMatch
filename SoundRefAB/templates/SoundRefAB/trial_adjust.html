@@ -22,10 +22,10 @@
     <script type="text/javascript">
 
         function validateFormOnSubmit(theForm){
-            if (theForm.confidence.value == "0") {
+            if (getConfidenceVal() == "") {
                 alert("Please rate before submitting!");
                 return false;
-            };
+            }
             var x = document.getElementsByClassName("played");
             var i;
             for (i = 0; i < x.length; i++) {
