@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 
 
 # Register your models here.
-from .models import Scenario, Experiment, Page, ItemInScenario, Subject
+from .models import Scenario, Experiment, Page, ItemInScenario, Subject,Questionnaire
 
 #class ParameterModelInLine(genadmin.TabularInLine):
 #    model = ParameterModel
@@ -64,5 +64,6 @@ class ScenarioAdmin(admin.ModelAdmin):
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Experiment)
 admin.site.register(Page)
+admin.site.register(Questionnaire)
 admin.site.register(Subject, SubjectAdmin)
 admin.site.register(ItemInScenario,ItemInScenarioAdmin)

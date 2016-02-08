@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from SoundRefAB.models import Experiment, Page, Scenario, ItemInScenario
+from SoundRefAB.models import Experiment, Page, Scenario, Questionnaire, ItemInScenario
 
 class Command(BaseCommand):
     args = ''

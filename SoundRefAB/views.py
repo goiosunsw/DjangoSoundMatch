@@ -240,7 +240,10 @@ def SoundPage(request, subject_id):
             prev_choice=0
             prev_confidence=0
             confidence_history = []
-
+        
+        # if 'trial_no' not in prev_param[-1][0].keys():
+        #     prev_param[-1][0]['trial_no'] = sub.trials_done
+            
         # create sound_triplet to store in db
         st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub, experiment_id = x.id)
         

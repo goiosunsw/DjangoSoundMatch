@@ -8,6 +8,72 @@ from decimal import Decimal
 
 import data_file_io as dio 
 
+def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
+                        prev_param=[], path='.', url_path='/', prev_exp_dict=[]):
+    '''A vibrato matching experiment where levels are fixed.
+    Only 2 trials allowed'''
+    
+    
+    # sound parameters per trial, Ref, S1 S2 inside trial
+    slope_ampl = [0.5,1.0,3.0]
+    loud_ampl = [1.0,2.0,6.0]
+    phase = [[1, 1,-1],[-1, 1,-1]]
+    ampl =  [[1, 2, 2],[ 1, 2, 2]]
+    
+    try:
+        ntrial = prev_param[-1][0]['trial_no']
+    except (KeyError, IndexError) as e:
+        ntrial = 0
+    
+    sound_data=[] 
+    param_data=[] 
+    filename=[]
+    
+    # randomize sample order
+    shorder = [1,2]
+    random.shuffle(shorder)
+    
+    order = [0]
+    order.extend(shorder)
+    thisph = [phase[ntrial][oo] for oo in order] 
+    thisa = [ampl[ntrial][oo] for oo in order] 
+    
+    count = 0
+    for ph,amp in zip(thisph,thisa):
+        if ph == -1:
+            hdepth = loud_ampl[amp]
+        else:
+            hdepth = slope_ampl[amp]
+            
+        this_pd = {'hdepth': hdepth,
+                   'vib_slope': ph}
+        
+        # reference sound
+        basename = 'Sample%d_Subj%d.wav'%(count,int(subject_id))
+        filename.append(os.path.join(path,basename))
+        this_sd = {'name': 'Sample %d'%count,
+                   'file': url_path+basename,
+                   'choice': True}
+        if count==0:
+            this_sd['name'] = 'Reference'
+            this_sd['choice'] = False
+            
+        count += 1   
+        
+        sound_data.append(this_sd)
+        param_data.append(this_pd)
+           
+               
+    
+    for i in xrange(len(sound_data)):
+        vibrato.SlopeVibratoWAV(filename=filename[i], 
+                           hdepth=param_data[i]['hdepth'], 
+                           vib_slope=param_data[i]['vib_slope'],
+                           amp=0.05)
+    
+    return sound_data, param_data, difficulty_divider
+
+
 def VibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         prev_param=[], path='.', url_path='/'):
     n_sounds = 3
@@ -455,3 +521,4 @@ def BrightnessIntro(subject_id, difficulty_divider=1.0, confidence_history=[], p
     
 def BrightnessIntro_process(param_dict):
     pass
+    
