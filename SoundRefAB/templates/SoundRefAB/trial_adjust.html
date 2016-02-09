@@ -17,10 +17,7 @@
            regenSound({{param_list.1.ampl}},document.getElementById("audio1"));
        } ;
     </script>
-
-
     <script type="text/javascript">
-
         function validateFormOnSubmit(theForm){
             if (getConfidenceVal() == "") {
                 alert("Please rate before submitting!");
@@ -61,14 +58,7 @@
 {% endblock %}
 
 {% block body_block %}
-
-
-   
-   
-
-
 <h1>Sample {{ trial_id }} of {{ n_trials }}</h1>
-
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 <form action="{% url 'srefab:processadj' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
@@ -135,7 +125,7 @@
         <table border="1px" margin="10px">
             <tr>
                 <td>
-                    <p>How confident are you about judging sounds "twice as bright"?</p>
+                    <p>How confident are you about your answer?</p>
                     {% include 'SoundRefAB/confidence_radio.html' %}
                 </td>
                 <td>

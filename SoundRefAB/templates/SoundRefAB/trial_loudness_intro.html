@@ -4,7 +4,6 @@
 <link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
 
 
-{% load staticfiles %}
 
 {% block head_block %}
     <script type="text/javascript">
@@ -30,6 +29,8 @@
     </script>
 
 {% endblock %}
+{% block body_block %}
+
 
 <h1>Sound level adjust</h1>
 
@@ -88,6 +89,7 @@
 
 <!-- FIXME: this should become a questionnaire and data sent into the db-->
 <form action="{% url 'srefab:next' subject_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="LoudnessForm">
+    {% csrf_token %}
     <input type="hidden" id="valid" value="0">
     
     <table border="1px" margin="10px">
@@ -97,7 +99,7 @@
                 {% include 'SoundRefAB/confidence_radio.html' %}
             </td>
             <td>
-                <p>Leave a comment about your understanding of brightness:</p>
+                <p>Leave a comment about what you think twice as loud means:</p>
                 <textarea rows="4" cols="50" name="comment"></textarea>
             </td>
         </tr>
