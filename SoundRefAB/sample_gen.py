@@ -510,6 +510,19 @@ def BrightnessAdjust_process(param_dict):
     
     return result_dict
         
+def LoudnessIntro(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
+                        ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):       
+                        
+    param_data = [{'html_template': 'trial_loudness_intro.html'}]
+    sound_data = [{}]
+    dificulty_divider = 1.
+    
+    return sound_data, param_data, difficulty_divider
+    
+def LoudnessIntro_process(param_dict):
+    pass
+
+
 def BrightnessIntro(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):       
                         
