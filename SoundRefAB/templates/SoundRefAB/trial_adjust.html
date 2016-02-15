@@ -77,14 +77,18 @@
           <div class="panel panel-default">
             <div class="panel-heading"><h3>Adjust:</h3></div>
             <div class="panel-body">
-                <audio id="audio1">
-                    Your browser does not support the audio element.
-                </audio>
-                <input id="adjval" name="adjval" type="range" style="width:180px"
+                <div style="float:left">
+                    <audio id="audio1">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <input type="button" class="btn btn-default"  value="Play"/>
+                </div>
+                <div style="float:left;padding-top:12px;padding-left:15px">
+                    <input id="adjval" name="adjval" type="range" style="width:180px"
                     min="0" max="1" step=".01" value="{{param_list.0.val}}"
                     onchange="regenSound(this.value, 'audio1'); timestamp('A');"/>
-                <input type="button" class="btn btn-default"  value="Play"/>
-          
+                </div>
+                <div style="clear:both"></div>
             </div>
           </div>
           

@@ -10,13 +10,23 @@
 
 <script type="text/javascript">
     
-    
+function getAnswer() {
+    var i, r = document.getElementsByName('answer');
+    for (i = 0; i < r.length; i++) {
+        if (r[i].checked) return r[i].value;
+    }
+    return '';
+}
+
     
 validateFormOnSubmit = function(theForm) {
     var valid = true;
-    valid = valid && validateAudio(theForm);
-    if (getConfidenceVal() == "") {
-        alert("Please rate before submitting!");
+    if (!validateAudio(theForm)){
+        return false;
+    }
+    if (getAnswer() == "") {
+        alertModal("Please answer the question!").showAlert();
+        $('#answer').closest('.panel').removeClass('panel-default').addClass('panel-warning');
         valid = false;
     }
     return valid;
@@ -30,9 +40,9 @@ validateFormOnSubmit = function(theForm) {
 {% block body_block %}
 
 
-<h1>Sound level adjust</h1>
+<h1>Loudness adjust</h1>
 
-<p>In this section you will be asked to compare the loudness of two tonws. Here is an example:</p>
+<p>In this section you will be asked to compare the loudness of two tones. Here is an example:</p>
 
     <div class="row">
       <div class="col-sm-6">
@@ -71,18 +81,7 @@ validateFormOnSubmit = function(theForm) {
 
 <p>You may click the 'Play' button as often as you wish but please try to give your first impression.</p>
 
-<p>Do you agree that tone 2 is louder than tone 1?</p>
-<div id="confidence" class="control-group">
-    <div class="radio-inline">
-      <label class="control-label"><input type="radio" name="confidence" value="Y"> Yes</label>
-    </div>
-    <div class="radio-inline">
-      <label class="control-label"><input type="radio" name="confidence" value="N"> No</label>
-    </div>
-    <div class="radio-inline">
-      <label class="control-label"><input type="radio" name="confidence" value="U"> Unsure</label>
-    </div>
-</div>
+<p></p>
 
 <div style="height:10px;clear:both;"></div>
 <!--  
@@ -99,10 +98,19 @@ validateFormOnSubmit = function(theForm) {
    <div class="row">
      <div class="col-sm-4">
          <div class="panel panel-default">
-           <div class="panel-heading">How confident are you about your answer?</div>
+           <div class="panel-heading">Do you agree that tone 2 is louder than tone 1?</div>
            <div class="panel-body">
-                
-                {% include 'SoundRefAB/confidence_radio.html' %}         
+                <div id="answer" class="control-group">
+                    <div class="radio">
+                      <label class="control-label"><input type="radio" name="answer" value="Y"> Yes</label>
+                    </div>
+                    <div class="radio">
+                      <label class="control-label"><input type="radio" name="answer" value="N"> No</label>
+                    </div>
+                    <div class="radio">
+                      <label class="control-label"><input type="radio" name="answer" value="U"> Unsure</label>
+                    </div>
+                </div>
            </div>
          </div>
          
