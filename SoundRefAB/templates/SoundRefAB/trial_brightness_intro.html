@@ -8,13 +8,23 @@
 
 <script type="text/javascript">
     
+function getAnswer() {
+    var i, r = document.getElementsByName('answer');
+    for (i = 0; i < r.length; i++) {
+        if (r[i].checked) return r[i].value;
+    }
+    return '';
+}
     
     
 validateFormOnSubmit = function(theForm) {
     var valid = true;
-    valid = valid && validateAudio(theForm);
-    if (getConfidenceVal() == "") {
-        alert("Please rate before submitting!");
+    if (!validateAudio(theForm)){
+        return false;
+    }
+    if (getAnswer() == "") {
+        alertModal("Please answer the question!").showAlert();
+        $('#answer').closest('.panel').removeClass('panel-default').addClass('panel-warning');
         valid = false;
     }
     return valid;
@@ -81,10 +91,19 @@ validateFormOnSubmit = function(theForm) {
    <div class="row">
      <div class="col-sm-4">
          <div class="panel panel-default">
-           <div class="panel-heading">How confident are you about your answer?</div>
+           <div class="panel-heading">Do you agree that tone 2 is brighter than tone 1?</div>
            <div class="panel-body">
-                
-                {% include 'SoundRefAB/confidence_radio.html' %}         
+                <div id="answer" class="control-group">
+                    <div class="radio">
+                      <label class="control-label"><input type="radio" name="answer" value="Y"> Yes</label>
+                    </div>
+                    <div class="radio">
+                      <label class="control-label"><input type="radio" name="answer" value="N"> No</label>
+                    </div>
+                    <div class="radio">
+                      <label class="control-label"><input type="radio" name="answer" value="U"> Unsure</label>
+                    </div>
+                </div>
            </div>
          </div>
          
