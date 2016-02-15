@@ -1,115 +1,204 @@
 {% extends 'SoundRefAB/base.html' %}
 
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
 
+{% block head_block %}
+<!-- Latest compiled and minified CSS -->
+
+<script type="text/javascript">
+    var waitDlg;
+    waitDlg = waitDlg || (function () {
+        var pleaseWaitDiv = 
+            $('<div class="modal fade" id="pleaseWaitDialog"  role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h1>Loading...</h1></div><div class="modal-body"><div class="progress progress-striped active"><div class="progress-bar"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div></div></div></div></div></div>');
+        return {
+            showPleaseWait: function() {
+                pleaseWaitDiv.modal('show');
+            },
+            hidePleaseWait: function () {
+                pleaseWaitDiv.modal('hide');
+            },
+
+        };
+    })();
+    
+    function checkTasksDone(){
+        
+        var x = document.getElementsByClassName("played");
+        var i;
+        var valid = true
+        for (i = 0; i < x.length; i++) {
+            if (! x[i].value) {
+                valid = false
+            }; 
+        }
+        if (valid) {
+            document.getElementById("submit").setAttribute("class","btn btn-success")
+        }
+        
+        return true;
+    }
+    
+    playAndDoStuff = function(audioEl) {
+        console.log(audioEl);
+        audioEl.play();
+        $(audioEl).data('played',true);
+        allAudio = $('audio');
+        var allPlayed = true;
+        but = $(audioEl).siblings('input[type=button]');
+        but.removeClass('btn-warning').addClass('btn-default');
+        
+        for(i=0;i<allAudio.length;i++) {
+            if (!allAudio.eq(i).data('played')){
+                allPlayed = false;
+            }
+        }
+        if (allPlayed) {
+            $('#submit').removeClass('disabled');
+        }
+    }
+    
+    newAudioLoaded = function(audioEl) {
+        $(audioEl).data('loaded',true);
+        allAudio = $('audio');
+        var allPlayed = true;
+        for(i=0;i<allAudio.length;i++) {
+            if (!allAudio.eq(i).data('loaded')){
+                allPlayed = false;
+            }
+        }
+        if (allPlayed) {
+            waitDlg.hidePleaseWait();
+        }
+        
+    }
+    
+    validateFormOnSubmit = function(theForm) {
+        if ($('#submit').hasClass('disabled')){
+            alert('Please listen to all sounds before continuing');
+            $('audio').each(function(){
+                but = $(this).siblings('input[type=button]')
+                if (!$(this).data('played')){
+                    but.removeClass('btn-default').addClass('btn-warning');
+                }
+            });
+            return false;
+        } 
+        else { 
+            return true;
+        }
+    };
+    
+    $(document).ready(function() {
+        waitDlg.showPleaseWait();
+        sounds = $('audio');
+        sounds.data('played',false);
+        
+        sounds.each(function(i,e){
+            $(e).on('canplaythrough', function(){newAudioLoaded(e);});
+            thisButton = $(e).siblings('input[type=button]');
+            thisButton.attr('onclick','');
+            thisButton.on('click',function(){playAndDoStuff(e)});
+        });
+    });
+    //$(window).on("load", waitDlg.hidePleaseWait);
+</script>
+
+{% endblock %}
 
 {% block body_block %}
 
+    
 <h1>Vibrato</h1>
 
 <p>Vibrato refers to regular fluctuations that we hear in musical notes.</p>
 
 <p>The following note has no vibrato</p>
-    <table border="1px" margin="10px">
-        <tr>
-            <td>
-                <h2>No vibrato</h2>
+    <div class="row">
+      <div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3>No vibrato</h3></div>
+            <div class="panel-body">
                 <input class="played" type="hidden" id="played_sam0" value="">
                 <audio id="audio0" src='{% static 'SoundRefAB/pg_vibrato_expl_no_vib.wav' %}'>
                     Your browser does not support the audio element.
                 </audio>
-                <script type="text/javascript">
-                    function Play0(){
-                      var v = document.getElementById("audio0");
-                      v.play();
-                      document.getElementById("played_sam0").value="1";
-                    }
-                </script>
-                <input type="button" onclick="Play0();"  value="Play"/>
-                
-            </td>
-        </tr>
-    </table>
+                <input type="button" class="btn btn-default"  value="Play"/>
+          
+            </div>
+          </div>
+          
+      </div>
+    </div>
+    
+    
             
 <p>The two next ones have relativelly small vibrato</p>
 
-    <table border="1px" margin="10px">
-        <tr>
-            <td>
-                <h2>Small vibrato (1)</h2>
+    <div class="row">
+      <div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3>Small vibrato (1)</h3></div>
+            <div class="panel-body">
                 <input class="played" type="hidden" id="played_sam1" value="">
                 <audio id="audio1" src='{% static 'SoundRefAB/pg_vibrato_expl_small_timbre_vib.wav' %}'>
                     Your browser does not support the audio element.
                 </audio>
-                <script type="text/javascript">
-                    function Play1(){
-                      var v = document.getElementById("audio1");
-                      v.play();
-                      document.getElementById("played_sam1").value="1";
-                    }
-                </script>
-                <input type="button" onclick="Play1();"  value="Play"/>
-            </td>
-            <td>
-                <h2>Small vibrato (2)</h2>
+                <input type="button" class="btn btn-default"  value="Play"/>
+            </div>
+          </div>
+          
+      </div>
+      <div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3>Small vibrato (2)</h3></div>
+            <div class="panel-body">
                 <input class="played" type="hidden" id="played_sam2" value="">
                 <audio id="audio2" src='{% static 'SoundRefAB/pg_vibrato_expl_small_loudness_vib.wav' %}'>
                     Your browser does not support the audio element.
                 </audio>
-                <script type="text/javascript">
-                    function Play2(){
-                      var v = document.getElementById("audio2");
-                      v.play();
-                      document.getElementById("played_sam2").value="1";
-                    }
-                </script>
-                <input type="button" onclick="Play2();"  value="Play"/>
-            </td>
-        </tr>
-    </table>
+                <input type="button" class="btn btn-default" onclick="Play2();"  value="Play"/>
+            </div>
+          </div>
+          
+      </div>
+      
+    </div>
 
 
 <p>Whereas the next two sounds have larger vibrato than the preceding ones</p>
 
-    <table border="1px" margin="10px">
-        <tr>
-            <td>
-                <h2>Large vibrato (1)</h2>
+    <div class="row">
+      <div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3>Large vibrato (1)</h3></div>
+            <div class="panel-body">
                 <input class="played" type="hidden" id="played_sam3" value="">
                 <audio id="audio3" src='{% static 'SoundRefAB/pg_vibrato_expl_large_timbre_vib.wav' %}'>
                     Your browser does not support the audio element.
                 </audio>
-                <script type="text/javascript">
-                    function Play3(){
-                      var v = document.getElementById("audio3");
-                      v.play();
-                      document.getElementById("played_sam3").value="1";
-                    }
-                </script>
-                <input type="button" onclick="Play3();"  value="Play"/>
-            </td>
-            <td>
-                <h2>Large vibrato (2)</h2>
+                <input type="button" class="btn btn-default" onclick="Play3();"  value="Play"/>
+            </div>
+          </div>
+          
+      </div>
+      <div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3>Large vibrato (2)</h3></div>
+            <div class="panel-body">
                 <input class="played" type="hidden" id="played_sam4" value="">
                 <audio id="audio4" src='{% static 'SoundRefAB/pg_vibrato_expl_large_loudness_vib.wav' %}'>
                     Your browser does not support the audio element.
                 </audio>
-                <script type="text/javascript">
-                    function Play4(){
-                      var v = document.getElementById("audio4");
-                      v.play();
-                      document.getElementById("played_sam4").value="1";
-                    }
-                </script>
-                <input type="button" onclick="Play4();"  value="Play"/>
-            </td>
-        </tr>
-    </table>
+                <input type="button" class="btn btn-default" onclick="Play4();"  value="Play"/>
+            </div>
+          </div>
+          
+      </div>
+      
     <div style="height:10px;clear:both;"></div>
 <form action="{% url 'srefab:next' subject_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
     {% csrf_token %}
-    <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Next" />
+    <input style="font-size:24;width:100px;height:50px" type="submit" class="btn btn-success disabled" name="submit" value="Next" id="submit" />
 </form>
     
 {% endblock %}
