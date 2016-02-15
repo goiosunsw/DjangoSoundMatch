@@ -4,35 +4,29 @@
 {% load staticfiles %}
 
 {% block head_block %}
-    <script type="text/javascript" src="{% static 'SoundRefAB/riffwav.js' %}" />
+    <script type="text/javascript" src="{% static 'SoundRefAB/riffwav.js' %}"></script>
+    <script type="text/javascript" src="{% static 'SoundRefAB/htmlSoundGoodies.js' %}"></script>
 
     <script type="text/javascript">
-       window.onload = function(){
-           window.document.body.onload = init_things;
-       };
-   
-        function init_things()
-        {
-           regenSound({{param_list.0.ampl}},document.getElementById("audio0"));
-           regenSound({{param_list.1.ampl}},document.getElementById("audio1"));
-       } ;
+       $(window).load(function(){
+           regenSound({{param_list.0.ampl}},"audio0");
+           regenSound({{param_list.1.ampl}},"audio1");
+           waitDlg.hidePleaseWait();
+       });
     </script>
+       
     <script type="text/javascript">
-        function validateFormOnSubmit(theForm){
-            if (getConfidenceVal() == "") {
-                alert("Please rate before submitting!");
+        validateFormOnSubmit = function(theForm) {
+            var valid = true;
+            if (!validateAudio(theForm)) {
                 return false;
             }
-            var x = document.getElementsByClassName("played");
-            var i;
-            for (i = 0; i < x.length; i++) {
-                if (! x[i].value) {
-                    alert("Please listen to all sounds before submitting!");
-                    return false;
-                };
+            if (getConfidenceVal() == "") {
+                alertModal("Please rate before submitting!").showAlert();
+                $('#confidence').closest('.panel').removeClass('panel-default').addClass('panel-warning');
+                return false;
             }
-            
-            return true;
+            return valid;
         };
    
        function regenSound(val, id) {
@@ -47,13 +41,6 @@
            return true;
        }
    
-       function timestamp(label) {
-           var showndate = document.getElementById("showndate").value;
-           var datedelay = Math.floor(((new Date().valueOf())-showndate)/1000);
-           document.getElementById("playseq").value += (label+":"+datedelay+";");
-       
-       
-       }
     </script>
 {% endblock %}
 
@@ -72,70 +59,62 @@
     <input type="hidden" id="ampl_list" value="{{ampl_list}}">
     <h2>{{ instruction_text }}</h2>
     <p>Difficulty level: {{ difficulty }}</p>
-    <table border="1px" margin="10px">
-        <tr>
-            <td>
-                <h2>Reference</h2>
-                <input class="played" type="hidden" id="played_ref" value="">
-                <audio id="audio0" >
+    <div class="row">
+      <div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3>Reference</h3></div>
+            <div class="panel-body">
+                <audio id="audio0">
                     Your browser does not support the audio element.
                 </audio>
-                <script type="text/javascript">
-                   function Play0(){
-                      var v = document.getElementById("audio0");
-                      if(v.src.length<1000){
-                          regenSound({{param_list.0.val0}},"audio0");
-                      }
-                      timestamp('0');
-                      document.getElementById("played_ref").value="1";
-                      v.play();
-                   }
-                </script>
-
-            <input type="button" onclick="Play0();"  value="Play"/>
-            </td>
-            <td>
-                <h2>Adjust:</h2>
-                <input class="played" type="hidden" id="played_sam1" value="">
+                <input type="button" class="btn btn-default"  value="Play"/>
+          
+            </div>
+          </div>
+          
+      </div>
+      <div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3>Adjust:</h3></div>
+            <div class="panel-body">
                 <audio id="audio1">
                     Your browser does not support the audio element.
                 </audio>
-                <script type="text/javascript">
-                   function Play1(){
-                      var v = document.getElementById("audio1");
-                      if(v.src.length<1000){
-                          regenSound(document.getElementById("adjval").value,"audio1");
-                      }
-                      timestamp('1');
-                      document.getElementById("played_sam1").value="1";
-                      v.play();
-                   }
-                </script>
-            <input id="adjval" name="adjval" type="range" style="width:180px"
-                min="0" max="1" step=".01" value="{{param_list.0.val}}"
-                onchange="regenSound(this.value, 'audio1'); timestamp('A');
-"/>
-				
-				<input type="button" onclick="Play1();"  value="Play"/>
-        </tr>
-    </table>
-    <div style="height:20px"></div>
-        {% csrf_token %}
-        <p>How confident are you of this answer?</p>
-        <table border="1px" margin="10px">
-            <tr>
-                <td>
-                    <p>How confident are you about your answer?</p>
-                    {% include 'SoundRefAB/confidence_radio.html' %}
-                </td>
-                <td>
-                    <p>Any comments?</p>
-                    <textarea rows="4" cols="50" name="comment"></textarea>
-                </td>
-            </tr>
-        </table>
-        <div style="height:20px"></div>
-        <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Submit" />
-
+                <input id="adjval" name="adjval" type="range" style="width:180px"
+                    min="0" max="1" step=".01" value="{{param_list.0.val}}"
+                    onchange="regenSound(this.value, 'audio1'); timestamp('A');"/>
+                <input type="button" class="btn btn-default"  value="Play"/>
+          
+            </div>
+          </div>
+          
+      </div>
+    </div>
+    
+   <div style="height:20px"></div>
+   <div class="row">
+     <div class="col-sm-4">
+         <div class="panel panel-default">
+           <div class="panel-heading">How confident are you about your answer?</div>
+           <div class="panel-body">
+                
+                {% include 'SoundRefAB/confidence_radio.html' %}         
+           </div>
+         </div>
+         
+     </div>
+     <div class="col-sm-8">
+         <div class="panel panel-default">
+           <div class="panel-heading">Any comments?</div>
+           <div class="panel-body">
+                <textarea rows="4" cols="50" name="comment"></textarea>
+           </div>
+         </div>
+         
+     </div>
+   </div>
+   
+    {% csrf_token %}
+    <input style="font-size:24;width:100px;height:50px" type="submit" class="btn btn-success disabled" name="submit" value="Next" id="submit" />
     </form>
 {% endblock %}

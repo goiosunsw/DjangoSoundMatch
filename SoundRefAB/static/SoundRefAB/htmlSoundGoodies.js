@@ -25,10 +25,36 @@ waitDlg = waitDlg || (function () {
     };
 })();
 
+var alertModal;
+alertModal = alertModal || (function (alertTxt) { 
+    var alertDiv = 
+        $('<div id="myModal" class="modal" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Warning</h4></div><div class="modal-body"><p>'+alertTxt+'</p></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
+    return {
+        showAlert: function() {
+            alertDiv.modal('show');
+        },
+        hideAlert: function () {
+            alertDiv.modal('hide');
+        },
+        
+    };
+});
+    
+timestamp = function(label) {
+    var showndate = $(document).data('showndate');
+    var datedelay = Math.floor(((new Date().valueOf())-showndate)/1000);
+    seqEl =  $('#playseq');
+    if (seqEl) {
+        orig = seqEl.attr('value');
+        seqEl.attr('value',orig+label+":"+datedelay+";");
+    }
+}
+
 
 playAndDoStuff = function(audioEl) {
     console.log(audioEl);
     audioEl.play();
+    timestamp($(audioEl).attr('id').match(/\d+/));
     $(audioEl).data('played',true);
     allAudio = $('audio');
     var allPlayed = true;
@@ -62,7 +88,7 @@ newAudioLoaded = function(audioEl) {
 
 validateAudio = function(theForm) {
     if ($('#submit').hasClass('disabled')){
-        alert('Please listen to all sounds before continuing');
+        alertModal('Please listen to all sounds before continuing').showAlert();
         $('audio').each(function(){
             but = $(this).siblings('input[type=button]')
             if (!$(this).data('played')){
@@ -78,6 +104,7 @@ validateAudio = function(theForm) {
 
 
 $(document).ready(function() {
+    $(document).data('showndate',(new Date()).valueOf());
     waitDlg.showPleaseWait();
     sounds = $('audio');
     sounds.data('played',false);

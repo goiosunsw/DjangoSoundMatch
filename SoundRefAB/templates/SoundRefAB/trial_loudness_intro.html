@@ -6,27 +6,25 @@
 
 
 {% block head_block %}
-    <script type="text/javascript">
-       function validateFormOnSubmit(theForm){
-           if (getConfidenceVal() == "") {
-               alert("Please rate before submitting!");
-               return false;
-           }
-           
-           var x = document.getElementsByClassName("played");
-           var i;
-           for (i = 0; i < x.length; i++) {
-               if (! x[i].value) {
-                   alert("Please listen to all sounds before submitting!");
-                   return false;
-               };
-           }
-           
-           return true;
-       }
-   
-   
-    </script>
+<script type="text/javascript" src="{% static 'SoundRefAB/htmlSoundGoodies.js' %}"></script>
+
+<script type="text/javascript">
+    
+    
+    
+validateFormOnSubmit = function(theForm) {
+    var valid = true;
+    valid = valid && validateAudio(theForm);
+    if (getConfidenceVal() == "") {
+        alert("Please rate before submitting!");
+        valid = false;
+    }
+    return valid;
+};
+    
+    //$(window).on("load", waitDlg.hidePleaseWait);
+</script>
+
 
 {% endblock %}
 {% block body_block %}
@@ -34,51 +32,57 @@
 
 <h1>Sound level adjust</h1>
 
-<p>In the next few experiments we will ask you to listen to a first tone</p>
-    <table border="1px" margin="10px">
-        <tr>
-            <td>
-                <h2>Reference</h2>
-                <input class="played" type="hidden" id="played_ref" value="">
-                <audio id="audio0" src='{% static 'SoundRefAB/pg_loudness_adj_ref.wav' %}'>
+<p>In this section you will be asked to compare the loudness of two tonws. Here is an example:</p>
+
+    <div class="row">
+      <div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3>Tone 1</h3></div>
+            <div class="panel-body">
+                <audio id="audio0" src="{% static 'SoundRefAB/pg_loudness_adj_ref.wav' %}">
                     Your browser does not support the audio element.
                 </audio>
-                <script type="text/javascript">
-                   function Play0(){
-                      var v = document.getElementById("audio0");
-                      v.play();
-                      document.getElementById("played_ref").value="1";
-                   }
-                </script>
-            <input type="button" onclick="Play0();"  value="Play"/>
-            </td>
-        </tr>
-    </table>
+                <input type="button" class="btn btn-default"  value="Play"/>
+          
+            </div>
+          </div>
+          
+      </div>
+    </div>
 
 
-<p>And then, with a slider adjust a second tone so that it sounds <b>twice as loud</b> as the first sound.</p>
 
-<p>For example, the next sound is considered by most people to be about twice as loud as the one above:</p>
 
-    <table border="1px" margin="10px">
-        <tr>
-            <td>
-                <h2>Reference</h2>
-                <input class="played" type="hidden" id="played_sam1" value="">
-                <audio id="audio1" src='{% static 'SoundRefAB/pg_loudness_adj_refX2.wav' %}'>
+    <div class="row">
+      <div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3>Tone 2</h3></div>
+            <div class="panel-body">
+                <audio id="audio0" src="{% static 'SoundRefAB/pg_loudness_adj_refX2.wav' %}">
                     Your browser does not support the audio element.
                 </audio>
-                <script type="text/javascript">
-                   function Play1(){
-                      var v = document.getElementById("audio1");
-                      v.play();
-                      document.getElementById("played_sam1").value="1";
-                   }
-                </script>
-            <input type="button" onclick="Play1();"  value="Play"/>
-            </td>
-        </tr>
-    </table>
+                <input type="button" class="btn btn-default"  value="Play"/>
+          
+            </div>
+          </div>
+          
+      </div>
+    </div>
+
+<p>You may click the 'Play' button as often as you wish but please try to give your first impression.</p>
+
+<p>Do you agree that tone 2 is louder than tone 1?</p>
+<div id="confidence" class="control-group">
+    <div class="radio-inline">
+      <label class="control-label"><input type="radio" name="confidence" value="Y"> Yes</label>
+    </div>
+    <div class="radio-inline">
+      <label class="control-label"><input type="radio" name="confidence" value="N"> No</label>
+    </div>
+    <div class="radio-inline">
+      <label class="control-label"><input type="radio" name="confidence" value="U"> Unsure</label>
+    </div>
+</div>
 
 <div style="height:10px;clear:both;"></div>
 <!--  
@@ -92,22 +96,29 @@
     {% csrf_token %}
     <input type="hidden" id="valid" value="0">
     
-    <table border="1px" margin="10px">
-        <tr>
-            <td>
-                <p>How confident are you about judging sounds "twice as loud"?</p>
-                {% include 'SoundRefAB/confidence_radio.html' %}
-            </td>
-            <td>
-                <p>Leave a comment about what you think twice as loud means:</p>
+   <div class="row">
+     <div class="col-sm-4">
+         <div class="panel panel-default">
+           <div class="panel-heading">How confident are you about your answer?</div>
+           <div class="panel-body">
+                
+                {% include 'SoundRefAB/confidence_radio.html' %}         
+           </div>
+         </div>
+         
+     </div>
+     <div class="col-sm-8">
+         <div class="panel panel-default">
+           <div class="panel-heading">Any comments?</div>
+           <div class="panel-body">
                 <textarea rows="4" cols="50" name="comment"></textarea>
-            </td>
-        </tr>
-    </table>
-    <div style="height:20px"></div>
-    <div style="height:10px;clear:both;"></div>
-
-    <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Next" />
-</form>
+           </div>
+         </div>
+         
+     </div>
+   </div>
+   
+    {% csrf_token %}
+    <input style="font-size:24;width:100px;height:50px" type="submit" class="btn btn-success disabled" name="submit" value="Next" id="submit" />
 
 {% endblock %}
