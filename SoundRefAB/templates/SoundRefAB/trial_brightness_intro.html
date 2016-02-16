@@ -40,13 +40,14 @@ validateFormOnSubmit = function(theForm) {
 
 <h1>Brightness adjust</h1>
 
-<p>The next task is similar, but we now ask you to adjust the second sound so that it sounds <b>twice as bright</b> as the reference.</p>
+<p>You will now be asked to compare the brightness of two tones.</p>
 
+<p>In order to have an idea of what brightness means, tone 1  should be clearly brighter than tone2.</p>
 
     <div class="row">
       <div class="col-sm-6">
           <div class="panel panel-default">
-            <div class="panel-heading"><h3>Tone 1</h3></div>
+            <div class="panel-heading"><h3>Tone 1:</h3></div>
             <div class="panel-body">
                 <audio id="audio0" src="{% static 'SoundRefAB/pg_brightness_adj_bright.wav' %}">
                     Your browser does not support the audio element.
@@ -65,7 +66,7 @@ validateFormOnSubmit = function(theForm) {
     <div class="row">
       <div class="col-sm-6">
           <div class="panel panel-default">
-            <div class="panel-heading"><h3>Tone 2</h3></div>
+            <div class="panel-heading"><h3>Tone 2:</h3></div>
             <div class="panel-body">
                 <audio id="audio0" src="{% static 'SoundRefAB/pg_brightness_adj_dark.wav' %}">
                     Your browser does not support the audio element.
@@ -78,8 +79,6 @@ validateFormOnSubmit = function(theForm) {
       </div>
     </div>
 
-<p> Up to you to define what  <b>twice as bright</b> means to you!</p>
-<p> This may be more difficult, let us know with the last slider how easy you found the task.</p>
 
 <!-- FIXME: this should become a questionnaire and data sent into the db-->
 <form action="{% url 'srefab:processintro' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="brightIntroForm">

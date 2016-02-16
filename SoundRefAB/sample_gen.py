@@ -443,6 +443,9 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     
     subj_no = int(subject_id)
     
+    #default slider position
+    default_val=0.0
+    
     try:
         nharm = prev_param[-1][0]['nharm']
         slope_list = dio.retrieve_temp_data_file(subj_no)
@@ -477,6 +480,8 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         thispar['slope'] = newslope
         thispar['adj_par_name'] = 'slope'
         thispar['val0'] = newslope
+    
+    new_param[1]['val0'] = default_val
     
     # for sd in sound_data:
     #     param_data.append(new_param)

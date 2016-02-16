@@ -9,8 +9,8 @@
 
     <script type="text/javascript">
        $(window).load(function(){
-           regenSound({{param_list.0.ampl}},"audio0");
-           regenSound({{param_list.1.ampl}},"audio1");
+           regenSound({{param_list.0.val0}},"audio0");
+           regenSound({{param_list.1.val0}},"audio1");
            waitDlg.hidePleaseWait();
        });
     </script>
@@ -29,7 +29,7 @@
             return valid;
         };
    
-       function regenSound(val, id) {
+        regenSound = function(val, id) {
            var nharm = {{param_list.0.nharm}};
            var slope = {{param_list.0.slope}};
            var ampl = {{param_list.0.ampl}};
@@ -40,7 +40,12 @@
            document.getElementById(id).src = GeneratePeriodic(nharm,realslope,ampl,dur,freq);
            return true;
        }
-   
+       
+       sliderChange = function(val) {
+           regenSound(val,'audio1');
+           timestamp('A');
+           playAndDoStuff($('#audio1')[0]);
+       }
     </script>
 {% endblock %}
 
@@ -62,7 +67,7 @@
     <div class="row">
       <div class="col-sm-6">
           <div class="panel panel-default">
-            <div class="panel-heading"><h3>Reference</h3></div>
+            <div class="panel-heading"><h3>Tone 1:</h3></div>
             <div class="panel-body">
                 <audio id="audio0">
                     Your browser does not support the audio element.
@@ -75,7 +80,7 @@
       </div>
       <div class="col-sm-6">
           <div class="panel panel-default">
-            <div class="panel-heading"><h3>Adjust:</h3></div>
+            <div class="panel-heading"><h3>Tone 2:</h3></div>
             <div class="panel-body">
                 <div style="float:left">
                     <audio id="audio1">
@@ -85,8 +90,8 @@
                 </div>
                 <div style="float:left;padding-top:12px;padding-left:15px">
                     <input id="adjval" name="adjval" type="range" style="width:180px"
-                    min="0" max="1" step=".01" value="{{param_list.0.val}}"
-                    onchange="regenSound(this.value, 'audio1'); timestamp('A');"/>
+                    min="0" max="1" step=".01" value="{{param_list.1.val0}}"
+                    onchange="sliderChange(this.value);"/>
                 </div>
                 <div style="clear:both"></div>
             </div>

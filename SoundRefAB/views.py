@@ -567,13 +567,26 @@ def ProcessIntro(request, trial_id):
             
     # mandatory parameters
     st.choice = 0
-    st.confidence = int(request.POST['confidence'])
+    conf = request.POST.get('confidence','')
+    try:
+        st.confidence = int(conf)
+    except ValueError:
+        st.confidence = 0
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
     sub.trials_done += 1
-
+    
+    answer = request.POST.get('answer','')
     comment = request.POST.get('comment','')
+    
+    answerpar =  st.stringparameterinstance_set.create(subject=st.subject)
+    answerpar.name = 'answer'
+    #parinst.description = par['description']
+    answerpar.value = answer
+    answerpar.position = 0
+    answerpar.save()
+    
     if len(comment)>0:
         st.comment_set.create(text=comment, subject = sub)
     # get experiment for subject
