@@ -6,6 +6,26 @@
         }
         return '';
     }
+
+
+    var oldDocumentReady = $(document).ready
+
+    $(document).ready(function(){
+        console.log('Here!')
+        $('#confidence').data('valid',false);
+        $('#confidence').data('invalidAlert',function() {
+            alertModal("Please rate!").showAlert();
+            $('#confidence').closest('.panel').removeClass('panel-default').addClass('panel-warning');
+        });
+        $('#confidence').on('click', function(){
+        
+            $(this).closest('.panel').removeClass('panel-warning').addClass('panel-default');
+            $(this).data('valid',true);
+            validatePage();
+        })
+        oldDocumentReady();
+    });
+    
 </script>
 <div id="confidence" class="control-group">
     <div class="radio">

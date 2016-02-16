@@ -8,24 +8,32 @@
 
 <script type="text/javascript">
 
-validateFormOnSubmit = function(theForm) {
-    var valid = true;
-    if (!validateAudio(theForm)) {
-        return false;
+function getAnswer() {
+    var i, r = document.getElementsByName('choice');
+    for (i = 0; i < r.length; i++) {
+        if (r[i].checked) return r[i].value;
     }
-    if (theForm.choice.value == "") {
+    return '';
+}
+
+
+var oldDocumentReady = $(document).ready
+
+$(document).ready(function(){
+    console.log('Here!')
+    $('input[name=choice]').data('valid',false);
+    $('input[name=choice]').data('invalidAlert',function() {
         alertModal("Please pick a sound!").showAlert();
-        return false;
-    }
-    if (getConfidenceVal() == "") {
-        alertModal("Please rate before submitting!").showAlert();
-        $('#confidence').closest('.panel').removeClass('panel-default').addClass('panel-warning');
-        return false;
-    }
-    
-    return valid;
-};
-   
+        $('input[name=choice]').closest('.panel').removeClass('panel-default').addClass('panel-warning');
+    });
+    $('input[name=choice]').on('click', function(){
+        
+        $('input[name=choice]').closest('.panel').removeClass('panel-warning').addClass('panel-default');
+        $('input[name=choice]').data('valid',true);
+        validatePage();
+    })
+    oldDocumentReady();
+});
    
 </script>
 {% endblock %}

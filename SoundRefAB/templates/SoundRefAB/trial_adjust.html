@@ -16,19 +16,6 @@
     </script>
        
     <script type="text/javascript">
-        validateFormOnSubmit = function(theForm) {
-            var valid = true;
-            if (!validateAudio(theForm)) {
-                return false;
-            }
-            if (getConfidenceVal() == "") {
-                alertModal("Please rate before submitting!").showAlert();
-                $('#confidence').closest('.panel').removeClass('panel-default').addClass('panel-warning');
-                return false;
-            }
-            return valid;
-        };
-   
         regenSound = function(val, id) {
            var nharm = {{param_list.0.nharm}};
            var slope = {{param_list.0.slope}};
@@ -114,7 +101,7 @@
      </div>
      <div class="col-sm-8">
          <div class="panel panel-default">
-           <div class="panel-heading">Any comments?</div>
+           <div class="panel-heading">Any comments? (optional)</div>
            <div class="panel-body">
                 <textarea rows="4" cols="50" name="comment"></textarea>
            </div>

@@ -55,19 +55,19 @@ playAndDoStuff = function(audioEl) {
     console.log(audioEl);
     audioEl.play();
     timestamp($(audioEl).attr('id').match(/\d+/));
-    $(audioEl).data('played',true);
+    $(audioEl).data('valid',true);
     allAudio = $('audio');
     var allPlayed = true;
     but = $(audioEl).siblings('input[type=button]');
     but.removeClass('btn-warning').addClass('btn-default');
     
     for(i=0;i<allAudio.length;i++) {
-        if (!allAudio.eq(i).data('played')){
+        if (!allAudio.eq(i).data('valid')){
             allPlayed = false;
         }
     }
     if (allPlayed) {
-        $('#submit').removeClass('disabled');
+        validatePage();
     }
 };
 
@@ -86,29 +86,62 @@ newAudioLoaded = function(audioEl) {
     
 };
 
-validateAudio = function(theForm) {
-    if ($('#submit').hasClass('disabled')){
-        alertModal('Please listen to all sounds before continuing').showAlert();
-        $('audio').each(function(){
-            but = $(this).siblings('input[type=button]')
-            if (!$(this).data('played')){
-                but.removeClass('btn-default').addClass('btn-warning');
-            }
-        });
-        return false;
-    } 
-    else { 
-        return true;
-    }
-};
+invalidAudioFunction = function() {
+    alertModal('Please listen to all sounds before continuing').showAlert();
+    $('audio').each(function(){
+        but = $(this).siblings('input[type=button]')
+        if (!$(this).data('valid')){
+            but.removeClass('btn-default').addClass('btn-warning');
+        }
+    });
+    
+}
 
+
+
+validatePage = function() {
+    var reqItems;
+    var valid = true;
+    reqItems = $('*').filter(function() {
+        return $(this).data('valid') !== undefined;
+    });
+    for (var i=0; i<reqItems.length; i++){
+        if (!$(reqItems[i]).data('valid')){
+            
+            return false;
+        }
+    }
+    // validation actions
+    $('#submit').removeClass('disabled');
+    return true;    
+}
+
+validateFormOnSubmit = function() {
+    var reqItems;
+    reqItems = $('*').filter(function() {
+        return $(this).data('valid') !== undefined;
+    });
+    for (var i=0; i<reqItems.length; i++){
+        if (!$(reqItems[i]).data('valid')){
+            if ($(reqItems[i]).data('invalidAlert') !== undefined){
+                $(reqItems[i]).data('invalidAlert')();
+            }
+            else {
+                alertModal('Please check that all required questions have been answered and you listened to all sounds').showAlert();
+            }
+            return false;
+        }
+    }
+    return true;
+    
+}
 
 $(document).ready(function() {
     $(document).data('showndate',(new Date()).valueOf());
     waitDlg.showPleaseWait();
     sounds = $('audio');
-    sounds.data('played',false);
-    
+    sounds.data('valid',false);
+    sounds.data('invalidAlert',invalidAudioFunction)
     sounds.each(function(i,e){
         $(e).on('canplaythrough', function(){newAudioLoaded(e);});
         thisButton = $(e).siblings('input[type=button]');

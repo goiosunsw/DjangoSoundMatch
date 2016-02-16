@@ -18,8 +18,26 @@ function getAnswer() {
     return '';
 }
 
+
+var oldDocumentReady = $(document).ready
+
+$(document).ready(function(){
+    console.log('Here!')
+    $('#answer').data('valid',false);
+    $('#answer').data('invalidAlert',function() {
+        alertModal("Please answer the question!").showAlert();
+        $('#answer').closest('.panel').removeClass('panel-default').addClass('panel-warning');
+    });
+    $('#answer').on('click', function(){
+        
+        $(this).closest('.panel').removeClass('panel-warning').addClass('panel-default');
+        $(this).data('valid',true);
+        validatePage();
+    })
+    oldDocumentReady();
+});
     
-validateFormOnSubmit = function(theForm) {
+/* validateFormOnSubmit = function(theForm) {
     var valid = true;
     if (!validateAudio(theForm)){
         return false;
@@ -30,7 +48,7 @@ validateFormOnSubmit = function(theForm) {
         valid = false;
     }
     return valid;
-};
+}; */
     
     //$(window).on("load", waitDlg.hidePleaseWait);
 </script>
@@ -117,7 +135,7 @@ validateFormOnSubmit = function(theForm) {
      </div>
      <div class="col-sm-8">
          <div class="panel panel-default">
-           <div class="panel-heading">Any comments?</div>
+           <div class="panel-heading">Any comments? (optional)</div>
            <div class="panel-body">
                 <textarea rows="4" cols="50" name="comment"></textarea>
            </div>
