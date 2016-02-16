@@ -7,27 +7,17 @@
 
 <script src="{% static 'SoundRefAB/htmlSoundGoodies.js' %}"></script> 
 
-<script type="text/javascript">
-    
-    
-    
-    validateFormOnSubmit = function(theForm) {
-        return validateAudio(theForm);
-    };
-    
-    //$(window).on("load", waitDlg.hidePleaseWait);
-</script>
 
 {% endblock %}
 
 {% block body_block %}
 
     
-<h1>Vibrato</h1>
+<h1>Fluctuation tones</h1>
 
-<p>Vibrato refers to regular fluctuations that we hear in musical notes.</p>
+<p>Some tones seem constant and others seem to fluctuate with different extents. We will ask you to compare the extent of the fluctuation in different tones</p>
 
-<p>The following note has no vibrato</p>
+<p>The following tone has no fluctuations:</p>
     <div class="row">
       <div class="col-sm-6">
           <div class="panel panel-default">
@@ -46,7 +36,7 @@
     
     
             
-<p>The two next ones have relativelly small vibrato</p>
+<p>The two next ones have relativelly small regular fluctuations:</p>
 
     <div class="row">
       <div class="col-sm-6">
@@ -77,7 +67,7 @@
     </div>
 
 
-<p>Whereas the next two sounds have larger vibrato than the preceding ones</p>
+<p>Whereas the next two tones have larger fluctuations than the preceding ones:</p>
 
     <div class="row">
       <div class="col-sm-6">
