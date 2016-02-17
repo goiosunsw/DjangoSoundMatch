@@ -196,6 +196,7 @@ class Subject(models.Model):
     scenario = models.ForeignKey(Scenario)
     exp_id = models.IntegerField(default=0)
     trials_done = models.IntegerField(default=0)
+    total_trials  = models.IntegerField(default=0)
     stop_experiment = models.BooleanField(default=False)
     difficulty_divider = models.DecimalField(default=1.0,max_digits=10,decimal_places=2)
     instrument = models.CharField('Sing or play any instrument? Which?',max_length=100, default='')
