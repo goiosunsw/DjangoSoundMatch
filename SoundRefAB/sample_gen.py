@@ -21,9 +21,11 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
     ampl =  [[1, 2, 2],[ 1, 2, 2]]
     
     try:
-        ntrial = prev_param[-1][0]['trial_no']
+        ntrial = int(prev_param[-1][0]['trial_no']) + 1
+        sys.stderr.write('Trail nbr: %d\n'%ntrial)
     except (KeyError, IndexError) as e:
         ntrial = 0
+        sys.stderr.write('Trail nbr not found in param data\n')
     
     sound_data=[] 
     param_data=[] 
@@ -46,7 +48,8 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
             hdepth = slope_ampl[amp]
             
         this_pd = {'hdepth': hdepth,
-                   'vib_slope': ph}
+                   'vib_slope': ph,
+                   'trial_no': ntrial}
         
         # reference sound
         basename = 'Sample%d_Subj%d.wav'%(count,int(subject_id))

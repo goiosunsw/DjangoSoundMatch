@@ -14,12 +14,20 @@ var waitDlg;
 waitDlg = waitDlg || (function () {
     var pleaseWaitDiv = 
         $('<div class="modal fade" id="pleaseWaitDialog"  role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h1>Loading...</h1></div><div class="modal-body"><div class="progress progress-striped active"><div class="progress-bar"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div></div></div></div></div></div>');
+    
     return {
         showPleaseWait: function() {
+            $.fn.modal.prototype.constructor.Constructor.DEFAULTS.backdrop = 'static';
             pleaseWaitDiv.modal('show');
+            pleaseWaitDiv.modal({
+                backdrop: 'static',
+                keyboard: false
+            });
+            
         },
         hidePleaseWait: function () {
             pleaseWaitDiv.modal('hide');
+            $.fn.modal.prototype.constructor.Constructor.DEFAULTS.backdrop = true;
         },
 
     };
@@ -112,6 +120,7 @@ validatePage = function() {
         }
     }
     // validation actions
+    window.onbeforeunload = undefined;
     $('#submit').removeClass('disabled');
     return true;    
 }
@@ -138,11 +147,25 @@ validateFormOnSubmit = function() {
 
 $(document).ready(function() {
     $(document).data('showndate',(new Date()).valueOf());
+    window.onbeforeunload = function() { return "Your work will be lost."; };
+    
     waitDlg.showPleaseWait();
     sounds = $('audio');
     sounds.data('valid',false);
+    sounds.data('loaded',false);
     sounds.data('invalidAlert',invalidAudioFunction)
     sounds.each(function(i,e){
+        //$(e).on('canplaythrough', function(){newAudioLoaded(e);});
+        var allAudio = $('audio');
+        var allLoaded = true;
+        for(i=0;i<allAudio.length;i++) {
+            if (!allAudio.eq(i).data('loaded')){
+                allLoaded = false;
+            }
+        }
+        if (allLoaded) {
+            waitDlg.hidePleaseWait();
+        }
         $(e).on('canplaythrough', function(){newAudioLoaded(e);});
         thisButton = $(e).siblings('input[type=button]');
         thisButton.attr('onclick','');
