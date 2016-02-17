@@ -1,12 +1,33 @@
 {% extends 'SoundRefAB/base.html' %}
 
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
+
+{% block head_block %}
+{% endblock %}
+
 {% block body_block %}
 <h1>Please tell us about yourself...</h1>
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-<form action="" method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Submit" />
-</form>
+<div class="container">
+    <form class="form-horizontal" role="form" action="" method="post">{% csrf_token %}
+        <fieldset>
+            {% for field in form %}
+                <div class="form-group">
+                    {{ field.errors }}
+                    <label class="control-label col-sm-8">{{ field.label_tag }}</label>
+                    <div class="controls  col-sm-4"> {{ field }} 
+                        {% if field.help_text %}
+                            <p class="help-inline"><small>{{ field.help_text }}</small></p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            <p><input style="font-size:24;width:100px;height:50px" type="submit" class="btn btn-success" name="submit" value="Next" id="submit" /></p>
+        </fieldset>
+    </form>
+</div>
+
 {% endblock %}

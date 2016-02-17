@@ -198,8 +198,10 @@ class Subject(models.Model):
     trials_done = models.IntegerField(default=0)
     stop_experiment = models.BooleanField(default=False)
     difficulty_divider = models.DecimalField(default=1.0,max_digits=10,decimal_places=2)
-    student_ID = models.CharField('Student ID',max_length=100, default='')
     instrument = models.CharField('Sing or play any instrument? Which?',max_length=100, default='')
+    student_ID = models.CharField('Student ID',max_length=10, default='')
+    loudspeaker_model = models.CharField('Model of headphones / speakers (if appliccable)',max_length=10, default='')
+    vol_change = models.BooleanField('Did you adjust the volume during the experiment?',default=False)
 
 class SoundTriplet(models.Model):
     '''Data corresponding to a single sample presented to the user'''
