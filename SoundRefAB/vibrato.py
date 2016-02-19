@@ -108,6 +108,98 @@ def HarmonicVibrato(f0=220.0,
     #display(Audio(data=sig, rate=sr))
     return sig
 
+def IndepHarmonicVibrato(f0=220.0,
+                    ampseq=lambda x: 1/x,
+                    f0vib=.05,
+                    sr=44100,
+                    t_att=0.05, t_rel=0.02,
+                    dur=1.0,
+                    vib_prof_t=[0.0,1.0], vib_prof_a = [0.0,0.0],
+                    vibfreq = 5.0,a0=.5):
+
+    '''Generates a complex sound with frequency modulation and
+    arbitrary modulation of harmonic amplitudes.
+    Signal parameters:
+    * sr: sample rate
+    Carrrier parameters:
+    * f0: Fundamental frequency
+    * ampseq: vector with harmonic amplitudes, or function.
+      If vector, number of harmonics is finite (len(ampseq))
+      If a function, there are as many harmonics as possible
+                     in the nyquist range
+    * a0: Overal scaling of amplitude
+    Vibrato profile parameters:
+    * vibfreq: frequecy of the vibrato oscillation (constant)
+    * vib_prof_t, vib_prof_a: Envelope of the vibrato depth
+    Frequency vibrato:
+    * f0vib: overall scaling of frequency vibrato (as fraction of f0)
+    Timbre vibrato:
+    * hvib: harmonic vibrato depth in dB
+    Global enveloppe:
+    * t_att: "fade in" duration
+    * t_rel: "fade-out"
+    '''
+
+
+    nharm = int(sr/f0)
+
+    if hasattr(ampseq, '__call__'):
+        amp=[0]
+        amp.extend([ampseq(float(i)) for i in range(1,nharm)])
+    else:
+        amp = np.zeros(max(len(ampseq),len(hvib))+1)
+        amp[1:len(ampseq)+1] = ampseq
+        nharm = min(nharm,len(amp))
+
+
+    # Build signal
+    t = np.arange(0,max(vib_prof_t),1/float(sr));
+    sig = np.zeros_like(t);
+
+    # vibrato signal
+    tvib,vsig = GenVibratoProfile(t=vib_prof_t,a=vib_prof_a,f=vibfreq);
+    vibsig = np.interp(t,tvib,vsig)
+    
+    # convert spectral centroid curve to slope curve
+    
+
+    # remove linear offset
+    vibsig = vibsig - np.linspace(vibsig[1],vibsig[-1],len(vibsig));
+
+
+    # attack / release size in samples
+    at_sam = int(round(t_att*sr));
+    rel_sam = int(round(t_rel*sr));
+    vibrat = np.zeros(nharm)
+    vibrat[1:len(hvib)+1] = hvib
+    for i in range(1,nharm):
+        # vector of frequency per sample
+        fharm = i*f0 * (1 + f0vib*vibsig);
+        # phase vector
+        fcumsum = np.cumsum(2*np.pi*fharm)/sr;
+        phi = np.concatenate(([0],fcumsum[0:-1]));
+
+        # amplitude vector
+        aharm = amp[i] * 10**(vibrat[i]*vibsig/20);
+        hsig = a0 * aharm * np.sin(phi);
+
+        sig = sig+hsig;
+
+    ## Build overal envelope
+    env_a = np.ones_like(vibsig);
+
+    env_a[0:at_sam]    = np.linspace(0,1,at_sam);
+    env_a[-rel_sam:] = np.linspace(1,0,rel_sam);
+
+    sig=sig*env_a;
+
+    # scale signal to audio range
+    #sig = .9 * sig / max(abs(sig));
+
+    #display(Audio(data=sig, rate=sr))
+    return sig
+
+
 def VibratoWAV(filename='out.wav',
         slope=0,
         nharm = 7,
