@@ -376,7 +376,7 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
         for pp in prev_param[-1]:
             pp['ampl']=0.5
             pp['nharm']=15
-            pp['slope']=0.1
+            pp['slope']=0.2
             pp['dur']=0.6
             pp['freq']= 500
             #pp['trial_no']=0
@@ -463,7 +463,7 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         for pp in prev_param[-1]:
             pp['ampl']=0.5
             pp['nharm']=15
-            pp['slope']=20
+            pp['slope']=0.5
             pp['dur']=0.6
             pp['freq']= 500
             #pp['trial_no']=0

@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 from scipy.interpolate import interp1d
 
 def Centroid(hamp):
@@ -76,6 +77,22 @@ class SlopeHarmonicScaler(object):
         for ii in xrange(self.nharm):
             hh.append(self.fharm[ii](cent))
         return np.array(hh)
+        
+    def outputJSArray(self, npoints=100):
+
+        sys.stdout.write("scvals = [ \n")
+
+        for ii in xrange(npoints+1):
+            cent = ii/float(npoints)
+            hamp = self(cent)
+            sys.stdout.write('[')
+            for hh in hamp:
+                sys.stdout.write('%f,'%hh)
+                
+            sys.stdout.write('], // %f\n'% cent)
+            
+        sys.stdout.write('];\n')
+        
 
 class VibratoProfile(object):
     '''A vibrato time-profile'''

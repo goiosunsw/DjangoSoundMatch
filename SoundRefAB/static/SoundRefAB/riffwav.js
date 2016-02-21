@@ -133,8 +133,7 @@ var RIFFWAVE = function(data) {
 
 }; // end RIFFWAVE
 
-
-function GeneratePeriodic(nharm, slope, ampl, dur, freq) {
+function GeneratePeriodic(hseq, ampl, dur, freq) {
 	
 	var data = [];
 	var wave = new RIFFWAVE(data); // create the wave file
@@ -146,9 +145,8 @@ function GeneratePeriodic(nharm, slope, ampl, dur, freq) {
 	var sampPerPeriod = Math.round(wave.header.sampleRate / freq);
 	var argdiv = sampPerPeriod / 2 / Math.PI;
     
-    // base for power operation (math)
-	var base = Math.exp(slope);
-    
+    var nharm = hseq.length;
+	
     // auxiliary calculations
     var wf = 0.0;
     var at = 0.0;
@@ -162,32 +160,17 @@ function GeneratePeriodic(nharm, slope, ampl, dur, freq) {
     // Initialisation: needed?
 	var i = 0;
 	while (i<sampPerPeriod) {
-	  period[i++] = Math.round(maxAmp*Math.sin(i/argdiv)); // left speaker
+	  period[i++] = 0.0; // left speaker
 	}
+	
+	a0=maxAmp*ampl/nharm;
 	
 	var hn = 0;
 	while(hn++<nharm) {
 	    var i = 0;
-        var div = Math.pow(base,(hn-(nharm+1.0)/2.0));;
 		while (i<sampPerPeriod) {
-            period[i++] += Math.round(maxAmp/div*Math.sin(i/argdiv*hn));
-            //wf += maxAmp/div * hn;
-            //at += maxAmp/div;
-            sqamp += 1.0/div/div;
+            period[i++] += Math.round(a0*hseq[hn-1]*Math.sin(i/argdiv*hn));
 		}
-	}
-    
-    //console.log('Period peak '+Math.max.apply(null,period)/maxAmp);
-    //console.log('Total amplitude: '+at/maxAmp);
-    //console.log('Spectral centroid (harm nbr): '+wf/at);
-    
-	// Normalise period values
-    //var ampdiv = Math.max.apply(null, period) / (maxAmp * ampl) ;
-    var ampdiv = Math.sqrt(sqamp)/(ampl);
-    
-    var i=0;
-	while (i<sampPerPeriod) {
-	  period[i] = Math.round(period[i++]/ampdiv); 
 	}
     
     

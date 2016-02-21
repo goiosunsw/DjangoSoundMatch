@@ -4,6 +4,7 @@
 {% load staticfiles %}
 
 {% block head_block %}
+	<script type="text/javascript" src="{% static 'SoundRefAB/slopeAmps.js' %}"></script>
     <script type="text/javascript" src="{% static 'SoundRefAB/riffwav.js' %}"></script>
     <script type="text/javascript" src="{% static 'SoundRefAB/htmlSoundGoodies.js' %}"></script>
 
@@ -18,13 +19,13 @@
     <script type="text/javascript">
         regenSound = function(val, id) {
            var nharm = {{param_list.0.nharm}};
-           var slope = {{param_list.0.slope}};
            var ampl = {{param_list.0.ampl}};
+		   var slope = {{param_list.0.slope}};
            var dur = {{param_list.0.dur}};
            var freq = {{param_list.0.freq}};
-           {{param_list.0.adj_par_name}} = val
-           realslope = (1-slope) * 6 - 1
-           document.getElementById(id).src = GeneratePeriodic(nharm,realslope,ampl,dur,freq);
+           {{param_list.0.adj_par_name}} = val;
+		   var hseq = scvals[Math.round(slope*100)];
+           document.getElementById(id).src = GeneratePeriodic(hseq,ampl,dur,freq);
            return true;
        }
        
