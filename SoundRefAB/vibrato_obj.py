@@ -62,23 +62,54 @@ class SlopeHarmonicScaler(object):
         cent[0] = 1.
         cent[-1] = nharm
         
-        self.fharm=[]
+        self.cent = cent
+        self.hamp = hamps
         
-        for ii in xrange(nharm):
-            ff = interp1d(cent, hamps[...,ii], kind='cubic')
-            self.fharm.append(ff)
+        self.generateInterpolators()
         
         self.vmin = np.min(cent)
         self.vmax = np.max(cent)
         
     def __call__(self, val):
+        '''
+        Return harmonic amplitudes for a given spectral centroid
+        '''
         hh = []
         cent = val*(self.nharm-1.)+1.
         for ii in xrange(self.nharm):
             hh.append(self.fharm[ii](cent))
         return np.array(hh)
+    
+    def saveNumpy(self,filename):
+        '''
+        Save a table of harmonic amplitudes to file
+        '''
+        np.save(filename, (self.cent,self.hamp))
+        
+    def loadNumpy(self,filename):
+        '''
+        Load a table of harmonic amplitudes from file
+        '''
+        self.cent, self.hamp = np.load(filename)
+        self.generateInterpolators()
+        
+    def generateInterpolators(self):
+        '''
+        Generates the interpolator function from a table 
+        of harmonic amplitudes
+        '''
+        self.fharm=[]
+        
+        for ii in xrange(self.nharm):
+            ff = interp1d(self.cent, self.hamp[...,ii], kind='cubic')
+            self.fharm.append(ff)
+        
         
     def outputJSArray(self, npoints=100):
+        '''
+        Outputs an interpolated array of harmonic amplitudes
+        for each value of spectral centroid (0-1)
+        '''
 
         sys.stdout.write("scvals = [ \n")
 
@@ -120,15 +151,12 @@ class VibratoProfile(object):
 
 class Vibrato(object):
     '''Generate a sound from vibrato profile'''
-    def __init__(self, harm0=[1.], vmin=0.0, vmax=1.0, type='amplitude', sr=44100, f0=500.):
+    def __init__(self, harm0=[1.],  sr=44100, f0=500.):
         self.sr=sr
         self.f0=f0
         self.h0 = np.array(harm0)
         self.nharm = len(harm0)
-        if type == 'amplitude':
-            self.hs = lambda x: np.outer(np.ones(self.nharm)/float(self.nharm),x)
-        if type == 'slope':
-            self.hs = SlopeHarmonicScaler(self.nharm)
+        self.hs = SlopeHarmonicScaler(self.nharm)
         
         self.setProfile()
         self.setEnvelope()
@@ -143,25 +171,32 @@ class Vibrato(object):
         self.rel_sam = int(round(t_rel*self.sr));
         
         
-    def calculate_wav(self,vmin,vmax):
+    def calculateWav(self,brightness=[0.5,0.5], amplitude=0.0, frequency = 0.0):
         # Build signal
+        bmin = min(brightness)
+        bmax = max(brightness)
+        
         t = np.arange(0,self.prof.getDuration(),1/float(self.sr));
         sig = np.zeros_like(t);
         
-        vibsig = self.prof(t)*(vmax-vmin)/2. + (vmax+vmin)/2.
         
-        hamp = self.hs(vibsig)
+        vibsig = self.prof(t)
+        bsig = vibsig * (bmax-bmin)/2. + (bmax+bmin)/2.
+        
+        hamp = self.hs(bsig)
         for i in range(1,self.nharm+1):
             # vector of frequency per sample
-            #fharm = i*self.f0 * (1 + f0vib*vibsig);
-            fharm = i*self.f0 *np.ones_like(vibsig)
+            fharm = i*self.f0 * (1 + frequency*vibsig);
+            #fharm = i*self.f0 *np.ones_like(vibsig)
             # phase vector
             fcumsum = np.cumsum(2*np.pi*fharm)/self.sr;
             phi = np.concatenate(([0],fcumsum[0:-1]));
 
             # amplitude vector
             aharm = hamp[i-1];
-            hsig = self.h0[i-1] * aharm * np.sin(phi);
+            a0 = self.h0[i-1] * (1. + amplitude * vibsig) 
+            
+            hsig = a0 * aharm * np.sin(phi);
 
             sig = sig+hsig;
 
@@ -175,10 +210,85 @@ class Vibrato(object):
 
         sig=sig*env_a;
 
-        # scale signal to audio range
-        #sig = .9 * sig / max(abs(sig));
-
-        #display(Audio(data=sig, rate=sr))
+        self.sig = sig
         return sig
         
-         
+    def saveWav(self,filename,sampwidth = 2):
+        import wave
+        import struct
+        
+        wav_file = wave.open(filename, "w")
+
+        nchannels = 2
+        amp = 2**(8*sampwidth)
+
+        framerate = int(self.sr)
+        nframes = len(self.sig)
+
+        comptype = "NONE"
+        compname = "not compressed"
+
+        wav_file.setparams((nchannels, sampwidth, framerate, nframes,
+            comptype, compname))
+
+        # numpy convert float to int
+        xstereo = np.reshape(np.tile(self.sig,[2,1]).T*amp/2,2*len(self.sig)).astype('int16').tostring()
+
+        wav_file.writeframes(xstereo)
+
+        wav_file.close()
+        
+        
+def SlopeVibratoWAV(filename='out.wav',
+        slope=0,
+        nharm = 7,
+        f0tonic=500.0,
+        amp=0.1,
+        hdepth = 6.0,
+        vib_slope=1.0,
+        sr=44100):
+    '''Generate a sequence of similar vibrato notes:fluctuating in amplitude or slope
+    '''
+    #sr=44100
+    base = np.exp(slope)
+    
+    print vib_slope
+    fact = 20./np.log(10)
+    if vib_slope>0.0:
+        hvib = [(float(hn)-(nharm-2.0)/2.0)*hdepth for hn in xrange(nharm-1)]
+    else:
+        hvib = [hdepth for hn in xrange(nharm-1)]
+    print hvib
+    #hvib = [fact*np.log10((hn-(nharm+1.0)/2.0)*slope) for hn in xrange(nharm-1)]
+    
+    hamp = np.array([(1.)**xx/xx**slope for xx in xrange(1,nharm)])
+    #hamp = np.concatenate(([0],hamp))
+    #hamp = np.zeros(nharm)
+    #f0tonic = 500.
+    #amp=0.05
+    #amp=0.1
+    #hamp = amp*np.ones(nharm)
+    #hamp[0]=0.0
+
+
+    #hvib = np.zeros(len(hamp))
+    # if vib_slope > 0.0:
+    #     for nn in range(nharm-1):
+    #         hvib[nn] = hdepth * (nharm/2. - float(nn))
+    # else:
+    #for nn in range(nharm-1):
+    #    hvib[nn] = hdepth
+    
+    
+    
+    sig = HarmonicVibrato(ampseq=hamp,hvib=hvib,f0vib=0.00,f0=f0tonic,
+                        vib_prof_t=[0.0,0.3,0.7,1.5,1.6],vib_prof_a=[0.0,0.0,0.5,1.0,0.0],vibfreq=6.0,
+                        a0=amp,sr=sr,t_att=.05)
+    
+    write_wav(filename,sig,sr=sr)
+    #wavwrite(filename,rate=sr,data=np.tile(sig,[1,2]))
+
+    #return sig, sr
+    #display(Audio(data=sig,rate=sr,autoplay=True))
+
+

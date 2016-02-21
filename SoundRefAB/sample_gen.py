@@ -1,4 +1,4 @@
-import vibrato
+import vibrato_obj as vo
 import random
 import os
 import numpy as np
@@ -335,11 +335,20 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         sound_data.append(this_sd)
         param_data.append(this_pd)
     
+    nharm = 6
+    vib = vo.Vibrato(harm0=ones(nharm)/float(nharm))
+    vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],v_prof=[0.0,0.0,0.5,1.0,0.0])
+    vib.setEnvelope(t_att=0.05,t_rel=0.02)
+    
     for i in xrange(n_sounds):
-        vibrato.SlopeVibratoWAV(filename=filename[i], 
-                           hdepth=float(param_data[i]['hdepth']), 
-                           vib_slope=param_data[i]['vib_slope'],
-                           amp=0.05)
+        # vibrato.SlopeVibratoWAV(filename=filename[i],
+        #                    hdepth=float(param_data[i]['hdepth']),
+        #                    vib_slope=param_data[i]['vib_slope'],
+        #                    amp=0.05)
+        blims = 0.5 + param_data[i]['hdepth']*np.array([-1,1])
+        amplitude = (param_data[i]['hdepth'])
+        vib.calculateWav(brightness=blims,amplitude=alims,frequency=0.0)
+        vib.saveWav(filename=filename[i])
                            
     dio.store_temp_data_file(range_divider, subj_no)
     
