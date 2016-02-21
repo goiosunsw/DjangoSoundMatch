@@ -45,13 +45,21 @@ class SlopeHarmonicScaler(object):
         self.nharm = nharm
         
         slopes = np.linspace(-slopelim,slopelim,npoints)
-        cent = np.zeros_like(slopes)
-        hamps = np.zeros((len(slopes),nharm))
+        cent = np.zeros(len(slopes)+2)
+        hamps = np.zeros((len(slopes)+2,nharm))
+        
+        
         
         for (ii,slope) in enumerate(slopes):
             hamp = SlopeToHmult(slope,nharm)
-            cent[ii]=(Centroid(hamp))
-            hamps[ii,...] = hamp
+            cent[ii+1]=(Centroid(hamp))
+            hamps[ii+1,...] = hamp
+        
+        hamps[0,0]=1.
+        hamps[-1,-1]=1.
+        
+        cent[0] = 1.
+        cent[-1] = nharm
         
         self.fharm=[]
         
@@ -126,7 +134,7 @@ class Vibrato(object):
         vibsig = self.prof(t)*(vmax-vmin)/2. + (vmax+vmin)/2.
         
         hamp = self.hs(vibsig)
-        for i in range(1,self.nharm):
+        for i in range(1,self.nharm+1):
             # vector of frequency per sample
             #fharm = i*self.f0 * (1 + f0vib*vibsig);
             fharm = i*self.f0 *np.ones_like(vibsig)
@@ -135,8 +143,8 @@ class Vibrato(object):
             phi = np.concatenate(([0],fcumsum[0:-1]));
 
             # amplitude vector
-            aharm = hamp[i];
-            hsig = self.h0[i] * aharm * np.sin(phi);
+            aharm = hamp[i-1];
+            hsig = self.h0[i-1] * aharm * np.sin(phi);
 
             sig = sig+hsig;
 
