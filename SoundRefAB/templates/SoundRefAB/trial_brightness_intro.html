@@ -46,14 +46,14 @@ $(document).ready(function(){
 
 <p>You will now be asked to compare the brightness of two tones.</p>
 
-<p>In order to have an idea of what brightness means, tone 1 should be clearly brighter than tone 2.</p>
+<p>In order to have an idea of what brightness means, tone 2 should be clearly brighter than tone 1.</p>
 
     <div class="row">
       <div class="col-sm-6">
           <div class="panel panel-default">
             <div class="panel-heading"><h3>Tone 1:</h3></div>
             <div class="panel-body">
-                <audio id="audio0" src="{% static 'SoundRefAB/pg_brightness_adj_bright.wav' %}">
+                <audio id="audio0" src="{% static 'SoundRefAB/pg_brightness_adj_dark.wav' %}">
                     Your browser does not support the audio element.
                 </audio>
                 <input type="button" class="btn btn-default"  value="Play"/>
@@ -71,7 +71,7 @@ $(document).ready(function(){
           <div class="panel panel-default">
             <div class="panel-heading"><h3>Tone 2:</h3></div>
             <div class="panel-body">
-                <audio id="audio0" src="{% static 'SoundRefAB/pg_brightness_adj_dark.wav' %}">
+                <audio id="audio0" src="{% static 'SoundRefAB/pg_brightness_adj_bright.wav' %}">
                     Your browser does not support the audio element.
                 </audio>
                 <input type="button" class="btn btn-default"  value="Play"/>
