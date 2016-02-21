@@ -15,10 +15,12 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
     
     
     # sound parameters per trial, Ref, S1 S2 inside trial
-    slope_ampl = [0.5,1.0,3.0]
-    loud_ampl = [1.0,2.0,6.0]
+    slope_ampl = [0.1,0.2,0.5]
+    loud_ampl = [0.1,0.2,0.5]
     phase = [[1, 1,-1],[-1, 1,-1]]
     ampl =  [[1, 2, 2],[ 1, 2, 2]]
+    base_brightness = 0.5
+    
     
     try:
         ntrial = int(prev_param[-1][0]['trial_no']) + 1
@@ -66,13 +68,27 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
         sound_data.append(this_sd)
         param_data.append(this_pd)
            
+    nharm = 6
+    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm))
+    vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],v_prof=[0.0,0.0,0.5,1.0,0.0])
+    vib.setEnvelope(t_att=0.05,t_rel=0.02)
                
     
     for i in xrange(len(sound_data)):
-        vibrato.SlopeVibratoWAV(filename=filename[i], 
-                           hdepth=param_data[i]['hdepth'], 
-                           vib_slope=param_data[i]['vib_slope'],
-                           amp=0.05)
+        # vibrato.SlopeVibratoWAV(filename=filename[i],
+        #                    hdepth=param_data[i]['hdepth'],
+        #                    vib_slope=param_data[i]['vib_slope'],
+        #                    amp=0.05)
+        depth = float(param_data[i]['hdepth'])
+        if param_data[i]['vib_slope'] > 0:
+            blims = base_brightness * (1 + depth *np.array([-1,1]))
+            amplitude = 0.0
+        else:
+            amplitude = depth
+            blims=np.array([1,1])*base_brightness
+        vib.calculateWav(brightness=blims,amplitude=amplitude,frequency=0.0)
+        vib.saveWav(filename=filename[i])
+        
     
     return sound_data, param_data, difficulty_divider
 
@@ -229,11 +245,27 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
         sound_data.append(this_sd)
         param_data.append(this_pd)
     
+    nharm = 6
+    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm))
+    vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],v_prof=[0.0,0.0,0.5,1.0,0.0])
+    vib.setEnvelope(t_att=0.05,t_rel=0.02)
+    
+    
     for i in [0,1,2]:
-        vibrato.SlopeVibratoWAV(filename=filename[i], 
-                           hdepth=param_data[i]['hdepth'], 
-                           vib_slope=param_data[i]['vib_slope'],
-                           amp=0.05)
+        # vibrato.SlopeVibratoWAV(filename=filename[i],
+        #                    hdepth=param_data[i]['hdepth'],
+        #                    vib_slope=param_data[i]['vib_slope'],
+        #                    amp=0.05)
+        depth = float(param_data[i]['hdepth'])
+        if param_data[i]['vib_slope'] > 0:
+            blims = base_brightness * (1 + depth *np.array([-1,1]))
+            amplitude = 0.0
+        else:
+            amplitude = depth
+            blims=np.array([1,1])*base_brightness
+        vib.calculateWav(brightness=blims,amplitude=amplitude,frequency=0.0)
+        vib.saveWav(filename=filename[i])
+        
     
     return sound_data, param_data, difficulty_divider
 
@@ -250,9 +282,10 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     n_sounds = 4
     
     # max amplitude fluctuation (max)
-    max_amp = 6.0
-    min_amp = 2.0
-    max_slope = 3.0
+    max_amp = 1.0
+    min_amp = 0.05
+    max_slope = 1.0
+    base_brightness = 0.5
     stop = False
     stop_confidence = 2
     
@@ -336,18 +369,24 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         param_data.append(this_pd)
     
     nharm = 6
-    vib = vo.Vibrato(harm0=ones(nharm)/float(nharm))
+    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm))
     vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],v_prof=[0.0,0.0,0.5,1.0,0.0])
     vib.setEnvelope(t_att=0.05,t_rel=0.02)
+    
     
     for i in xrange(n_sounds):
         # vibrato.SlopeVibratoWAV(filename=filename[i],
         #                    hdepth=float(param_data[i]['hdepth']),
         #                    vib_slope=param_data[i]['vib_slope'],
         #                    amp=0.05)
-        blims = 0.5 + param_data[i]['hdepth']*np.array([-1,1])
-        amplitude = (param_data[i]['hdepth'])
-        vib.calculateWav(brightness=blims,amplitude=alims,frequency=0.0)
+        depth = float(param_data[i]['hdepth'])
+        if param_data[i]['vib_slope'] > 0:
+            blims = base_brightness * (1 + depth *np.array([-1,1]))
+            amplitude = 0.0
+        else:
+            amplitude = depth
+            blims=np.array([1,1])*base_brightness
+        vib.calculateWav(brightness=blims,amplitude=amplitude,frequency=0.0)
         vib.saveWav(filename=filename[i])
                            
     dio.store_temp_data_file(range_divider, subj_no)
