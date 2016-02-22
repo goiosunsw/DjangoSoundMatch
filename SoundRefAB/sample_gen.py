@@ -268,7 +268,60 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
         
     
     return sound_data, param_data, difficulty_divider
+    
 
+def PickParamsForSlopeABC(n_runs=3):
+    '''
+    Generate a set of initialisation parameters for vibrato matching experiments.
+    These are then randomised in order
+    '''
+    
+    # rough conversion btween brightness depth and loudness depth:
+    brightness_to_loudness_mult = 1.5
+    
+    # depth ranges
+    brightness_ranges = np.array([[0.05,0.15],[0.15,0.35],[0.35,0.7]])
+    loudness_ranges = brightness_ranges * brightness_to_loudness_mult
+    
+    # central brightness range
+    central_brightness = np.array([0.3,0.3])
+    central_loudness = np.array([0.1,0.1])
+    
+    aa = np.empty(n_runs*2, dtype = [('ref_depth','f'),('ref_phase','i'),('smpl_depth','f'),('smpl_phase','i')])
+    # ref_depths = np.empty((0,1))
+    # ref_phases = np.empty((0,1))
+    # smpl_depths = np.empty((0,1))
+    # smpl_phases = np.empty((0,1))
+    
+    
+    # generate loudness references
+    count = 0
+    for (ph_no,ranges) in enumerate((loudness_ranges, brightness_ranges)):
+        n_ranges = ranges.shape[0]
+        phase = [1,-1][ph_no]
+        # multiplier for sample base depth
+        mult = brightness_to_loudness_mult ** phase
+
+        for i in range(n_runs):
+            this_range = ranges[i%n_ranges,...]
+            vmin = np.min(this_range)
+            vmax = np.max(this_range)
+            this_ref_depth = vmin + np.random.random() * (vmax-vmin)
+            aa['ref_depth'][count] = this_ref_depth
+            aa['ref_phase'][count] = phase
+            aa['smpl_depth'][count] = this_ref_depth * mult
+            aa['smpl_phase'][count] = -phase
+            count +=1
+            
+    # randomize 
+    # randomize sample order
+    order = np.arange(len(aa))
+    random.shuffle(order)
+    
+    aa = aa[order]
+    return aa
+    
+    
 def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         prev_param=[], path='.', url_path='/', prev_exp_dict=[]):
                         

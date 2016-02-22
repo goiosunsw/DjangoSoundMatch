@@ -56,12 +56,11 @@ $(document).ready(function(){
     
     <input name="playseq" type="hidden" id="playseq" value="">
     <h2>{{ instruction_text }}</h2>
-    <p>Difficulty level: {{ difficulty }}</p>
     <div class="row">
       {% for s in sound_list %}
       <div class="col-sm-3">
           <div class="panel panel-default">
-            <div class="panel-heading"><h3>Sample {{ forloop.counter }}</h3></div>
+            <div class="panel-heading"><h3>Tone {{ forloop.counter }}</h3></div>
             <div class="panel-body">
                 <audio id="audio{{ forloop.counter0 }}">
                     <source type="audio/wav" src="{{ s.file }}" />
