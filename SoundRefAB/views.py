@@ -38,11 +38,12 @@ def store_sound_parameters(st, sound_data, param_list):
         for parkey,parval in soundpar.items():
             if isinstance(parval, Number):
                 parinst = st.parameterinstance_set.create(subject=st.subject)
+		parval = float(parval)
             else:
                 parinst = st.stringparameterinstance_set.create(subject=st.subject)
             parinst.name = parkey
             #parinst.description = par['description']
-            parinst.value = float(parval)
+            parinst.value = parval
             parinst.position = sound_nbr
 
             parinst.save()

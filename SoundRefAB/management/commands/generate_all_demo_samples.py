@@ -80,7 +80,7 @@ class Command(BaseCommand):
     help = 'Generate all samples needed for demo pages (fixed samples)'
 
     def handle(self, *args, **options):
-        base_path = os.path.join(settings.STATIC_ROOT,'SoundRefAB','static','SoundRefAB')
+        base_path = os.path.join(settings.STATIC_ROOT,'SoundRefAB')
         LoudnessSamples(base_path=base_path)
         BrightnessSamples(base_path=base_path)
         VibratoExplainSamples(base_path=base_path)

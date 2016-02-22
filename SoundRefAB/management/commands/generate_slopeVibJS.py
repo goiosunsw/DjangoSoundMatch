@@ -11,7 +11,7 @@ class Command(BaseCommand):
     help = 'Generate javascript array for brightness sounds'
 
     def handle(self, *args, **options):
-        base_path = os.path.join(settings.STATIC_ROOT,'SoundRefAB','static','SoundRefAB')
+        base_path = os.path.join(settings.STATIC_ROOT,'SoundRefAB')
         sys.stdout = open(os.path.join(base_path,'slopeAmps.js'),'w')
         
         nharm=6

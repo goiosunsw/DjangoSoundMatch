@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.CharField(max_length=200)),
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
-                ('template', models.CharField(default=b'', max_length=100, verbose_name=b'Page file', choices=[('pg_brightness_adj_intro.html', 'pg_brightness_adj_intro.html'), ('pg_loudness_adj_intro.html', 'pg_loudness_adj_intro.html'), ('pg_quest_info.html', 'pg_quest_info.html'), ('pg_thanks.html', 'pg_thanks.html'), ('pg_vibrato_explanation.html', 'pg_vibrato_explanation.html'), ('pg_vibrato_intro.html', 'pg_vibrato_intro.html'), ('pg_welcome.html', 'pg_welcome.html')])),
+                ('template', models.CharField(default=b'', max_length=100, verbose_name=b'Page file', choices=[('pg_brightness_adj_intro.html', 'pg_brightness_adj_intro.html'), ('pg_loudness_adj_intro.html', 'pg_loudness_adj_intro.html'), ('pg_quest_info.html', 'pg_quest_info.html'), ('pg_thanks.html', 'pg_thanks.html'), ('pg_vibrato_explanation.html', 'pg_vibrato_explanation.html'), ('pg_vibrato_intro.html', 'pg_vibrato_intro.html')])),
             ],
         ),
         migrations.CreateModel(
