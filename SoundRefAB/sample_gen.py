@@ -270,12 +270,12 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
     return sound_data, param_data, difficulty_divider
     
 
-def PickParamsForSlopeABC(n_runs=3):
+def SlopeVibratoRefABC_init(subject_id, n_runs=3):
     '''
     Generate a set of initialisation parameters for vibrato matching experiments.
     These are then randomised in order
     '''
-    
+    subj_no = int(subject_id)
     # rough conversion btween brightness depth and loudness depth:
     brightness_to_loudness_mult = 1.5
     
@@ -287,7 +287,7 @@ def PickParamsForSlopeABC(n_runs=3):
     central_brightness = np.array([0.3,0.3])
     central_loudness = np.array([0.1,0.1])
     
-    aa = np.empty(n_runs*2, dtype = [('ref_depth','f'),('ref_phase','i'),('smpl_depth','f'),('smpl_phase','i')])
+    aa = np.empty(n_runs, dtype = [('ref_depth','f8'),('ref_phase','i'),('smpl_depth','f8'),('smpl_phase','i')])
     # ref_depths = np.empty((0,1))
     # ref_phases = np.empty((0,1))
     # smpl_depths = np.empty((0,1))
@@ -301,8 +301,7 @@ def PickParamsForSlopeABC(n_runs=3):
         phase = [1,-1][ph_no]
         # multiplier for sample base depth
         mult = brightness_to_loudness_mult ** phase
-
-        for i in range(n_runs):
+        for i in range(n_runs/2):
             this_range = ranges[i%n_ranges,...]
             vmin = np.min(this_range)
             vmax = np.max(this_range)
@@ -319,6 +318,8 @@ def PickParamsForSlopeABC(n_runs=3):
     random.shuffle(order)
     
     aa = aa[order]
+    arec = aa.view(np.recarray)
+    dio.store_temp_data_file(arec, subj_no, suffix='AllVib')
     return aa
     
     
@@ -345,16 +346,18 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     
     # base values
     if prev_param==[]:
-        base_amp_depth = min_amp + (max_amp-min_amp) * random.random()
+        aa = dio.retrieve_temp_data_file(subj_no, suffix='AllVib')
+        base_amp_depth = aa['ref_depth'][0]
+        base_phase = aa['ref_phase'][0]
+        last_chosen_amp = aa['smpl_depth'][0]
         range_divider=1
-        base_phase = [-1,1][random.randint(0,1)]
-        last_chosen_amp = base_amp_depth
-        
+        aa = aa[1:]
+        dio.store_temp_data_file(aa, subj_no, suffix='AllVib')
     else:
         # Last chosen amplitude
         last_chosen_amp = prev_param[-1][prev_choice[-1]]['hdepth']
         
-        range_divider = dio.retrieve_temp_data_file(subj_no)
+        range_divider = dio.retrieve_temp_data_file(subj_no).tolist()
         base_amp_depth = prev_param[-1][0]['hdepth']
         base_phase = prev_param[-1][0]['vib_slope']
         if confidence_history[-1]>1:

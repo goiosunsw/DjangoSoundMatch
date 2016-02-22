@@ -10,6 +10,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.db.models import F
 from django.utils.datastructures import MultiValueDictKeyError
+from django.contrib.contenttypes.models import ContentType
+
 #from django.core.exceptions import DoesNotExist
 
 from random import shuffle
@@ -40,7 +42,7 @@ def store_sound_parameters(st, sound_data, param_list):
                 parinst = st.stringparameterinstance_set.create(subject=st.subject)
             parinst.name = parkey
             #parinst.description = par['description']
-            parinst.value = parval
+            parinst.value = float(parval)
             parinst.position = sound_nbr
 
             parinst.save()
@@ -222,8 +224,25 @@ def SoundPage(request, subject_id):
         ord_no = this_subj.exp_id 
         x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
         #sys.stderr.write('Here\n')
+        
+        #number of runs: how many times does this experiment appear in scenario
+        x_content_type = ContentType.objects.get_for_model(x)
+        n_runs = sub.scenario.iteminscenario_set.filter(content_type__pk=x_content_type.id,object_id=x.id).count()
+        qq=sub.scenario.iteminscenario_set.filter(content_type__pk=x_content_type.id,object_id=x.id).order_by('order')
+        all_order_nos = qq.values_list('order',flat=True)
+        first_order_no = min(all_order_nos)
 
-
+        function_name = x.function
+        
+        # initialise data for series of runs
+        try:
+            if ord_no == first_order_no:
+                init_function_name = function_name + '_init'
+                f = getattr(sample_gen, init_function_name)
+                f(subject_id, n_runs=n_runs)
+        except AttributeError:
+            pass
+        
         # retrieve data from previous experiment
         try:
             if not this_subj.trials_done:
@@ -251,7 +270,6 @@ def SoundPage(request, subject_id):
         st.save()
 
 
-        function_name = x.function
         try:
             f = getattr(sample_gen, function_name)
         except AttributeError:
