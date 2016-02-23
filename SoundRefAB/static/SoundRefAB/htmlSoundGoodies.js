@@ -186,14 +186,15 @@ $(document).ready(function() {
         thisButton.attr('onclick','');
         thisButton.on('click',function(){playAndDoStuff(e)});
         console.log('Setting up audio obj '+i);
-        $(e).on('stalled', function() { 
+        /* $(e).on('stalled', function() { 
             var audio = this;
+
             audio.load();
             console.log('Reloading '+this.id);
 
             audio.play();
             audio.pause();
-        });
+        }); */
     });
     var allLoaded = true;
     // remove wait dialog if all sounds are loaded by this time

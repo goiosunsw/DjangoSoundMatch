@@ -9,7 +9,10 @@ def store_temp_data_file(data,  subject_id=0, suffix='temp'):
 def retrieve_temp_data_file( subject_id=0, suffix='temp'):
     filename=os.path.join(tempfile.gettempdir(),'subj%d_%s.npy'%(subject_id, suffix))
     data = np.load(filename)
-    return data
+    if data.dtype.fields is None: 
+        return data.tolist()
+    else:
+        return data
     
 def erase_temp_data_file(subject_id=0, suffix='temp'):
     filename=os.path.join(tempfile.gettempdir(),'subj%d_%s.npy'%(subject_id, suffix))

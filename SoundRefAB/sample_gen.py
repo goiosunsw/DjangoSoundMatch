@@ -357,7 +357,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         # Last chosen amplitude
         last_chosen_amp = prev_param[-1][prev_choice[-1]]['hdepth']
         
-        range_divider = dio.retrieve_temp_data_file(subj_no).tolist()
+        range_divider = dio.retrieve_temp_data_file(subj_no)
         base_amp_depth = prev_param[-1][0]['hdepth']
         base_phase = prev_param[-1][0]['vib_slope']
         if confidence_history[-1]>1:
