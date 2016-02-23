@@ -53,7 +53,7 @@ $(document).ready(function(){
           <div class="panel panel-default">
             <div class="panel-heading"><h3>Tone 1:</h3></div>
             <div class="panel-body">
-                <audio id="audio0" src="{% static 'SoundRefAB/pg_brightness_adj_dark.wav' %}">
+                <audio id="audio0" src="{% static 'SoundRefAB/pg_brightness_adj_dark.wav' %}" preload="auto">
                     Your browser does not support the audio element.
                 </audio>
                 <input type="button" class="btn btn-default"  value="Play"/>
@@ -71,7 +71,7 @@ $(document).ready(function(){
           <div class="panel panel-default">
             <div class="panel-heading"><h3>Tone 2:</h3></div>
             <div class="panel-body">
-                <audio id="audio1" src="{% static 'SoundRefAB/pg_brightness_adj_bright.wav' %}">
+                <audio id="audio1" src="{% static 'SoundRefAB/pg_brightness_adj_bright.wav' %}" preload="auto">
                     Your browser does not support the audio element.
                 </audio>
                 <input type="button" class="btn btn-default"  value="Play"/>
