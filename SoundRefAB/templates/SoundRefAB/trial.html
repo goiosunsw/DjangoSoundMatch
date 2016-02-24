@@ -62,7 +62,7 @@ $(document).ready(function(){
           <div class="panel panel-default">
             <div class="panel-heading"><h3>Tone {{ forloop.counter }}</h3></div>
             <div class="panel-body">
-                <audio id="audio{{ forloop.counter0 }}">
+                <audio preload="auto" id="audio{{ forloop.counter0 }}">
                     <source type="audio/wav" src="{{ s.file }}" />
                     Your browser does not support the audio element.
                 </audio>
