@@ -270,7 +270,7 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
     return sound_data, param_data, difficulty_divider
     
 
-def SlopeVibratoRefABC_init(subject_id, n_runs=3):
+def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
     '''
     Generate a set of initialisation parameters for vibrato matching experiments.
     These are then randomised in order
@@ -279,8 +279,13 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3):
     # rough conversion btween brightness depth and loudness depth:
     brightness_to_loudness_mult = 1.5
     
+    # number of runs where matching different kinds
+    n_diff = n_runs-n_similar
+    
     # depth ranges
-    brightness_ranges = np.array([[0.05,0.15],[0.15,0.35],[0.35,0.7]])
+    brightness_lims = np.array([0.05,0.7])
+    brightness_ranges = np.linspace(*brightness_lims, num=n_diff/2+1)
+    #brightness_ranges = np.array([[0.05,0.15],[0.15,0.35],[0.35,0.7]])
     loudness_ranges = brightness_ranges * brightness_to_loudness_mult
     
     # central brightness range
@@ -302,14 +307,16 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3):
         # multiplier for sample base depth
         mult = brightness_to_loudness_mult ** phase
         for i in range(n_runs/2):
+            # generate different kinds or same?
+            isdiff = i<n_diff/2
             this_range = ranges[i%n_ranges,...]
             vmin = np.min(this_range)
             vmax = np.max(this_range)
             this_ref_depth = vmin + np.random.random() * (vmax-vmin)
             aa['ref_depth'][count] = this_ref_depth
             aa['ref_phase'][count] = phase
-            aa['smpl_depth'][count] = this_ref_depth * mult
-            aa['smpl_phase'][count] = -phase
+            aa['smpl_depth'][count] = this_ref_depth * mult if isdiff else this_ref_depth
+            aa['smpl_phase'][count] = -phase if isdiff else phase
             count +=1
             
     # randomize 
@@ -330,7 +337,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     
     try:
         twice_bright = float(prev_exp_dict['med_twice_brightness'])
-    except KeyError:
+    except ( KeyError, TypeError ):
         twice_bright = 2.0
     
     n_sounds = 4
@@ -347,9 +354,17 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     # base values
     if prev_param==[]:
         aa = dio.retrieve_temp_data_file(subj_no, suffix='AllVib')
-        base_amp_depth = aa['ref_depth'][0]
-        base_phase = aa['ref_phase'][0]
-        last_chosen_amp = aa['smpl_depth'][0]
+        try:
+            base_amp_depth = aa['ref_depth'][0]
+            base_phase = aa['ref_phase'][0]
+            last_chosen_amp = aa['smpl_depth'][0]
+            smpl_phase = aa['smpl_phase'][0]
+        except IndexError:
+            sys.stderr.write('Could not read parameters. Generating random.\n')
+            base_amp_depth = random.random()
+            base_phase = int(random.random()*2)-1
+            last_chosen_amp = random.random()
+            smpl_phase = int(random.random()*2)-1
         range_divider=1
         aa = aa[1:]
         dio.store_temp_data_file(aa, subj_no, suffix='AllVib')
@@ -360,6 +375,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         range_divider = dio.retrieve_temp_data_file(subj_no)
         base_amp_depth = prev_param[-1][0]['hdepth']
         base_phase = prev_param[-1][0]['vib_slope']
+        smpl_phase = prev_param[-1][-1]['vib_slope']
         if confidence_history[-1]>1:
             range_divider *= 1.3
         # if user has not been confident in last answers stop
@@ -369,7 +385,11 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         except KeyError:
             stop=False
         
-        
+    # check limits 
+    base_amp_depth = np.clip(base_amp_depth, 0., 1.)
+    last_chosen_amp = np.clip(last_chosen_amp, 0., 1.)
+    
+    
     sound_data=[] 
     param_data=[] 
     filename=[]
@@ -396,7 +416,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     
     # test sounds
     amplitude = []
-    new_phase =  - base_phase
+    new_phase =  smpl_phase
     amplitude.append(last_chosen_amp)
     
     range_around = twice_bright/range_divider
@@ -437,7 +457,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         #                    amp=0.05)
         depth = float(param_data[i]['hdepth'])
         if param_data[i]['vib_slope'] > 0:
-            blims = base_brightness * (1 + depth *np.array([-1,1]))
+            blims = base_brightness * (1 + depth/2 *np.array([-1,1]))
             amplitude = 0.0
         else:
             amplitude = depth

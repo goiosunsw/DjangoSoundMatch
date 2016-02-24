@@ -36,6 +36,8 @@ class Experiment(models.Model):
         function = models.CharField('Sound generating function',max_length=100)
         
     number_of_trials = models.IntegerField('Number of Trials',default=1)
+    total_completed_trials = models.IntegerField('Totla number of completed trials',default=0)
+    total_completed_runs = models.IntegerField('Totla number of completed runs',default=0)
     # change here when a new design is to be introduced
     design = models.CharField('Design class',         
         max_length=100, choices = (
