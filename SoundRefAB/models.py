@@ -35,9 +35,7 @@ class Experiment(models.Model):
     except ImportError:
         function = models.CharField('Sound generating function',max_length=100)
         
-    number_of_trials = models.IntegerField('Number of Trials',default=1)
-    total_completed_trials = models.IntegerField('Totla number of completed trials',default=0)
-    total_completed_runs = models.IntegerField('Totla number of completed runs',default=0)
+    number_of_trials = models.IntegerField('Number of completed trials in current experiment',default=1)
     # change here when a new design is to be introduced
     design = models.CharField('Design class',         
         max_length=100, choices = (
@@ -128,6 +126,9 @@ class Scenario(models.Model):
     
     def __str__(self):
         return '%d:%s'%(self.id,self.description)
+        
+    def total_number_of_experiments(self):
+        return self.iteminscenario_set.count()
     
 # class ExperimentInScenario(models.Model):
 #     experiment = models.ForeignKey(Experiment)
@@ -203,8 +204,27 @@ class Subject(models.Model):
     difficulty_divider = models.DecimalField(default=1.0,max_digits=10,decimal_places=2)
     instrument = models.CharField('Sing or play any instrument? Which?',max_length=100, default='')
     student_ID = models.CharField('Student ID',max_length=10, default='')
-    loudspeaker_model = models.CharField('Model of headphones / speakers (if appliccable)',max_length=10, default='')
+    loudspeaker_model = models.CharField('Model of headphones / speakers (if appliccable)',max_length=100, default='')
     vol_change = models.BooleanField('Did you adjust the volume during the experiment?',default=False)
+    
+    def one_more_trial(self):
+        self.trials_done+=1
+        self.total_trials+=1
+
+    def get_progress(self):
+        total_exp = self.scenario.total_number_of_experiments()
+        completed_exp = self.exp_id - 1
+        
+        s = self.scenario
+        item = s.iteminscenario_set.get(order=self.exp_id).content_object
+        try:    
+            trials_in_current_exp = item.number_of_trials
+        except AttributeError:
+            trials_in_current_exp = 1
+        
+        progress = float(completed_exp)/total_exp
+        progress += 1./total_exp * self.trials_done / trials_in_current_exp
+        return int(progress*100)
 
 class SoundTriplet(models.Model):
     '''Data corresponding to a single sample presented to the user'''

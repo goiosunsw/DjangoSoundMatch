@@ -8,7 +8,7 @@
 {% if subject_list %}
     <ul>
     {% for s in subject_list %}
-        <li><a href="{% url 'srefab:subjectdetail' s.pk %}">{{ s.pk }}</a> on {{ s.start_date|date:"r" }} ({{s.trials_done}} trials)</li>
+        <li><a title="Subject {{ s.pk }} in {{s.scenario.description}}" href="{% url 'srefab:subjectdetail' s.pk %}">{{ s.pk }} (scenario {{s.scenario.id}})</a> on {{ s.start_date|date:"r" }} ({{s.total_trials}} trials in {{ s.exp_id|add:"-1" }} runs)</li>
     {% endfor %}
     </ul>
 {% else %}

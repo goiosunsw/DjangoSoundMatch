@@ -298,6 +298,7 @@ def SoundPage(request, subject_id):
         context = RequestContext(request, {
             'instruction_text': x.instruction_text,
             'sound_list': sound_data,
+            'progress': sub.get_progress(),
             'subject_id': subject_id,
             'trial_id': st.trial,
             'sample_id': st.pk,
@@ -327,7 +328,7 @@ def ProcessPage(request, trial_id):
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
-    sub.trials_done += 1
+    sub.one_more_trial()
     
     comment = request.POST.get('comment','')
     if len(comment)>0:
@@ -483,7 +484,7 @@ def ProcessAdjustPage(request, trial_id):
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
-    sub.trials_done += 1
+    sub.one_more_trial()
 
     comment = request.POST.get('comment','')
     if len(comment)>0:
@@ -594,7 +595,7 @@ def ProcessIntro(request, trial_id):
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
-    sub.trials_done += 1
+    sub.one_more_trial()
     
     answer = request.POST.get('answer','')
     comment = request.POST.get('comment','')
