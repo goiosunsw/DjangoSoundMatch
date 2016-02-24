@@ -105,7 +105,7 @@ class SlopeHarmonicScaler(object):
             self.fharm.append(ff)
         
         
-    def outputJSArray(self, npoints=100):
+    def outputJSArray(self, npoints=100, vlims=[0.,1.]):
         '''
         Outputs an interpolated array of harmonic amplitudes
         for each value of spectral centroid (0-1)
@@ -114,7 +114,8 @@ class SlopeHarmonicScaler(object):
         sys.stdout.write("scvals = [ \n")
 
         for ii in xrange(npoints+1):
-            cent = ii/float(npoints)
+            vrange = max(vlims) - min(vlims)
+            cent = min(vlims) + ii * vrange / float(npoints)
             hamp = self(cent)
             sys.stdout.write('[')
             for hh in hamp:

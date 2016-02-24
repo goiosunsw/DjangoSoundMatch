@@ -95,7 +95,6 @@ class Command(BaseCommand):
                             ll.save()
                             count += 1
                     
-                            break
                     else:
                         print itd2
                         #sys.stderr.write('%s is not %s in model %s\n'%(thisdesc,itd2['description'],itd2['model']))
