@@ -246,7 +246,7 @@ def SlopeVibratoTripletRefAB(subject_id, difficulty_divider=1.0, confidence_hist
         param_data.append(this_pd)
     
     nharm = 6
-    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm))
+    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm),vibfreq=6.0)
     vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],v_prof=[0.0,0.0,0.5,1.0,0.0])
     vib.setEnvelope(t_att=0.05,t_rel=0.02)
     
@@ -445,7 +445,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         param_data.append(this_pd)
     
     nharm = 6
-    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm))
+    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm),vibfreq=6.0)
     vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],v_prof=[0.0,0.0,0.5,1.0,0.0])
     vib.setEnvelope(t_att=0.05,t_rel=0.02)
     
