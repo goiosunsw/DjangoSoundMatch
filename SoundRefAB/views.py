@@ -338,8 +338,9 @@ def ProcessPage(request, trial_id):
     x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
     
     try:
-        stop_confidence = st.parameterinstance_set.get(name='stop_conf', position=0)
-        if st.confidence <= stop_confidence:
+        stop_confidence = st.parameterinstance_set.get(name='stop_conf', position=0).value
+        if st.confidence < stop_confidence:
+            sys.stderr.write('This confidence %d smaller than %d. Stoping!\n'%(st.confidence,stop_confidence))
             stop = True
     except (KeyError, ParameterInstance.DoesNotExist) as e:
         pass

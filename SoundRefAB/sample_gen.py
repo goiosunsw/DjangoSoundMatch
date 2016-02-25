@@ -284,7 +284,8 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
     
     # depth ranges
     brightness_lims = np.array([0.05,0.7])
-    brightness_ranges = np.linspace(*brightness_lims, num=n_diff/2+1)
+    brightness_boundaries = np.linspace(*brightness_lims, num=n_diff/2+1)
+    brightness_ranges = np.array([brightness_boundaries[i:i+2].tolist() for i in xrange(len(brightness_boundaries)-1)])
     #brightness_ranges = np.array([[0.05,0.15],[0.15,0.35],[0.35,0.7]])
     loudness_ranges = brightness_ranges * brightness_to_loudness_mult
     
@@ -355,10 +356,18 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     if prev_param==[]:
         aa = dio.retrieve_temp_data_file(subj_no, suffix='AllVib')
         try:
+            # sys.stderr.write('Using pre-calculated parameters. Values stored for subject %d:\n'%subj_no)
+            # sys.stderr.write('{}\t'.format(aa))
             base_amp_depth = aa['ref_depth'][0]
             base_phase = aa['ref_phase'][0]
-            last_chosen_amp = aa['smpl_depth'][0]
+            #last_chosen_amp = aa['smpl_depth'][0]
+            last_chosen_amp = .5
             smpl_phase = aa['smpl_phase'][0]
+            # sys.stderr.write('Values used:\n')
+            # sys.stderr.write('ref_depth:\t %f\n'%base_amp_depth)
+            # sys.stderr.write('ref_phase:\t %f\n'%base_phase)
+            # sys.stderr.write('smpl_depth:\t %f\n'%last_chosen_amp)
+            # sys.stderr.write('smpl_phase:\t %f\n'%smpl_phase)
         except IndexError:
             sys.stderr.write('Could not read parameters. Generating random.\n')
             base_amp_depth = random.random()
@@ -422,6 +431,12 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     range_around = twice_bright/range_divider
     multipliers = np.array([1./range_around,1.,range_around])
     amplitudes = float(last_chosen_amp) * multipliers
+    
+    # check that amplitudes are within bounds
+    if ((np.min(amplitudes)<0.) or (np.max(amplitudes>1.))):
+        amin = max((0.,np.min(amplitudes)))
+        amax = min((1.,np.max(amplitudes)))
+        amplitudes = np.linspace(amin,amax,3)
 
     
     # randomize sample order

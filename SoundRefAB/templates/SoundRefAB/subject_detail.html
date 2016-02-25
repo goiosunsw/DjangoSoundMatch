@@ -54,14 +54,37 @@
              <div class="panel-heading"><h4>{{st.experiment.description}} ({{st.experiment.id}}) trial #{{st.trial}}</h4></div>
             <div class="panel-body">
                 <strong>Times: {{ st.shown_date|date:"H:i:s" }} - {{st.valid_date|date:"H:i:s"}}</strong><br/>
+                <table class="table-condensed" style="font-size:12px">
+                    
+                  <thead>
+                    <tr>
+                      <th style="width:30%">Par</th>
+                      <th>#</th>
+                      <th>Val</th>
+                    </tr>
+                  </thead>
+                
+                <tbody>
                     {% for p in st.parameterinstance_set.all %}
+                      <tr {% if p.position|divisibleby:2 %}class="info"{%endif%} height="10">
                         
-                        <span style="color:{% if p.position == 0 %}blue{% elif p.position == st.choice %}darkred{% endif %};{% if p.position|divisibleby:2 %}background-color:lightgrey;{%endif%}">   <strong>{{ p.name }} {{p.position}}</strong> : {{p.value|floatformat:3}}</span> <br />
-                        
+                           
+                            <td style="width:30%"><strong><span style="color:{% if p.position == 0 %}blue{% elif p.position == st.choice %}darkred{% endif %};">{{ p.name }}</span></strong></td> 
+                            <td><strong>{{p.position}}</strong></td>
+                            <td> {{p.value|floatformat:2}}</span> </td>
+                        </tr>
                     {% endfor %}
                     {% for p in st.stringparameterinstance_set.all %}
-                    <strong>{{ p.name }} {{p.position}}</strong>  : {{p.value}} <br />
+                    <tr {% if p.position|divisibleby:2 %}class="info"{%endif%}>
+                        <td style="width:30%"><strong>{{ p.name }}</strong></td> 
+                        <td><strong>{{p.position}}</strong></td>
+                        <td> {{p.value}}</span> </td>
+                        
+                    </tr>
                     {% endfor %}
+                        </tbody>
+                    </table>
+                    
                     <p><strong>Confidence:</strong> {{st.confidence}}</p>
                     <p><strong>Play sequence:</strong> {{st.playseq}}</p>
                     {% if st.comment_set.all %}
