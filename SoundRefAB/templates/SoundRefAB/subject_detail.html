@@ -1,35 +1,107 @@
-{% extends 'SoundRefAB/base.html' %}
+{% extends 'SoundRefAB/base_wide.html' %}
 
 {% block body_block %}
-<h1>Subject {{subject.pk}} </h1>
+<h1>Subject {{subject.pk}} in {{subject.scenario.description}}</h1>
+
+    <div class="row">
+      <div class="col-sm-4">
+          <div class="panel panel-default">
+            <div class="panel-body">
+                <p> <strong>Started:</strong> {{ subject.start_date|date:"r" }}</p>
+                <p><strong>Finished:</strong> {{ subject.finish_date|date:"r" }}</p>
+                <p><strong>Number of trials:</strong> {{ subject.total_trials }}</p>
+                <p><strong>Number of experiments:</strong> {{ subject.exp_id|add:"-1" }}</p>
+            </div>
+          </div>
+          
+      </div>
+      <div class="col-sm-4">
+          <div class="panel panel-default">
+            <div class="panel-body">
+                <p><strong>Age:</strong> {{ subject.age }}</p>
+                <p><strong>Experience in music:</strong> {{ subject.get_music_experience_display }}</p>
+                <p><strong>Hearing problems:</strong> {{ subject.get_hearing_prob_display }}</p>
+                <p><strong>Listening device:</strong> {{ subject.get_device_display }}</p>
+                <p style="margin-left: 40px"><strong>Model:</strong> {{ subject.loudspeaker_model }}</p>
+                <p><strong>Instrument played:</strong> {{ subject.instrument }}</p>
+                <p><strong>Student ID:</strong> {{ subject.student_ID }}</p>
+            </div>
+          </div>
+          
+      </div>
+      <div class="col-sm-4">
+          <div class="panel panel-default">
+            <div class="panel-body">
+                <p><strong>Final comment:</strong> {{ subject.final_comment }}</p>
+            </div>
+          </div>
+          
+      </div>
+    </div>
+
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-<ul>
-    <li>Date started: {{ subject.start_date|date:"r" }}</li>
-    <li>Date finished: {{ subject.finish_date|date:"r" }}</li>
-    <li>Number of trials: {{ subject.trials_done }}</li>
+    <div class="row">
     {% for st in subject.soundtriplet_set.all %}
-    <li> Times: {{ st.shown_date|date:"H:i:s" }} - {{st.valid_date|date:"H:i:s"}}
-        <ul>
-        {% for p in st.parameterinstance_set.all %}
-        <li>{{ p.name }} {{p.position}} : {{p.value|floatformat:3}} </li>
-        {% endfor %}
-        {% for p in st.stringparameterinstance_set.all %}
-        <li>{{ p.name }} {{p.position}} : {{p.value}} </li>
-        {% endfor %}
-        <li>Choice: {{st.choice}}</li>
-        <li>Confidence: {{st.confidence}}</li>
-        <li>Play sequence: {{st.playseq}}</li>
-        <li>Comment: 
-            <ul>
-                {% for c in st.comment_set.all %}
-                <li>{{c.text}}</li>
-                {% endfor %}
+    {% if st.trial == 1 %}
+        </div>
+        <div class="row">
+    {% endif %}
+    
+      <div class="col-sm-2">
+          
+          <div class="panel {% if st.choice == 0 %} panel-warning {% else %} panel-success {% endif %}">
+             <div class="panel-heading"><h4>{{st.experiment.description}} ({{st.experiment.id}}) trial #{{st.trial}}</h4></div>
+            <div class="panel-body">
+                <strong>Times: {{ st.shown_date|date:"H:i:s" }} - {{st.valid_date|date:"H:i:s"}}</strong><br/>
+                <table class="table-condensed" style="font-size:12px">
+                    
+                  <thead>
+                    <tr>
+                      <th style="width:30%">Par</th>
+                      <th>#</th>
+                      <th>Val</th>
+                    </tr>
+                  </thead>
                 
-            </ul>
-        </li>
-    </ul></li>
+                <tbody>
+                    {% for p in st.parameterinstance_set.all %}
+                      <tr {% if p.position|divisibleby:2 %}class="info"{%endif%} height="10">
+                        
+                           
+                            <td style="width:30%"><strong><span style="color:{% if p.position == 0 %}blue{% elif p.position == st.choice %}darkred{% endif %};">{{ p.name }}</span></strong></td> 
+                            <td><strong>{{p.position}}</strong></td>
+                            <td> {{p.value|floatformat:2}}</span> </td>
+                        </tr>
+                    {% endfor %}
+                    {% for p in st.stringparameterinstance_set.all %}
+                    <tr {% if p.position|divisibleby:2 %}class="info"{%endif%}>
+                        <td style="width:30%"><strong>{{ p.name }}</strong></td> 
+                        <td><strong>{{p.position}}</strong></td>
+                        <td> {{p.value}}</span> </td>
+                        
+                    </tr>
+                    {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <p><strong>Confidence:</strong> {{st.confidence}}</p>
+                    <p><strong>Play sequence:</strong> {{st.playseq}}</p>
+                    {% if st.comment_set.all %}
+                    <p><strong>Comment: </strong>
+                            {% for c in st.comment_set.all %}
+                            {{c.text}}<br/>
+                            {% endfor %}
+                
+                    <p>
+                    {% endif %}
+            </div>
+          </div>
+          
+      </div>
     {% endfor %}
+    </div>
+    
     <li>Calculated results:
         <ul>
     {% for er in subject.experimentresults_set.all %}

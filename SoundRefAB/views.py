@@ -136,6 +136,11 @@ def  NewSubjectView(request, pk=0):
     sub = scen.subject_set.create(trials_done=0, exp_id=0)
     subject_id = sub.id
     return HttpResponseRedirect(reverse('srefab:next', args = (subject_id,)))
+
+def  MainView(request, pk=0):
+    scen = Scenario.objects.filter(description__contains='UNSW').last()
+    return HttpResponseRedirect(reverse('srefab:new', args = (scen.id,)))
+
     
 class SubjectQuestionnaireUpdate(UpdateView):
     template_name='SoundRefAB/subject_form.html'
@@ -211,7 +216,7 @@ def NextExp(request, subject_id):
         this_subj.save()
          
         #return HttpResponseRedirect(reverse('srefab:list', args=(subject_id,)))
-        return HttpResponseRedirect(reverse('srefab:list'))
+        return HttpResponseRedirect(reverse('srefab:main'))
         
 
 def SoundPage(request, subject_id):
@@ -298,6 +303,7 @@ def SoundPage(request, subject_id):
         context = RequestContext(request, {
             'instruction_text': x.instruction_text,
             'sound_list': sound_data,
+            'progress': sub.get_progress(),
             'subject_id': subject_id,
             'trial_id': st.trial,
             'sample_id': st.pk,
@@ -327,7 +333,7 @@ def ProcessPage(request, trial_id):
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
-    sub.trials_done += 1
+    sub.one_more_trial()
     
     comment = request.POST.get('comment','')
     if len(comment)>0:
@@ -337,8 +343,9 @@ def ProcessPage(request, trial_id):
     x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
     
     try:
-        stop_confidence = st.parameterinstance_set.get(name='stop_conf', position=0)
-        if st.confidence <= stop_confidence:
+        stop_confidence = st.parameterinstance_set.get(name='stop_conf', position=0).value
+        if st.confidence < stop_confidence:
+            sys.stderr.write('This confidence %d smaller than %d. Stoping!\n'%(st.confidence,stop_confidence))
             stop = True
     except (KeyError, ParameterInstance.DoesNotExist) as e:
         pass
@@ -454,6 +461,7 @@ def SoundAdjustPage(request, subject_id):
         'instruction_text': x.instruction_text,
         'param_list': param_dict,
         #'ampl_list': ampl_list,
+        'progress': sub.get_progress(),
         'subject_id': subject_id,
         'trial_id': st.trial,
         'sample_id': st.pk,
@@ -483,7 +491,7 @@ def ProcessAdjustPage(request, trial_id):
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
-    sub.trials_done += 1
+    sub.one_more_trial()
 
     comment = request.POST.get('comment','')
     if len(comment)>0:
@@ -569,6 +577,7 @@ def SoundIntro(request, subject_id):
         'instruction_text': x.instruction_text,
         'param_list': param_dict,
         'trial_id': st.trial,
+        'progress': sub.get_progress(),
         'sample_id': st.pk,
         'subject_id': subject_id,
         'n_trials': x.number_of_trials,
@@ -594,7 +603,7 @@ def ProcessIntro(request, trial_id):
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
-    sub.trials_done += 1
+    sub.one_more_trial()
     
     answer = request.POST.get('answer','')
     comment = request.POST.get('comment','')

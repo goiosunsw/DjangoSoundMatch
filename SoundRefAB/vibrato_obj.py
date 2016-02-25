@@ -129,35 +129,47 @@ class SlopeHarmonicScaler(object):
 class VibratoProfile(object):
     '''A vibrato time-profile'''
     def __init__(self, t_vals=[0.0,1.0], a_vals=[1.0,1.0], vibfreq=5.0):
-        ti=np.array(t_vals)
-        ai=np.array(a_vals)
+        self.ti=np.array(t_vals)
+        self.ai=np.array(a_vals)
+        self.vibfreq = vibfreq
+        
         # max of vibrato profile is 1
-        ai = ai/np.max(ai)
+        self.ai = self.ai/np.max(self.ai)
+        self.recalc_profile()
+        
+        
+    def recalc_profile(self):
 
-        t_max = max(ti)
-        tout = np.arange(0,t_max,1./vibfreq/16.0)
-        aout = np.interp(tout,ti,ai)
+        t_max = max(self.ti)
+        tout = np.arange(0,t_max,1./self.vibfreq/16.0)
+        aout = np.interp(tout,self.ti,self.ai)
 
-        i_st = min(np.argmin(ai>0.0),1)-1
-        t_st = t_vals[i_st]
+        i_st = min(np.argmin(self.ai>0.0),1)-1
+        t_st = self.ti[i_st]
 
         self.t = tout
-        self.vibprof = aout*np.sin(2*np.pi*vibfreq*(tout-t_st))
+        self.vibprof = aout*np.sin(2*np.pi*self.vibfreq*(tout-t_st))
+        
     
     def __call__(self,t):
         return np.interp(t,self.t,self.vibprof)
         
     def getDuration(self):
         return max(self.t)
+        
+    def setVibratoFreq(self, vibfreq):
+        self.vibfreq=vibfreq
+        self.recalc_profile()
 
 class Vibrato(object):
     '''Generate a sound from vibrato profile'''
-    def __init__(self, harm0=[1.],  sr=44100, f0=500.):
+    def __init__(self, harm0=[1.],  sr=44100, f0=500., vibfreq=5.0):
         self.sr=sr
         self.f0=f0
         self.h0 = np.array(harm0)
         self.nharm = len(harm0)
         self.hs = SlopeHarmonicScaler(self.nharm)
+        self.vibfreq=vibfreq
         
         self.setProfile()
         self.setEnvelope()
@@ -165,7 +177,10 @@ class Vibrato(object):
 
 
     def setProfile(self, t_prof=[0.0,1.0], v_prof=[1.0,1.0]):
-        self.prof = VibratoProfile(t_prof,v_prof)
+        self.prof = VibratoProfile(t_prof,v_prof,vibfreq=self.vibfreq)
+
+    def setVibratoFreq(self, vibfreq=5.0):
+        self.prof.setVibFreq(vibfreq)
         
     def setEnvelope(self,t_att=0.0, t_rel=0.0):
         self.at_sam = int(round(t_att*self.sr));

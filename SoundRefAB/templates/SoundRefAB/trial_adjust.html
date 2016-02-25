@@ -1,4 +1,4 @@
-{% extends 'SoundRefAB/base.html' %}
+{% extends 'SoundRefAB/base_exp.html' %}
 
 
 {% load staticfiles %}
@@ -19,12 +19,19 @@
     <script type="text/javascript">
         regenSound = function(val, id) {
            var nharm = {{param_list.0.nharm}};
-           var ampl = {{param_list.0.ampl}};
-		   var slope = {{param_list.0.slope}};
+           if (id == 'audio0') {
+               var ampl = {{param_list.0.ampl}};
+               var slope = {{param_list.0.slope}};
+           }
+           else
+           {
+               var ampl = {{param_list.1.ampl}};
+               var slope = {{param_list.1.slope}};
+           }
            var dur = {{param_list.0.dur}};
            var freq = {{param_list.0.freq}};
            {{param_list.0.adj_par_name}} = val;
-		   var hseq = scvals[Math.round(slope*100)];
+           var hseq = scvals[Math.round(slope*100)];
            document.getElementById(id).src = GeneratePeriodic(hseq,ampl,dur,freq);
            return true;
        }
@@ -38,7 +45,6 @@
 {% endblock %}
 
 {% block body_block %}
-<h1>Sample {{ trial_id }} of {{ n_trials }}</h1>
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 <form action="{% url 'srefab:processadj' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">

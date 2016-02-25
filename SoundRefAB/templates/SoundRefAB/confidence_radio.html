@@ -17,7 +17,7 @@
             alertModal("Please rate!").showAlert();
             $('#confidence').closest('.panel').removeClass('panel-default').addClass('panel-warning');
         });
-        $('#confidence').on('click', function(){
+        $('#confidence').on('change', function(){
         
             $(this).closest('.panel').removeClass('panel-warning').addClass('panel-default');
             $(this).data('valid',true);

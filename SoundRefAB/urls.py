@@ -3,6 +3,7 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
+    url(r'^main/$', views.MainView, name='main'),
     url(r'^index/$', views.ScenarioListView.as_view(), name='list'),
     url(r'^(?P<subject_id>[0-9]+)/sound/$', views.SoundPage, name='soundpage'),
     url(r'^(?P<subject_id>[0-9]+)/soundadj/$', views.SoundAdjustPage, name='soundadjustpage'),

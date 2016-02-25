@@ -15,8 +15,9 @@ class Command(BaseCommand):
         sys.stdout = open(os.path.join(base_path,'slopeAmps.js'),'w')
         
         nharm=6
+        vlims=[0.0,0.9]
         
         sh = vo.SlopeHarmonicScaler(nharm=nharm)
-        sh.outputJSArray()
+        sh.outputJSArray(vlims=vlims)
             
                      
