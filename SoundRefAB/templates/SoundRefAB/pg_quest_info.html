@@ -11,6 +11,6 @@
 <p>The experiment is now over. Please answer to the following questions about yourself and your relation with music.</p>
 
 
-<input type="button" style="font-size:24;width:100px;height:50px" name="next_button" value="Next" onclick="location.href='{% url 'srefab:next' subject_id %}'">
+<input style="font-size:24;width:100px;height:50px" type="button" class="btn btn-success" name="next" value="Next" id="next" onclick="location.href='{% url 'srefab:next' subject_id %}'"/>
 
 {% endblock %}
