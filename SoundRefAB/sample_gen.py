@@ -659,7 +659,101 @@ def BrightnessAdjust_process(param_dict):
     result_dict = {'med_twice_brightness': med_twice_brightness}
     
     return result_dict
+
+def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
+                        ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):
+                 
+    # include an empty string so that store params knows what to store
+    ref_sd = {'name': 'Reference',
+                'file': '',
+                'choice': False}
+    adj_sd = {'name': 'Adjusted',
+                'file': '',
+                'choice': True}
+    sound_data=[ref_sd,adj_sd]
+    
+    subj_no = int(subject_id)
+    
+    #default slider position
+    default_val=0.0
+    
+    ref_slope=0.2
+    other_slope=0.4
+    
+    try:
+        nharm = prev_param[-1][0]['nharm']
+        ampl_list = dio.retrieve_temp_data_file(subj_no)
         
+    except (IOError, KeyError, IndexError) as e:
+        # first trial
+        sys.stderr.write('First trial in SameLoudnessAdjust\n')
+        ampl_list = np.logspace(-1.3,-0.1,ntrials).tolist()
+        random.shuffle(ampl_list)
+        dio.erase_temp_data_file(subj_no)
+        for pp in prev_param[-1]:
+            pp['ampl']=0.5
+            pp['nharm']=15
+            pp['slope']=ref_slope
+            pp['dur']=0.6
+            pp['freq']= 500
+            #pp['trial_no']=0
+        
+        
+        
+    
+    
+    param_data = []
+    new_param = prev_param[-1]
+    #print prev_param
+    
+    try:    
+        newampl = ampl_list.pop()
+    except IndexError:
+        # something went wrong wit sequence, maybe user has clicked reload
+        #temp_list = np.linspace(0,1,ntrials).tolist()
+        sys.stderr.write('Couldn''t get an amplitude value from original list\n')
+        temp_list = np.logspace(-1.3,-0.3,ntrials).tolist()
+        random.shuffle(temp_list)
+        newampl = temp_list.pop()
+    
+    for thispar in new_param:
+        thispar['ampl'] = newampl
+        thispar['adj_par_name'] = 'ampl'
+        thispar['val0'] = newampl
+    
+    new_param[1]['val0'] = default_val
+    new_param[1]['slope'] = other_slope
+    # for sd in sound_data:
+    #     param_data.append(new_param)
+    param_data = new_param
+    dio.store_temp_data_file(ampl_list, subj_no)
+    
+    return sound_data, param_data, difficulty_divider
+    
+def SameLoudnessAdjust_process(param_dict):
+    '''processes the results from the experiment 
+       to get an indication of the 2x brightness value
+    '''
+       
+    vals = []
+    
+    for pp in param_dict:
+        try:
+            vals.append(pp[1]['ampl']/pp[0]['ampl'])
+        except (KeyError, IndexError,ZeroDivisionError) as e:
+            pass
+    
+    if vals:
+        same_loudness_for_brighter = np.median(vals)
+    else:
+        same_loudness_for_brighter = 1.0
+    
+    result_dict = {'same_loudness_for_brighter' : same_loudness_for_brighter}
+    
+    return result_dict
+
+
+
 def LoudnessIntro(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):       
                         

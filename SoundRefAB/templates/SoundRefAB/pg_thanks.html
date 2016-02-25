@@ -5,8 +5,14 @@
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-<p> Thank you for helping in {{ exp_name }} </p>
-<p> You completed {{ trials_done }} trials </p>
 
+  <div class="jumbotron">
+    <h1>UNSW Tone study</h1>
+    <p>The study is now complete</p>
+    <p>Thank you for your participation</p>
+  </div>
+
+
+<input style="font-size:24;width:100px;height:50px" type="button" class="btn btn-success" name="next" value="Finish" id="next" onclick="location.href='{% url 'srefab:next' subject_id %}'"/>
 
 {% endblock %}

@@ -16,12 +16,18 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
+from django.views.generic.base import RedirectView
+from django.core.urlresolvers import reverse
+
+
 
 urlpatterns = [
+    #url(r'/', include('SoundRefAB.urls', namespace='srefab')),
     url(r'^subject/', include('SoundRefAB.urls', namespace='srefab')),
     #url(r'^scenario/', include('SoundRefAB.urls', namespace='srefab')),
     url(r'^experiment/', include('SoundRefAB.urls', namespace='srefab')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^$', RedirectView.as_view(url='experiment/main', permanent=False), name='index')
 ]
 
 if settings.DEBUG:

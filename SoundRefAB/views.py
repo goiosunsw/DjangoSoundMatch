@@ -136,6 +136,11 @@ def  NewSubjectView(request, pk=0):
     sub = scen.subject_set.create(trials_done=0, exp_id=0)
     subject_id = sub.id
     return HttpResponseRedirect(reverse('srefab:next', args = (subject_id,)))
+
+def  MainView(request, pk=0):
+    scen = Scenario.objects.filter(description__contains='UNSW').last()
+    return HttpResponseRedirect(reverse('srefab:new', args = (scen.id,)))
+
     
 class SubjectQuestionnaireUpdate(UpdateView):
     template_name='SoundRefAB/subject_form.html'
@@ -211,7 +216,7 @@ def NextExp(request, subject_id):
         this_subj.save()
          
         #return HttpResponseRedirect(reverse('srefab:list', args=(subject_id,)))
-        return HttpResponseRedirect(reverse('srefab:list'))
+        return HttpResponseRedirect(reverse('srefab:main'))
         
 
 def SoundPage(request, subject_id):
