@@ -1,0 +1,37 @@
+{% extends 'SoundRefAB/base.html' %}
+
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
+
+
+{% block body_block %}
+
+<script type="text/javascript">
+   function validateFormOnSubmit(theForm){
+       if (theForm.valid.value == "0") {
+           alert("Please rate before submitting!");
+           return false;
+       }
+
+       return true;
+   }
+   
+   
+</script>
+
+
+<h1>Match sound level by adjusting</h1>
+
+<p>In the next few trials we will ask you to adjust a second tone so that it sounds as loud as a reference one, even though they will always sound different.</p>
+
+<div style="height:10px;clear:both;"></div>
+<!--  
+<form action="{% url 'srefab:next' subject_id %}"  method="post" id="next_page">
+     <input type="button" style="font-size:24;width:100px;height:50px" type="submit" name="submit"  value="Next"/>
+</form>
+-->
+
+
+<input style="font-size:24;width:100px;height:50px" type="button" class="btn btn-success" name="next" value="Next" id="next" onclick="location.href='{% url 'srefab:next' subject_id %}'"/>
+
+{% endblock %}
