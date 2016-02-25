@@ -134,7 +134,9 @@ class VibratoProfile(object):
         self.vibfreq = vibfreq
         
         # max of vibrato profile is 1
-        self.ai = self.ai/np.max(self.ai)
+        amax = np.max(self.ai)
+        if amax>0.:
+            self.ai = self.ai/amax
         self.recalc_profile()
         
         
@@ -143,12 +145,16 @@ class VibratoProfile(object):
         t_max = max(self.ti)
         tout = np.arange(0,t_max,1./self.vibfreq/16.0)
         aout = np.interp(tout,self.ti,self.ai)
-
-        i_st = min(np.argmin(self.ai>0.0),1)-1
-        t_st = self.ti[i_st]
-
         self.t = tout
-        self.vibprof = aout*np.sin(2*np.pi*self.vibfreq*(tout-t_st))
+        
+        amax = np.max(self.ai)
+        if amax>0.:
+            i_st = min(np.argmin(self.ai>0.0),1)-1
+            t_st = self.ti[i_st]
+
+            self.vibprof = aout*np.sin(2*np.pi*self.vibfreq*(tout-t_st))
+        else:
+            self.vibprof = np.zeros_like(tout)
         
     
     def __call__(self,t):

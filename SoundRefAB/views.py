@@ -295,6 +295,7 @@ def SoundPage(request, subject_id):
         sub.save()
 
         # anti-caching
+        v_num = sub.total_trials
         for s in sound_data:
             s['file']+='?v=%06d'%st.trial
 

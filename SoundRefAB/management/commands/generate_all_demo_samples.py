@@ -1,29 +1,30 @@
 from django.core.management.base import BaseCommand
 from SoundRefAB import vibrato
+import SoundRefAB.vibrato_obj as vo
 from django.conf import settings
 import numpy as np
 
 import os
 import sys
 
-def ConstantTone(filename,ampl=0.05,sr=44100,nharm=6,vib_slope=0.0):
-    aseq0 = np.ones(nharm)
-    avardb =  10.**((np.arange(nharm)- (nharm-1)/2. )*vib_slope/20.)
-    avamp = aseq0 * avardb
-    vibdepth = np.zeros(nharm+1)*2
-    sig=vibrato.HarmonicVibrato(ampseq=avamp,
-                        hvib=vibdepth,f0vib=0.00,f0=500,
-                        vib_prof_t=[0.0,0.6],vib_prof_a=[0.0,0.0],vibfreq=6.0,a0=ampl,sr=sr)
-    vibrato.write_wav(filename,sig,sr)
+def ConstantTone(filename,ampl=0.05,sr=44100,nharm=6,vib_slope=0.0, dur=0.6):
+    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm)*ampl,vibfreq=6.0)
+    vib.setProfile(t_prof=[0.0,dur],v_prof=[0.0,0.0])
+    vib.setEnvelope(t_att=0.05,t_rel=0.02)
+    
+    blims = vib_slope
+    amplitude = 0.0
+    vib.calculateWav(brightness=[blims],amplitude=amplitude,frequency=0.0)
+    vib.saveWav(filename=filename)
 
 def LoudnessSamples(base_path='.'):
     '''Generate samples for loudness page'''
     sound_data=[{'filename': 'pg_loudness_adj_ref.wav',
-                 'ampl': 0.005,
-                 'slope': -2.},
+                 'ampl': 0.4,
+                 'slope': .2},
                 {'filename': 'pg_loudness_adj_refX2.wav',
-                 'ampl': 0.05,
-                 'slope': -2.}]
+                 'ampl': 1,
+                 'slope': .2}]
     for sd in sound_data:
         filename = os.path.join(base_path,sd['filename'])
         ConstantTone(filename=filename, 
@@ -35,11 +36,11 @@ def LoudnessSamples(base_path='.'):
 def BrightnessSamples(base_path='.'):
     '''Generate samples for brightness page'''
     sound_data=[{'filename': 'pg_brightness_adj_dark.wav',
-                 'ampl': 0.05,
-                 'slope': -8.},
+                 'ampl': 1,
+                 'slope': .1},
                 {'filename': 'pg_brightness_adj_bright.wav',
-                 'ampl': 0.05,
-                 'slope': -1.}]
+                 'ampl': 1,
+                 'slope': .5}]
     for sd in sound_data:
         filename = os.path.join(base_path,sd['filename'])
         ConstantTone(filename=filename, 
