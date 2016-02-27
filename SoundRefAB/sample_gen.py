@@ -8,6 +8,9 @@ from decimal import Decimal
 
 import data_file_io as dio 
 
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+
 def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         prev_param=[], path='.', url_path='/', prev_exp_dict=[]):
     '''A vibrato matching experiment where levels are fixed.
@@ -660,6 +663,85 @@ def BrightnessAdjust_process(param_dict):
     
     return result_dict
 
+def BrightnessAdjust_analyse(param_dict, path='.', url_path='/'):
+    '''processes the results from the experiment 
+       to get an indication of the 2x brightness value
+    '''
+       
+    vals = []
+    res=[]
+    ref=[]
+    graph=[]
+    
+    for pp in param_dict:
+        try:
+            vals.append(float(pp[1]['slope']/pp[0]['slope']))
+            ref.append(pp[0]['slope'])
+        except (KeyError, IndexError,ZeroDivisionError) as e:
+            pass
+    
+    figbase = 'Analysis_BrightnessAdjust.png'
+    figfile=os.path.join(path,figbase)
+    figurl = url_path+figbase
+    fig=Figure(figsize=(3,2))
+    ax=fig.add_subplot(111)
+    ax.plot(ref, vals, 'o')
+    #fig.savefig(figname)
+    canvas=FigureCanvas(fig)
+    canvas.print_png(figfile)
+    graph.append(figurl)
+    
+    
+    if vals:
+        twice_bright = Decimal(np.mean(vals))
+        twice_bright_std = Decimal(np.std(vals))
+        res.append({'name':'"Twice as bright" spectral cent. ratio','value':twice_bright})
+        res.append({'name':'"Twice as bright" ratio dev','value':twice_bright_std})
+    
+    return res, graph
+
+
+    
+def LoudnessAdjust_analyse(param_dict, path='.', url_path='/'):
+    '''processes the results from the experiment 
+       to get an indication of the 2x brightness value
+    '''
+       
+    vals = []
+    ref = []
+    res=[]
+    graph=[]
+    
+    for pp in param_dict:
+        try:
+            
+            vals.append(float(pp[1]['ampl']/pp[0]['ampl']))
+            ref.append(float(pp[0]['ampl']))
+        except (KeyError, IndexError,ZeroDivisionError) as e:
+            sys.stderr.write('Error %s\n'%e)
+            pass
+    
+    
+    figbase = 'Analysis_LoudnessAdjust.png'
+    figfile=os.path.join(path,figbase)
+    figurl = url_path+figbase
+    fig=Figure(figsize=(3,2))
+    ax=fig.add_subplot(111)
+    ax.plot(ref, vals, 'o')
+    #fig.savefig(figname)
+    canvas=FigureCanvas(fig)
+    canvas.print_png(figfile)
+    graph.append(figurl)
+    
+    if vals:
+        twice_loudness = Decimal(np.mean(vals))
+        twice_loudness_std = Decimal(np.std(vals))
+        res.append({'name':'"Twice as loud" loudness ratio','value':twice_loudness})
+        res.append({'name':'"Twice as loud" ratio deviation','value':twice_loudness_std})
+
+    return res, graph
+
+
 def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):
                  
@@ -752,8 +834,42 @@ def SameLoudnessAdjust_process(param_dict):
     
     return result_dict
 
+def SameLoudnessAdjust_analyse(param_dict, path='.', url_path='/'):
+    '''processes the results from the experiment 
+       to get an indication of the 2x brightness value
+    '''
+       
+    vals = []
+    res=[]
+    graph=[]
+    ref=[]
+    
+    for pp in param_dict:
+        try:
+            vals.append(float(pp[1]['ampl']/pp[0]['ampl']))
+            ref.append(pp[0]['ampl'])
+        except (KeyError, IndexError,ZeroDivisionError) as e:
+            pass
+    
+    figbase = 'Analysis_SameLoudnessAdjust.png'
+    figfile=os.path.join(path,figbase)
+    figurl = url_path+figbase
+    fig=Figure(figsize=(3,2))
+    ax=fig.add_subplot(111)
+    ax.plot(ref, vals, 'o')
+    #fig.savefig(figname)
+    canvas=FigureCanvas(fig)
+    canvas.print_png(figfile)
+    graph.append(figurl)
+    
+    if vals:
+        same_loudness_for_brighter = Decimal(np.mean(vals))
+        same_loudness_for_brighter_std = Decimal(np.std(vals))
+        res.append({'name':'Brighter to darker loudness ratio','value':same_loudness_for_brighter})
+        res.append({'name':'Brighter to darker ratio dev','value':same_loudness_for_brighter_std})
 
-
+    return res, graph
+    
 def LoudnessIntro(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):       
                         

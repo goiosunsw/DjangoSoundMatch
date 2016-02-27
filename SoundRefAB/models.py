@@ -13,7 +13,11 @@ from django.core.urlresolvers import reverse
 
 import os
 import string
+
 MODEL_ROOT = os.path.dirname(os.path.realpath(__file__))
+
+# module with sample generating functions
+import sample_gen
 
 
 
@@ -71,6 +75,16 @@ class Experiment(models.Model):
             stnum +=1
             allpar.append(trialpar)
         return allpar
+        
+    def analyse_results_for_subj(self, subj_pk):
+        try:
+            analyse_function_name = self.function + '_analyse'
+            f = getattr(sample_gen, analyse_function_name)
+            all_data = self.get_all_trial_data(subj_pk)
+            return f(all_data, path=settings.MEDIA_ROOT, url_path=settings.MEDIA_URL)
+        except AttributeError:
+            return None
+            
     
     def __str__(self):
         return self.description
@@ -129,6 +143,23 @@ class Scenario(models.Model):
         
     def total_number_of_experiments(self):
         return self.iteminscenario_set.count()
+        
+    def experiments_with_analysis(self):
+        xcont = ContentType.objects.get_for_model(Experiment)
+        expitems = ItemInScenario.objects.filter(content_type = xcont, scenario_id=self.id)
+        expobjs = [ii.content_object for ii in expitems]
+        exp_with_analysis = []
+        for x in expobjs:
+            try:
+                analyse_function_name = x.function + '_analyse'
+                f = getattr(sample_gen, analyse_function_name)
+                exp_with_analysis.append(x)
+            except AttributeError:
+                pass
+        
+        return exp_with_analysis
+            
+        
     
 # class ExperimentInScenario(models.Model):
 #     experiment = models.ForeignKey(Experiment)
@@ -225,7 +256,32 @@ class Subject(models.Model):
         progress = float(completed_exp)/total_exp
         progress += 1./total_exp * self.trials_done / trials_in_current_exp
         return int(progress*100)
+        
+    def get_total_experiment_duration(self):
+        s = self.scenario
+        subj_id=self.id
+        xcont = ContentType.objects.get_for_model(Experiment)
+        stobjs = SoundTriplet.objects.filter(subject_id=subj_id)
+        exp_start_time = stobjs.order_by('shown_date').first().shown_date
+        exp_end_time =  stobjs.order_by('valid_date').last().valid_date
+        return exp_end_time - exp_start_time
 
+    def get_total_experiment_duration_formated(self):
+        seconds = self.get_total_experiment_duration().seconds
+        hours, remainder = divmod(seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return '%s:%s:%s' % (hours, minutes, seconds)
+        
+    def analyse_results(self):
+        
+        exps = self.scenario.experiments_with_analysis()
+        analysis_results = []
+        for x in exps:
+            res, graphs = x.analyse_results_for_subj(self.id)
+            this_result = {'title':str(x), 'res':res, 'graphs': graphs}
+            analysis_results.append(this_result)
+        return analysis_results
+        
 class SoundTriplet(models.Model):
     '''Data corresponding to a single sample presented to the user'''
     #var_params = models.ForeignModel(ParameterInstance)

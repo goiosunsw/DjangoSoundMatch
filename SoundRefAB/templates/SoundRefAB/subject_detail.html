@@ -40,6 +40,27 @@
     </div>
 
 
+    <div class="row">
+    {% for ar in subject.analyse_results %}
+      <div class="col-sm-6">
+          
+          <div class="panel  panel-success">
+             <div class="panel-heading"><h4>{{ar.title}}</h4></div>
+             <div class="panel-body">
+				{% for res  in ar.res %}
+                <p><strong>{{res.name}}: </strong>{{res.value|floatformat:3}}</p>
+				{% endfor %}
+				{% for graph  in ar.graphs %}
+                <img src = '{{graph}}' />
+				{% endfor %}
+            </div>
+          </div>
+          
+      </div>
+    {% endfor %}
+    </div>
+
+
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
     <div class="row">
     {% for st in subject.soundtriplet_set.all %}
