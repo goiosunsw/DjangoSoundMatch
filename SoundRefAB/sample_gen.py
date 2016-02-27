@@ -676,10 +676,17 @@ def BrightnessAdjust_analyse(param_dict, path='.', url_path='/'):
     
     nharm = 6
     
+    nharm = 6
+
     for pp in param_dict:
         try:
+<<<<<<< HEAD
             sc1 = pp[1]['slope'] * (nharm-1) + 1
             sc0 = pp[0]['slope'] * (nharm-1) + 1
+=======
+            sc1 = pp[1]['slope'] * (nharm-1) + 1 
+            sc0 = pp[0]['slope'] * (nharm-1) + 1 
+>>>>>>> 280011fdc17c6dd5eccbb4049a5e660c8792095e
             vals.append(float(sc1/sc0))
             ref.append(pp[0]['slope'])
             conf.append(pp[0]['confidence'])
