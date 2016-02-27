@@ -761,7 +761,7 @@ def BrightnessAdjust_analyse_overall(param_dict_all, path='.', url_path='/'):
         ref = [ref[ii] for ii in idx]
         vals = [vals[ii] for ii in idx]
         ax.plot(ref, vals, '-', alpha=.3)
-        ax.scatter(ref,vals,s=conf*30, alpha=.3)
+        ax.scatter(ref,vals,s=[cc*30 for cc in conf], alpha=.3)
 
     #fig.savefig(figname)
     ax.set_xlabel('Reference "brightness" (lin. spect. cent.)')
@@ -867,7 +867,7 @@ def LoudnessAdjust_analyse_overall(param_dict_all, path='.', url_path='/'):
         ref = [ref[ii] for ii in idx]
         vals = [vals[ii] for ii in idx]
         ax.plot(ref, vals, '-', alpha=.3)
-        ax.scatter(ref,vals,s=conf*30, alpha=.3)
+        ax.scatter(ref,vals,s=[cc*30 for cc in conf], alpha=.3)
 
     ax.set_xlabel('Reference amplitude (lin. spect. cent.)')
     ax.set_ylabel('Amplitude ratio')
@@ -1061,7 +1061,7 @@ def SameLoudnessAdjust_analyse_overall(param_dict_all, path='.', url_path='/'):
         ref = [ref[ii] for ii in idx]
         vals = [vals[ii] for ii in idx]
         ax.plot(ref, vals, '-', alpha=.3)
-        ax.scatter(ref,vals,s=conf*30, alpha=.3)
+        ax.scatter(ref,vals,s=[cc*30 for cc in conf], alpha=.3)
 
     ax.set_xlabel('Reference amplitude (lin.)')
     ax.set_ylabel('Ratio of brighter to darker ampl.')
