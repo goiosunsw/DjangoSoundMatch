@@ -673,9 +673,13 @@ def BrightnessAdjust_analyse(param_dict, path='.', url_path='/'):
     ref=[]
     graph=[]
     
+    nharm = 6
+
     for pp in param_dict:
         try:
-            vals.append(float(pp[1]['slope']/pp[0]['slope']))
+            sc1 = pp[1]['slope'] * (nharm-1) + 1 
+            sc0 = pp[0]['slope'] * (nharm-1) + 1 
+            vals.append(float(sc1/sc0))
             ref.append(pp[0]['slope'])
         except (KeyError, IndexError,ZeroDivisionError) as e:
             pass
