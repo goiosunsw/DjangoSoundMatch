@@ -1,0 +1,28 @@
+{% extends 'SoundRefAB/base_wide.html' %}
+
+{% block body_block %}
+<h1>Scenario nbr {{scenario.pk}} "{{scenario.description}}"</h1>
+
+
+    <div class="row">
+    {% for ar in scenario.analyse_results %}
+      <div class="col-sm-8">
+          
+          <div class="panel  panel-success">
+             <div class="panel-heading"><h4>{{ar.title}}</h4></div>
+             <div class="panel-body">
+				{% for res  in ar.res %}
+                <p><strong>{{res.name}}: </strong>{{res.value|floatformat:3}}</p>
+				{% endfor %}
+				{% for graph  in ar.graphs %}
+                <img src = '{{graph}}' />
+				{% endfor %}
+            </div>
+          </div>
+          
+      </div>
+    {% endfor %}
+    </div>
+
+
+{% endblock %}
