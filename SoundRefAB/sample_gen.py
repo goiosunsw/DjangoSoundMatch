@@ -674,9 +674,13 @@ def BrightnessAdjust_analyse(param_dict, path='.', url_path='/'):
     graph=[]
     conf=[]
     
+    nharm = 6
+    
     for pp in param_dict:
         try:
-            vals.append(float(pp[1]['slope']/pp[0]['slope']))
+            sc1 = pp[1]['slope'] * (nharm-1) + 1
+            sc0 = pp[0]['slope'] * (nharm-1) + 1
+            vals.append(float(sc1/sc0))
             ref.append(pp[0]['slope'])
             conf.append(pp[0]['confidence'])
         except (KeyError, IndexError,ZeroDivisionError) as e:
@@ -720,29 +724,38 @@ def LoudnessAdjust_analyse(param_dict, path='.', url_path='/'):
     ref = []
     res=[]
     graph=[]
+    conf=[]
     
     for pp in param_dict:
         try:
             
             vals.append(float(pp[1]['ampl']/pp[0]['ampl']))
             ref.append(float(pp[0]['ampl']))
+            conf.append(pp[0]['confidence'])
+            
         except (KeyError, IndexError,ZeroDivisionError) as e:
             sys.stderr.write('Error %s\n'%e)
             pass
     
+    ref = np.array(ref)
+    vals = np.array(vals)
+    conf = np.array(conf)
     
     figbase = 'Analysis_LoudnessAdjust.png'
     figfile=os.path.join(path,figbase)
     figurl = url_path+figbase
     fig=Figure(figsize=(3,2))
     ax=fig.add_subplot(111)
+    idx = np.argsort(ref)
+    ax.plot(ref[idx], vals[idx], '-')
+    ax.scatter(ref,vals,s=conf*30)
     ax.plot(ref, vals, 'o')
     #fig.savefig(figname)
     canvas=FigureCanvas(fig)
     canvas.print_png(figfile)
     graph.append(figurl)
     
-    if vals:
+    if len(vals)>0:
         twice_loudness = Decimal(np.mean(vals))
         twice_loudness_std = Decimal(np.std(vals))
         res.append({'name':'"Twice as loud" loudness ratio','value':twice_loudness})
