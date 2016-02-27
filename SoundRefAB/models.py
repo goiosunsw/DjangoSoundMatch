@@ -71,6 +71,7 @@ class Experiment(models.Model):
                 for par in st.stringparameterinstance_set.filter(position = sam):
                     stpar[par.name] = par.value
                     parnum += 1
+                stpar['confidence'] = st.confidence
                 trialpar.append(stpar)
             stnum +=1
             allpar.append(trialpar)
