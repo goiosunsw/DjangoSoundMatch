@@ -258,13 +258,16 @@ class Subject(models.Model):
         return int(progress*100)
         
     def get_total_experiment_duration(self):
-        s = self.scenario
-        subj_id=self.id
-        xcont = ContentType.objects.get_for_model(Experiment)
-        stobjs = SoundTriplet.objects.filter(subject_id=subj_id)
-        exp_start_time = stobjs.order_by('shown_date').first().shown_date
-        exp_end_time =  stobjs.order_by('valid_date').last().valid_date
-        return exp_end_time - exp_start_time
+        try:
+            s = self.scenario
+            subj_id=self.id
+            xcont = ContentType.objects.get_for_model(Experiment)
+            stobjs = SoundTriplet.objects.filter(subject_id=subj_id)
+            exp_start_time = stobjs.order_by('shown_date').first().shown_date
+            exp_end_time =  stobjs.order_by('valid_date').last().valid_date
+            return exp_end_time - exp_start_time
+        except AttributeError:
+            return datetime.timedelta(0)
 
     def get_total_experiment_duration_formated(self):
         seconds = self.get_total_experiment_duration().seconds
