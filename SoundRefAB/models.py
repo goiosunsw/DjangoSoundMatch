@@ -86,6 +86,18 @@ class Experiment(models.Model):
         except AttributeError:
             return None
             
+    def analyse_overall_results(self, subj_pk_list):
+        try:
+            all_data=[]
+            for subj_pk in subj_pk_list:
+                analyse_function_name = self.function + '_analyse_overall'
+                f = getattr(sample_gen, analyse_function_name)
+                subj_data = self.get_all_trial_data(subj_pk)
+                all_data.append(subj_data)
+            return f(all_data, path=settings.MEDIA_ROOT, url_path=settings.MEDIA_URL)
+        except AttributeError:
+            return None
+            
     
     def __str__(self):
         return self.description
@@ -159,7 +171,35 @@ class Scenario(models.Model):
                 pass
         
         return exp_with_analysis
+
+    def experiments_with_overall_analysis(self):
+        xcont = ContentType.objects.get_for_model(Experiment)
+        expitems = ItemInScenario.objects.filter(content_type = xcont, scenario_id=self.id)
+        expobjs = [ii.content_object for ii in expitems]
+        exp_with_analysis = []
+        for x in expobjs:
+            try:
+                analyse_function_name = x.function + '_analyse_overall'
+                f = getattr(sample_gen, analyse_function_name)
+                exp_with_analysis.append(x)
+            except AttributeError:
+                pass
+        
+        return exp_with_analysis
             
+    def analyse_results(self):
+        nexp=self.total_number_of_experiments()
+        subjects = Subject.objects.filter(exp_id__gt=nexp-1)
+        subj_id_list = subjects.values_list('pk',flat=True)
+        
+        exps = self.experiments_with_overall_analysis()
+        analysis_results = []
+        for x in exps:
+            res, graphs = x.analyse_overall_results(subj_id_list)
+            this_result = {'title':str(x), 'res':res, 'graphs': graphs}
+            analysis_results.append(this_result)
+        return analysis_results
+    
         
     
 # class ExperimentInScenario(models.Model):

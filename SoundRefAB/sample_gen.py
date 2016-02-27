@@ -715,6 +715,59 @@ def BrightnessAdjust_analyse(param_dict, path='.', url_path='/'):
     
     return res, graph
 
+def BrightnessAdjust_analyse_overall(param_dict_all, path='.', url_path='/'):
+    '''processes the results from the experiment 
+       to get an indication of the 2x brightness value
+    '''
+    
+    graph=[]
+    res = []
+    
+    all_vals=[]
+    all_ref=[]
+    all_conf=[]
+    
+    nharm=6
+    for param_dict in param_dict_all:
+        vals = []
+        ref = []
+        res=[]
+        conf=[]
+    
+        for pp in param_dict:
+            try:
+            
+                sc1 = pp[1]['slope'] * (nharm-1) + 1
+                sc0 = pp[0]['slope'] * (nharm-1) + 1
+                vals.append(float(sc1/sc0))
+                ref.append(pp[0]['slope'])
+                conf.append(pp[0]['confidence'])
+            
+            except (KeyError, IndexError,ZeroDivisionError) as e:
+                sys.stderr.write('Error %s\n'%e)
+                pass
+        all_vals.append(vals)
+        all_ref.append(ref)
+        all_conf.append(conf)
+    
+    figbase = 'Analysis_BrightnessAdjust.png'
+    figfile=os.path.join(path,figbase)
+    figurl = url_path+figbase
+    fig=Figure(figsize=(6,4))
+    ax=fig.add_subplot(111)
+    for ref, vals, conf in zip(all_ref, all_vals, all_conf):
+        idx=sorted(xrange(len(ref)),key=ref.__getitem__)
+        ref = [ref[ii] for ii in idx]
+        vals = [vals[ii] for ii in idx]
+        ax.plot(ref, vals, '-', alpha=.3)
+        ax.scatter(ref,vals,s=conf*30, alpha=.3)
+
+    #fig.savefig(figname)
+    canvas=FigureCanvas(fig)
+    canvas.print_png(figfile)
+    graph.append(figurl)
+    
+    return res, graph
 
     
 def LoudnessAdjust_analyse(param_dict, path='.', url_path='/'):
@@ -764,6 +817,57 @@ def LoudnessAdjust_analyse(param_dict, path='.', url_path='/'):
         res.append({'name':'"Twice as loud" ratio deviation','value':twice_loudness_std})
 
     res.append({'name':'Average confidence', 'value':np.mean([pp[0]['confidence'] for pp in param_dict])})
+    return res, graph
+
+def LoudnessAdjust_analyse_overall(param_dict_all, path='.', url_path='/'):
+    '''processes the results from the experiment 
+       to get an indication of the 2x brightness value
+    '''
+    
+    graph=[]
+    res = []
+    
+    all_vals=[]
+    all_ref=[]
+    all_conf=[]
+    
+    for param_dict in param_dict_all:
+        vals = []
+        ref = []
+        res=[]
+        conf=[]
+    
+        for pp in param_dict:
+            try:
+            
+                vals.append(float(pp[1]['ampl']/pp[0]['ampl']))
+                ref.append(float(pp[0]['ampl']))
+                conf.append(pp[0]['confidence'])
+            
+            except (KeyError, IndexError,ZeroDivisionError) as e:
+                sys.stderr.write('Error %s\n'%e)
+                pass
+        all_vals.append(vals)
+        all_ref.append(ref)
+        all_conf.append(conf)
+    
+    figbase = 'Analysis_LoudnessAdjust.png'
+    figfile=os.path.join(path,figbase)
+    figurl = url_path+figbase
+    fig=Figure(figsize=(6,4))
+    ax=fig.add_subplot(111)
+    for ref, vals, conf in zip(all_ref, all_vals, all_conf):
+        idx=sorted(xrange(len(ref)),key=ref.__getitem__)
+        ref = [ref[ii] for ii in idx]
+        vals = [vals[ii] for ii in idx]
+        ax.plot(ref, vals, '-', alpha=.3)
+        ax.scatter(ref,vals,s=conf*30, alpha=.3)
+
+    #fig.savefig(figname)
+    canvas=FigureCanvas(fig)
+    canvas.print_png(figfile)
+    graph.append(figurl)
+    
     return res, graph
 
 
@@ -903,6 +1007,58 @@ def SameLoudnessAdjust_analyse(param_dict, path='.', url_path='/'):
 
     res.append({'name':'Average confidence', 'value':np.mean([pp[0]['confidence'] for pp in param_dict])})
     return res, graph
+
+def SameLoudnessAdjust_analyse_overall(param_dict_all, path='.', url_path='/'):
+    '''processes the results from the experiment 
+       to get an indication of the 2x brightness value
+    '''
+    
+    graph=[]
+    res = []
+    
+    all_vals=[]
+    all_ref=[]
+    all_conf=[]
+    
+    for param_dict in param_dict_all:
+        vals = []
+        ref = []
+        res=[]
+        conf=[]
+    
+        for pp in param_dict:
+            try:
+            
+                vals.append(float(pp[1]['ampl']/pp[0]['ampl']))
+                ref.append(float(pp[0]['ampl']))
+                conf.append(pp[0]['confidence'])
+            
+            except (KeyError, IndexError,ZeroDivisionError) as e:
+                sys.stderr.write('Error %s\n'%e)
+                pass
+        all_vals.append(vals)
+        all_ref.append(ref)
+        all_conf.append(conf)
+    
+    figbase = 'Analysis_SameLoudnessAdjust.png'
+    figfile=os.path.join(path,figbase)
+    figurl = url_path+figbase
+    fig=Figure(figsize=(6,4))
+    ax=fig.add_subplot(111)
+    for ref, vals, conf in zip(all_ref, all_vals, all_conf):
+        idx=sorted(xrange(len(ref)),key=ref.__getitem__)
+        ref = [ref[ii] for ii in idx]
+        vals = [vals[ii] for ii in idx]
+        ax.plot(ref, vals, '-', alpha=.3)
+        ax.scatter(ref,vals,s=conf*30, alpha=.3)
+
+    #fig.savefig(figname)
+    canvas=FigureCanvas(fig)
+    canvas.print_png(figfile)
+    graph.append(figurl)
+    
+    return res, graph
+
     
 def LoudnessIntro(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):       

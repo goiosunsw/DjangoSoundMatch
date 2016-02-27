@@ -647,6 +647,11 @@ class SubjectDetail(DetailView):
     template_name='SoundRefAB/subject_detail.html'
     model = Subject
     #fields = ['pk','parameterlist']
+    
+class ScenarioResults(DetailView):
+    template_name='SoundRefAB/scenario_results.html'
+    model = Scenario
+    #fields = ['pk','parameterlist']
 
 
 def ThanksPage(request, subject_id):

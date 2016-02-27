@@ -18,4 +18,5 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/subjectdata/$', views.SubjectQuestionnaireUpdate.as_view(), name='subjectupdate'),
     url(r'^subjects/$', views.SubjectList.as_view(), name='subjectlist'),
     url(r'^subject_detail/(?P<pk>[0-9]+)$', views.SubjectDetail.as_view(), name='subjectdetail'),
+    url(r'^scenario_results/(?P<pk>[0-9]+)$', views.ScenarioResults.as_view(), name='scenarioresults'),
 ]
