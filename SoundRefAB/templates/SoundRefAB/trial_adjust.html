@@ -38,7 +38,7 @@
        
        sliderChange = function(val) {
            regenSound(val,'audio1');
-           timestamp('A%2f.'%val);
+           timestamp('A'+val);
            playAndDoStuff($('#audio1')[0]);
        }
     </script>
