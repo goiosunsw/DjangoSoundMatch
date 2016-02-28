@@ -1105,7 +1105,7 @@ def BrightnessIntro_process(param_dict):
     pass
 
 def DescribeVibrato(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
-                        ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):       
+                        ntrials = 1, const_par=[],prev_param=[],  prev_exp_dict=[], path='.', url_path='/'):       
                         
     param_data = [{'html_template': 'trial_vibrato_comment.html'}]
     sound_data = [{}]

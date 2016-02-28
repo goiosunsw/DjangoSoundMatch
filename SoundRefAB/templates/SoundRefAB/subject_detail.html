@@ -110,10 +110,11 @@
                     <p><strong>Play sequence:</strong> {{st.playseq}}</p>
                     {% if st.comment_set.all %}
                     <p><strong>Comment: </strong>
+                        <ol>
                             {% for c in st.comment_set.all %}
-                            {{c.text}}<br/>
+                            <li>{{c.text}}</li>
                             {% endfor %}
-                
+                        </ol>
                     <p>
                     {% endif %}
             </div>

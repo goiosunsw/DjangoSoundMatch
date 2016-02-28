@@ -46,6 +46,7 @@ class Experiment(models.Model):
             ('soundpage','Reference presented with N sounds, single choice'),
             ('soundadjustpage','Reference presented with single adjustable sound'),
             ('intropage', 'Intro page collecting confidence and comment'),
+            ('multicommentpage', 'Page collecting text answers as comments'),
             ), default='soundpage'
     )
     #fixed_params = models.ForeignKey(FixedParameter) 
@@ -390,5 +391,5 @@ class Comment(models.Model):
     trial = models.ForeignKey(SoundTriplet)
     
     def __str__(self):
-        return self.name+' in sample %d of trial %d '%(self.position,self.trial.pk)+' of exp. '+self.trial.experiment.description
+        return 'Comment in trial %d '%(self.trial.pk)+' of exp. '+self.trial.experiment.description
    

@@ -704,6 +704,7 @@ def ProcessComment(request, trial_id):
     
     comment_labels = [lab for lab in request.POST.keys() if 'comment' in lab]
     for lab in comment_labels:
+        sys.stderr.write('Found comment %s'%lab)
         c = request.POST.get(lab,'')
         if len(c)>0:
             st.comment_set.create(text=c, subject = sub)

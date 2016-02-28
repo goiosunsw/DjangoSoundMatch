@@ -4,35 +4,81 @@
 <link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
 
 {% block head_block %}
-<script type="text/javascript">
-   function validateFormOnSubmit(theForm){
-       if (theForm.choice.value == "") {
-           alert("Please pick a sound!");
-           return false;
-       }
-       if (getConfidenceVal() == "") {
-           alert("Please rate before submitting!");
-           return false;
-       }
-       var x = document.getElementsByClassName("played");
-       var i;
-       for (i = 0; i < x.length; i++) {
-           if (! x[i].value) {
-               alert("Please listen to all sounds before submitting!");
-               return false;
-           };
-       }
 
-       return true;
-   }
-   
-   function timestamp(label) {
-       var showndate = document.getElementById("showndate").value;
-       var datedelay = Math.floor(((new Date().valueOf())-showndate)/1000);
-       document.getElementById("playseq").value += (label+":"+datedelay+";");
-       
-       
-   }
+<script type="text/javascript">
+var alertModal;
+alertModal = alertModal || (function (alertTxt) { 
+    var alertDiv = 
+        $('<div id="myModal" class="modal" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title">Warning</h4></div><div class="modal-body"><p>'+alertTxt+'</p></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
+    return {
+        showAlert: function() {
+            alertDiv.modal('show');
+        },
+        hideAlert: function () {
+            alertDiv.modal('hide');
+        },
+        
+    };
+});
+
+validatePage = function() {
+    var reqItems;
+    var valid = true;
+    reqItems = $('*').filter(function() {
+        return $(this).data('valid') !== undefined;
+    });
+    for (var i=0; i<reqItems.length; i++){
+        if (!$(reqItems[i]).data('valid')){
+            
+            return false;
+        }
+    }
+    // validation actions
+    window.onbeforeunload = undefined;
+    $('#submit').removeClass('disabled');
+    return true;    
+}
+
+validateFormOnSubmit = function() {
+    var reqItems;
+    reqItems = $('*').filter(function() {
+        return $(this).data('valid') !== undefined;
+    });
+    for (var i=0; i<reqItems.length; i++){
+        if (!$(reqItems[i]).data('valid')){
+            if ($(reqItems[i]).data('invalidAlert') !== undefined){
+                $(reqItems[i]).data('invalidAlert')();
+            }
+            else {
+                alertModal('Please check that all required questions have been answered and you listened to all sounds').showAlert();
+            }
+            return false;
+        }
+    }
+    return true;
+    
+}
+
+$(document).ready(function() {
+    $(document).data('showndate',(new Date()).valueOf());
+    //window.onbeforeunload = function() { return "Your work will be lost."; };
+    var comment_boxes = $('[name*=comment]')
+/*    comment_boxes.data('valid',false);
+    comment_boxes.data('invalidAlert',function() {
+        alertModal("Please answer the question!").showAlert();
+        $(this).closest('.panel').removeClass('panel-default').addClass('panel-warning');
+    });
+    comment_boxes.on('input', function(){
+    
+        $(this).closest('.panel').removeClass('panel-warning').addClass('panel-default');
+        $(this).data('valid',true);
+        validatePage();
+    })
+    */
+    
+});
+
+  
    
 </script>
 {% endblock %}
@@ -41,9 +87,9 @@
 
 
 
-<h1>Describe vibrato</h1>
+<h1>Study impressions</h1>
 
-<form action="{% url 'srefab:process' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
+<form action="{% url 'srefab:processcomment' sample_id %}" onsubmit="return validateFormOnSubmit(this)" method="post" id="trialForm">
     {% csrf_token %}
     <input type="hidden" id="valid" value="0">
     <input type="radio" name="confidence" value="0" hidden="1" checked/>
@@ -54,14 +100,31 @@
         document.getElementById("showndate").value = showndate.valueOf();
     </script>
     
-    <p>Please explain in a few words what you understood by "fluctuations" in the tones</p>
-    <textarea rows="4" cols="50" name="comment"></textarea>
-        <div style="height:20px"></div>
-    <p>What do you think this study was about?</p>
-    <textarea rows="4" cols="50" name="comment1"></textarea>
+    <div class="row">
+      <div class="col-sm-8">
+          <div class="panel panel-default">
+            <div class="panel-heading">Please leave any comments about the nature of the fluctuations in the tones that you heard:</div>
+            <div class="panel-body">
+                <textarea rows="4" cols="50" name="comment"></textarea>
+            </div>
+          </div>
+          
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+          <div class="panel panel-default">
+            <div class="panel-heading">What do you think was the aim of this study?</div>
+            <div class="panel-body">
+                <textarea rows="4" cols="50" name="comment"></textarea>
+            </div>
+          </div>
+          
+      </div>
+    </div>
+    
 
         <div style="height:20px"></div>
-        <input style="font-size:24;width:100px;height:50px" type="submit" name="submit" value="Submit" />
-
+        <input style="font-size:24;width:100px;height:50px" type="submit" class="btn btn-success" name="submit" value="Next" id="submit" />
     </form>
 {% endblock %}
