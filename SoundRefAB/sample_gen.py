@@ -599,7 +599,7 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         slope_list = dio.retrieve_temp_data_file(subj_no)
     except (IOError, KeyError, IndexError) as e: 
         sys.stderr.write('First trial in BrightnessAdjust\n')
-        slope_list = np.linspace(0,.7,ntrials).tolist()
+        slope_list = np.linspace(0,.4,ntrials).tolist()
         random.shuffle(slope_list)
         dio.erase_temp_data_file(subj_no)
         for pp in prev_param[-1]:

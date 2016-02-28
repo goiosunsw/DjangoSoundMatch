@@ -56,7 +56,7 @@
         document.getElementById("showndate").value = showndate.valueOf();
     </script>
     <input type="hidden" id="ampl_list" value="{{ampl_list}}">
-    <h2>{{ instruction_text }}</h2>
+    <h2>{{ instruction_text|safe }}</h2>
     <div class="row">
       <div class="col-sm-6">
           <div class="panel panel-default">
