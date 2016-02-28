@@ -336,9 +336,11 @@ def ProcessPage(request, trial_id):
     sub = st.subject
     sub.one_more_trial()
     
-    comment = request.POST.get('comment','')
-    if len(comment)>0:
-        st.comment_set.create(text=comment, subject = sub)
+    comment_labels = [lab for lab in request.POST.keys() if 'comment' in lab]
+    for lab in comment_labels:
+        c = request.POST.get(lab,'')
+        if len(c)>0:
+            st.comment_set.create(text=c, subject = sub)
     # get experiment for subject
     ord_no = sub.exp_id 
     x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
@@ -618,6 +620,95 @@ def ProcessIntro(request, trial_id):
     
     if len(comment)>0:
         st.comment_set.create(text=comment, subject = sub)
+    # get experiment for subject
+    ord_no = sub.exp_id 
+    x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
+    sub.save()
+
+    if sub.trials_done >= x.number_of_trials:
+        function_name = x.function
+        try:
+            f = getattr(sample_gen, function_name+'_process')
+            result_dict = f(x.get_all_trial_data(subject_pk=sub.pk))
+            store_experiment_results(result_dict, x, sub)
+        except AttributeError:
+            sys.stderr.write('No processing done\n')
+        
+        return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
+        #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
+    else:
+        return HttpResponseRedirect(reverse('srefab:intropage', args=(sub.pk,)))
+    
+def CommentPage(request, subject_id):
+    # get subject
+    sub = get_object_or_404(Subject, pk=subject_id)
+    now = timezone.now()
+
+    try:
+        # get experiment for subject
+        this_subj = Subject.objects.get(pk=subject_id)
+        ord_no = this_subj.exp_id 
+        x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
+        ntrials = x.number_of_trials
+
+        # create sound_triplet to store in db
+        st = SoundTriplet.objects.create(shown_date=now, valid_date=now, subject=sub, experiment_id = x.id)
+        st.trial = sub.trials_done + 1
+        st.save()
+        
+    except (KeyError):
+        raise Http404("Error in subject or experiment data")
+    
+
+    function_name = x.function
+    try:
+        f = getattr(sample_gen, function_name)
+    except AttributeError:
+        raise Http404("Error in sample generating function name: "+function_name+'\n')
+
+    sound_data, param_dict, difficulty_divider = f(subject_id, ntrials = ntrials, prev_param= [],
+                               prev_choice=prev_choice, confidence_history=confidence_history,
+                               difficulty_divider = float(sub.difficulty_divider),
+                               path = settings.MEDIA_ROOT, url_path = settings.MEDIA_URL)
+
+    sub.save()
+    context = RequestContext(request, {
+        'instruction_text': x.instruction_text,
+        'param_list': param_dict,
+        'trial_id': st.trial,
+        'progress': sub.get_progress(),
+        'subject_id': subject_id,
+        'n_trials': x.number_of_trials,
+        }
+    )
+    
+    template_name = param_dict[0]['html_template']
+
+    template = loader.get_template('SoundRefAB/'+template_name)
+    return HttpResponse(template.render(context))
+    
+def ProcessComment(request, trial_id):
+    st = get_object_or_404(SoundTriplet, pk=trial_id)
+            
+    # mandatory parameters
+    st.choice = 0
+    conf = request.POST.get('confidence','')
+    try:
+        st.confidence = int(conf)
+    except ValueError:
+        st.confidence = 0
+    st.valid_date = timezone.now()
+    st.save()
+    sub = st.subject
+    sub.one_more_trial()
+    
+    comment_labels = [lab for lab in request.POST.keys() if 'comment' in lab]
+    for lab in comment_labels:
+        c = request.POST.get(lab,'')
+        if len(c)>0:
+            st.comment_set.create(text=c, subject = sub)
+    
+    
     # get experiment for subject
     ord_no = sub.exp_id 
     x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
