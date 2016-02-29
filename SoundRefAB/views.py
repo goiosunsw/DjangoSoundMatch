@@ -119,6 +119,14 @@ def get_experiment_results(subj):
     
     return erd
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
 # Create your views here.
 class ExperimentListView(ListView):
     template_name='SoundRefAB/index.html'
@@ -133,8 +141,10 @@ class ScenarioListView(ListView):
 
 def  NewSubjectView(request, pk=0):
     scen = Scenario.objects.get(pk=pk)
-    sub = scen.subject_set.create(trials_done=0, exp_id=0)
+    ip = get_client_ip(request)
+    sub = scen.subject_set.create(trials_done=0, exp_id=0, ip=ip)
     subject_id = sub.id
+    
     return HttpResponseRedirect(reverse('srefab:next', args = (subject_id,)))
 
 def  MainView(request, pk=0):
