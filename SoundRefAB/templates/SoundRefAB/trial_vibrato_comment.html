@@ -99,7 +99,8 @@ $(document).ready(function() {
         var showndate = new Date();
         document.getElementById("showndate").value = showndate.valueOf();
     </script>
-    
+
+{% comment %}    
     <div class="row">
       <div class="col-sm-8">
           <div class="panel panel-default">
@@ -110,13 +111,25 @@ $(document).ready(function() {
           </div>
           
       </div>
-    </div>
+    </div> 
+{% endcomment %}
     <div class="row">
       <div class="col-sm-8">
           <div class="panel panel-default">
             <div class="panel-heading">What do you think was the aim of this study?</div>
             <div class="panel-body">
                 <textarea rows="4" cols="50" name="comment1"></textarea>
+            </div>
+          </div>
+          
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+          <div class="panel panel-default">
+            <div class="panel-heading">In you own words how would you define 'regular fluctuations' as it was used in this study:</div>
+            <div class="panel-body">
+                <textarea rows="4" cols="50" name="comment2"></textarea>
             </div>
           </div>
           

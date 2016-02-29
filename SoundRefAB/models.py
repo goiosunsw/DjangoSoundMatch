@@ -73,18 +73,37 @@ class Experiment(models.Model):
                     stpar[par.name] = par.value
                     parnum += 1
                 stpar['confidence'] = st.confidence
+                stpar['trial_id'] = st.id
+                stpar['trial_seq_no'] = st.trial
+                stpar['tag'] = ''
+                if sam==0:
+                    stpar['tag']='ref'
+                if st.choice == sam:
+                    stpar['tag']='choice'
                 trialpar.append(stpar)
             stnum +=1
             allpar.append(trialpar)
         return allpar
-        
+
+    
+    def get_data_from_all_scenario_exps_same_kind(self, subj_pk):
+        s = Subjects.objects.get(pk = subj_pk).scenario
+        x_content_type = ContentType.objects.get_for_model(self)
+        same_exp = sub.scenario.iteminscenario_set.filter(content_type__pk=x_content_type.id,object_id=self.id)
+        all_data = []
+        for exp in same_exp:
+            this_data = exp.get_all_trial_data(subj_pk)
+            if len(this_data)>0:
+                this_data[0]['run_no']=exp.iteminscenario.ord_no
+            all_data.append(this_data)
+
     def analyse_results_for_subj(self, subj_pk):
         try:
             analyse_function_name = self.function + '_analyse'
             f = getattr(sample_gen, analyse_function_name)
             all_data = self.get_all_trial_data(subj_pk)
             return f(all_data, path=settings.MEDIA_ROOT, url_path=settings.MEDIA_URL)
-        except AttributeError:
+        except (AttributeError, IndexError):
             return None
             
     def analyse_overall_results(self, subj_pk_list):
@@ -390,6 +409,7 @@ class Comment(models.Model):
     text = models.TextField(default='')
     subject = models.ForeignKey(Subject)
     trial = models.ForeignKey(SoundTriplet)
+    label = models.CharField(max_length=100, default = 'comment')
     
     def __str__(self):
         return 'Comment in trial %d '%(self.trial.pk)+' of exp. '+self.trial.experiment.description

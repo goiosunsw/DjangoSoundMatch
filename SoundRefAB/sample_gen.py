@@ -487,6 +487,8 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     
     return sound_data, param_data, difficulty_divider
 
+def SlopeVibratoRefABC_analyse(param_dict, path='.', url_path='/'):
+    pass
     
 def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):

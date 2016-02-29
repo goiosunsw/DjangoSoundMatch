@@ -717,7 +717,7 @@ def ProcessComment(request, trial_id):
         sys.stderr.write('Found comment %s'%lab)
         c = request.POST.get(lab,'')
         if len(c)>0:
-            st.comment_set.create(text=c, subject = sub)
+            st.comment_set.create(text=c, subject = sub, label = lab)
     
     
     # get experiment for subject
