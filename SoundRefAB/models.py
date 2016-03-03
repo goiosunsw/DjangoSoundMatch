@@ -220,7 +220,14 @@ class Scenario(models.Model):
             analysis_results.append(this_result)
         return analysis_results
     
+    def unique_experiments(self):
+        xcont = ContentType.objects.get_for_model(Experiment)
         
+        expitems = self.iteminscenario_set.filter(content_type=xcont)
+        exp_ids = expitems.values_list('object_id',flat=True).distinct() 
+        unique_experiments = Experiment.objects.filter(id__in=exp_ids)
+        return unique_experiments
+
     
 # class ExperimentInScenario(models.Model):
 #     experiment = models.ForeignKey(Experiment)

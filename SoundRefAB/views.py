@@ -756,6 +756,82 @@ class ScenarioResults(DetailView):
     #fields = ['pk','parameterlist']
 
 
+def CommentList(request, scenario_id):
+    # get scenario
+    sub = get_object_or_404(Scenario, pk=scenario_id)
+    now = timezone.now()
+
+    try:
+        # get experiment list
+        exp_list = s.unique_experiments() 
+    except (KeyError):
+        raise Http404("Error in subject or experiment data")
+    
+
+
+    context = RequestContext(request, {
+        'instruction_text': x.instruction_text,
+        'param_list': param_dict,
+        'trial_id': st.trial,
+        'progress': sub.get_progress(),
+        'sample_id': st.pk,
+        'subject_id': subject_id,
+        'n_trials': x.number_of_trials,
+        'difficulty': sub.difficulty_divider
+        }
+    )
+    
+    template_name = 'comment_list.html' 
+
+    template = loader.get_template('SoundRefAB/'+template_name)
+    return HttpResponse(template.render(context))
+    
+def ProcessIntro(request, trial_id):
+    st = get_object_or_404(SoundTriplet, pk=trial_id)
+            
+    # mandatory parameters
+    st.choice = 0
+    conf = request.POST.get('confidence','')
+    try:
+        st.confidence = int(conf)
+    except ValueError:
+        st.confidence = 0
+    st.valid_date = timezone.now()
+    st.save()
+    sub = st.subject
+    sub.one_more_trial()
+    
+    answer = request.POST.get('answer','')
+    comment = request.POST.get('comment','')
+    
+    answerpar =  st.stringparameterinstance_set.create(subject=st.subject)
+    answerpar.name = 'answer'
+    #parinst.description = par['description']
+    answerpar.value = answer
+    answerpar.position = 0
+    answerpar.save()
+    
+    if len(comment)>0:
+        st.comment_set.create(text=comment, subject = sub)
+    # get experiment for subject
+    ord_no = sub.exp_id 
+    x = sub.scenario.iteminscenario_set.get(order=ord_no).content_object
+    sub.save()
+
+    if sub.trials_done >= x.number_of_trials:
+        function_name = x.function
+        try:
+            f = getattr(sample_gen, function_name+'_process')
+            result_dict = f(x.get_all_trial_data(subject_pk=sub.pk))
+            store_experiment_results(result_dict, x, sub)
+        except AttributeError:
+            sys.stderr.write('No processing done\n')
+        
+        return HttpResponseRedirect(reverse('srefab:next', args=(st.subject.pk,)))
+        #return HttpResponseRedirect(reverse('srefab:soundpage', args=(sub.pk,)))
+    else:
+        return HttpResponseRedirect(reverse('srefab:intropage', args=(sub.pk,)))
+ 
 def ThanksPage(request, subject_id):
     now = timezone.now()
 
