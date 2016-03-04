@@ -802,7 +802,7 @@ def CommentList(request, pk):
                     these_answers.append({'text': comment.text,
                                           'subj_id': comment.subject_id,
                                           })
-                final_comments.append(these_answers)
+                    final_comments.append('question': question, 'comments': these_answers)
         except Experiment.DoesNotExist:
             pass
         
