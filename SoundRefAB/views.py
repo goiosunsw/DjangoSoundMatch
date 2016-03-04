@@ -16,7 +16,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from random import shuffle
 from decimal import Decimal
-from datetime import timedelta
+from datetime import timedelta, datetime
 from numbers import Number
 import os
 import numpy as np
@@ -778,34 +778,49 @@ def CommentList(request, pk):
                                         'experiment_title': x.description})
         
         final_comments = []
-        new_question_date = datetime.datetime(day=01,month=03,year=2016,hour=14,minute=30)
+        new_question_date = datetime(day=01,month=03,year=2016,hour=14,minute=30)
         comment_labels = ('comment','comment1','comment2','comment2')
         after_change_date = (-1, -1, 0, 1)
         questions = ('Please leave any comments about the nature of the fluctuations in the tones that you heard',
                 'What do you think was the aim of this study?',
                 'In you own words how would you define "regular fluctuations" as used in this study',
                 'In you own words how would you define "fluctuations" as used in this study (feel free to answer in one or two words)')
-        x=Experiment.objects.get(description__contains='impressions',scenario_id=self.pk)
-        for label,acd,question in zip(comment_labels,after_change_date,questions):
-            print question
-            print '-------------------------'
-            if acd==1:
-                qs=Comment.objects.filter(label=label,trial__experiment=x,trial__shown_date__gt=new_question_date)
-            if acd==0:
-                qs=Comment.objects.filter(label=label,trial__experiment=x,trial__shown_date__lt=new_question_date)
-            if acd==-1:
-                qs=Comment.objects.filter(label=label,trial__experiment=x)
-            for comment in qs:
-                print '* '+str(comment.trial.subject_id)+': '+comment.text
-            print '.'
-            print '.'
+        
+        try:
+            x=Experiment.objects.get(description__contains='impressions')
+            
+            for label,acd,question in zip(comment_labels,after_change_date,questions):
+                this_question = {'question': question}
+                these_answers = []
+                if acd==1:
+                    qs=Comment.objects.filter(label=label,trial__experiment=x,trial__shown_date__gt=new_question_date)
+                if acd==0:
+                    qs=Comment.objects.filter(label=label,trial__experiment=x,trial__shown_date__lt=new_question_date)
+                if acd==-1:
+                    qs=Comment.objects.filter(label=label,trial__experiment=x)
+                for comment in qs:
+                    these_answers.append({'text': comment.text,
+                                          'subj_id': comment.subject_id,
+                                          })
+                final_comments.append(these_answers)
+        except Experiment.DoesNotExist:
+            pass
+        
+        finals = []
+        for sub in Subject.objects.all():
+            if sub.final_comment:
+                finals.append({'text': sub.final_comment,
+                               'subj_id': sub.id})
+            
+        final_comments.append({'question': 'Final comments',
+                               'comments': finals})
 
- 
+
 
 
         context = RequestContext(request, {
             'experiment_comments': experiment_comments,
-            'final_comments': [],
+            'final_comments': final_comments,
             'scenario': s,
             }
         )

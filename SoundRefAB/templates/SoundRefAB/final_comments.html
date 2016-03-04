@@ -7,7 +7,7 @@
     {% for x in final_comments %}
       <div class="col-sm-8">
           <div class="panel  panel-success">
-              <div class="panel-heading"><h4>x.question</h4></div>
+              <div class="panel-heading"><h4>{{x.question}}</h4></div>
               <div class="panel-body">
                   <ul>
 				    {% for comment  in x.comments %}
