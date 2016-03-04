@@ -1,7 +1,7 @@
 {% extends 'SoundRefAB/base_wide.html' %}
 
 {% block body_block %}
-<h1>Scenario nbr {{scenario.pk}} "{{scenario.description}}"</h1>
+<h1>Comments in scenario nbr {{scenario.pk}} "{{scenario.description}}"</h1>
 
      <div class="row">
     {% for x in final_comments %}
@@ -11,7 +11,7 @@
               <div class="panel-body">
                   <ul>
 				    {% for comment  in x.comments %}
-                    <li><strong>Subject {{comment.subj_id}}: </strong>{{comment.text}}</li>
+                    <li><strong><a href="{% url 'srefab:subjectdetail' comment.subj_id %}">Subject {{comment.subj_id}}:</a> </strong>{{comment.text}}</li>
                     {% endfor %}
                  </ul>
             </div>
@@ -24,11 +24,11 @@
     {% for x in experiment_comments %}
       <div class="col-sm-8">
           <div class="panel  panel-success">
-              <div class="panel-heading"><h4>Experiment {{x.experiment_title}}</h4></div>
+              <div class="panel-heading"><h4>Experiment "{{x.experiment_title}}"</h4></div>
               <div class="panel-body">
                   <ul>
 				    {% for comment  in x.comments %}
-                    <li><strong>Subject {{comment.subj_id}} trial {{comment.trial}}: </strong>{{comment.text}}</li>
+                    <li><strong><a href="{% url 'srefab:subjectdetail' comment.subj_id %}">Subject {{comment.subj_id}}</a> trial {{comment.trial}}: </strong>{{comment.text}}</li>
                     {% endfor %}
                  </ul>
             </div>

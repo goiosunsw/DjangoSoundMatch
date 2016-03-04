@@ -24,7 +24,7 @@ import tempfile
 import sys
 
 
-from .models import Subject,Experiment, Scenario, SoundTriplet, Page, ItemInScenario, ParameterInstance
+from .models import Subject,Experiment, Scenario, SoundTriplet, Page, ItemInScenario, ParameterInstance, Comment
 
 import random
 
@@ -756,14 +756,62 @@ class ScenarioResults(DetailView):
     #fields = ['pk','parameterlist']
 
 
-def CommentList(request, scenario_id):
+def CommentList(request, pk):
     # get scenario
-    sub = get_object_or_404(Scenario, pk=scenario_id)
+    s = get_object_or_404(Scenario, pk=pk)
     now = timezone.now()
 
     try:
         # get experiment list
-        exp_list = s.unique_experiments() 
+        exp_list = s.unique_experiments()
+        
+        
+        experiment_comments = []
+        for x in exp_list:
+            these_comments=[]
+            comments = Comment.objects.filter(trial__experiment=x)
+            for c in comments:
+                these_comments.append({'subj_id': c.subject_id,
+                                       'trial': c.trial.trial,
+                                       'text': c.text})
+            experiment_comments.append({'comments': these_comments,
+                                        'experiment_title': x.description})
+        
+        final_comments = []
+        new_question_date = datetime.datetime(day=01,month=03,year=2016,hour=14,minute=30)
+        comment_labels = ('comment','comment1','comment2','comment2')
+        after_change_date = (-1, -1, 0, 1)
+        questions = ('Please leave any comments about the nature of the fluctuations in the tones that you heard',
+                'What do you think was the aim of this study?',
+                'In you own words how would you define "regular fluctuations" as used in this study',
+                'In you own words how would you define "fluctuations" as used in this study (feel free to answer in one or two words)')
+        x=Experiment.objects.get(description__contains='impressions',scenario_id=self.pk)
+        for label,acd,question in zip(comment_labels,after_change_date,questions):
+            print question
+            print '-------------------------'
+            if acd==1:
+                qs=Comment.objects.filter(label=label,trial__experiment=x,trial__shown_date__gt=new_question_date)
+            if acd==0:
+                qs=Comment.objects.filter(label=label,trial__experiment=x,trial__shown_date__lt=new_question_date)
+            if acd==-1:
+                qs=Comment.objects.filter(label=label,trial__experiment=x)
+            for comment in qs:
+                print '* '+str(comment.trial.subject_id)+': '+comment.text
+            print '.'
+            print '.'
+
+ 
+
+
+        context = RequestContext(request, {
+            'experiment_comments': experiment_comments,
+            'final_comments': [],
+            'scenario': s,
+            }
+        )
+        
+        template = loader.get_template('SoundRefAB/final_comments.html')
+        return HttpResponse(template.render(context))
     except (KeyError):
         raise Http404("Error in subject or experiment data")
     

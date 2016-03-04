@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^subjects/$', views.SubjectList.as_view(), name='subjectlist'),
     url(r'^subject_detail/(?P<pk>[0-9]+)$', views.SubjectDetail.as_view(), name='subjectdetail'),
     url(r'^scenario_results/(?P<pk>[0-9]+)$', views.ScenarioResults.as_view(), name='scenarioresults'),
+    url(r'^final_comments/(?P<pk>[0-9]+)$', views.CommentList, name='finalcomments'),
 ]
