@@ -364,6 +364,7 @@ class SoundTriplet(models.Model):
     playseq = models.SlugField(default='')
     # number of trial for the subject and experiment
     trial = models.IntegerField(default=0)
+    run = models.IntegerField(default=0)
     experiment = models.ForeignKey(Experiment)
     # chosen instance
     choice = models.IntegerField(default=0)
