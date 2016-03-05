@@ -13,6 +13,7 @@ from django.core.urlresolvers import reverse
 
 import os
 import string
+import numpy as np
 
 MODEL_ROOT = os.path.dirname(os.path.realpath(__file__))
 
@@ -377,7 +378,20 @@ class SoundTriplet(models.Model):
             return True
         else:
             return False
-
+    def get_parameter(self, name, pos):
+        try:
+            pari = self.parameterinstance_set.get(position=pos, name=name)
+            return float(pari.value)
+        except ParameterInstance.DoesNotExist:
+            return np.nan
+    
+    def get_chosen_par(self,name):
+        try:
+            pari = self.parameterinstance_set.get(position=self.choice, name=name)
+            return float(pari.value)
+        except ParameterInstance.DoesNotExist:
+            return np.nan
+        
 
 class ParameterInstance(models.Model):
     '''Holds the actual value of a parameter
