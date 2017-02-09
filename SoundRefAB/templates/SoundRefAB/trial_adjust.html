@@ -58,21 +58,25 @@
     <input type="hidden" id="ampl_list" value="{{ampl_list}}">
     <h2>{{ instruction_text|safe }}</h2>
     <div class="row">
-      <div class="col-sm-6">
-          <div class="panel panel-default">
+      <div class="col-sm-12">
+          <div class="panel panel-default panel-horizontal">
             <div class="panel-heading"><h3>Tone 1:</h3></div>
             <div class="panel-body">
                 <audio id="audio0">
                     Your browser does not support the audio element.
                 </audio>
                 <input type="button" class="btn btn-default"  value="Play"/>
-          
+            
             </div>
+            <div style="clear:both; border:none;"></div>
           </div>
           
+
       </div>
-      <div class="col-sm-6">
-          <div class="panel panel-default">
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
+          <div class="panel panel-horizontal panel-default">
             <div class="panel-heading"><h3>Tone 2:</h3></div>
             <div class="panel-body">
                 <div style="float:left">
@@ -82,12 +86,13 @@
                     <input type="button" class="btn btn-default"  value="Play"/>
                 </div>
                 <div style="float:left;padding-top:12px;padding-left:15px">
-                    <input id="adjval" name="adjval" type="range" style="width:180px"
+                    <input id="adjval" name="adjval" type="range" style="width:400px"
                     min="0" max="1" step=".01" value="{{param_list.1.val0}}"
                     onchange="sliderChange(this.value);"/>
                 </div>
                 <div style="clear:both"></div>
             </div>
+            <div style="clear:both; border:none;"></div>
           </div>
           
       </div>

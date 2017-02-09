@@ -16,3 +16,48 @@
     /* inline-block space fix */
     margin-right:-4px;
 }
+
+/* horizontal panels */
+.panel-horizontal {
+    vertical-align: middle;
+}
+
+.panel-horizontal .panel-heading {
+	margin-bottom: 0;
+    margin-right: 0;
+	border-bottom: 0;
+	border-right: 1px solid transparent;
+	border-top-right-radius: 0;
+	width: 120px;
+    float: left;
+}
+
+.panel-horizontal .panel-body {
+	padding-bottom: 0;
+	margin: 0 0 15px 15px;
+    float:left;
+    vertical-align: middle;
+}
+
+.panel-horizontal .vcenter {
+    
+} 
+/*
+.panel-horizontal .panel-heading {
+       width: 150px;
+       border-top-left-radius: 3px;
+       border-top-right-radius: 0px;
+       border-bottom-left-radius: 3px;
+       margin-bottom: 0;
+       margin-right: 0;
+       position: relative;
+       clear: none;
+}
+
+.panel-horizontal .panel-body {
+       float: right;
+       margin: 0 0 0 180px;
+       position: relative;
+       clear: none;
+ }
+*/
