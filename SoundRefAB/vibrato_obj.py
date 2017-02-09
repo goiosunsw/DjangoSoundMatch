@@ -2,6 +2,9 @@ import numpy as np
 import sys
 from scipy.interpolate import interp1d
 
+
+
+
 def Centroid(hamp):
     '''Calculate the centroid of a harmonic sequence'''
     allamp = 0.0
@@ -22,7 +25,23 @@ def RMSampl(hamp):
     
     return np.sqrt(ampsq)
 
-def SlopeToHmult(slope, nharm):
+def dBAampl(hamp,f0):
+    '''Calculate the dBA level of a harmonic sequence'''
+    ampsq = 0.0
+    fseq = f0*(np.arange(len(hamp))+1)
+    fs2 = fseq**2
+    a2 = 12200.**2
+    b2 = 20.6**2
+    c2 = 107.7**2
+    d2 = 737.9**2
+    
+    corr = 1.259*(a2 * fseq**4) / ((fs2 + b2 ) * np.sqrt((fs2+c2)*(fs2+d2)) * (fs2+a2))
+    hacorr = hamp*corr
+    hasq = np.array(hacorr)**2
+    
+    return np.sqrt(sum(hasq))
+
+def SlopeToHmult(slope, nharm, mode='RMS', f0=1000.):
     '''Calculate a harmonic sequence for a constant dB slope'''
     
     base = np.exp(slope)
@@ -32,8 +51,11 @@ def SlopeToHmult(slope, nharm):
         hamp.append(base**(hn-(nharm-1)/2.0))
         #hamp.append(np.sqrt(((hn/float(nharm-1)-.5 )*2.*(-slope)+1.)/nharm)) 
     ha = np.array(hamp)
-    return ha /np.sqrt(sum(ha*ha))
-
+    if mode=='RMS':     
+        return ha /np.sqrt(sum(ha*ha))
+    if mode=='dBA':     
+        return ha /dBAampl(ha,f0)
+    
 
 class SlopeHarmonicScaler(object):
     '''Object for quick calculation of a harmonic for 
@@ -42,7 +64,7 @@ class SlopeHarmonicScaler(object):
     * for val=1, centroid is on last harmonic
     * Centroid variation is produced by a change in spectral slope
     * Spectrum is a linear slope in dB'''
-    def __init__(self, nharm=2, npoints=100, slopelim=4):
+    def __init__(self, nharm=2, npoints=100, slopelim=4, f0=1000., mode='RMS'):
         self.nharm = nharm
         
         slopes = np.linspace(-slopelim,slopelim,npoints)
@@ -52,13 +74,17 @@ class SlopeHarmonicScaler(object):
         
         
         for (ii,slope) in enumerate(slopes):
-            hamp = SlopeToHmult(slope,nharm)
+            hamp = SlopeToHmult(slope,nharm,f0=f0,mode=mode)
             cent[ii+1]=(Centroid(hamp))
             hamps[ii+1,...] = hamp
         
         hamps[0,0]=1.
         hamps[-1,-1]=1.
         
+        if mode=='dBA':
+            hamps[0,:] = hamps[0,:]/dBAampl(hamps[0,:],f0)
+            hamps[-1,:] = hamps[-1,:]/dBAampl(hamps[-1,:],f0)
+                
         cent[0] = 1.
         cent[-1] = nharm
         
@@ -169,12 +195,12 @@ class VibratoProfile(object):
 
 class Vibrato(object):
     '''Generate a sound from vibrato profile'''
-    def __init__(self, harm0=[1.],  sr=44100, f0=500., vibfreq=5.0):
+    def __init__(self, harm0=[1.],  sr=44100, f0=500., vibfreq=5.0,norm_mode='RMS'):
         self.sr=sr
         self.f0=f0
         self.h0 = np.array(harm0)
         self.nharm = len(harm0)
-        self.hs = SlopeHarmonicScaler(self.nharm)
+        self.hs = SlopeHarmonicScaler(self.nharm, f0=self.f0, mode=norm_mode)
         self.vibfreq=vibfreq
         
         self.setProfile()

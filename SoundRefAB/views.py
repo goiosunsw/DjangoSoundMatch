@@ -243,6 +243,8 @@ def SoundPage(request, subject_id):
         
         #number of runs: how many times does this experiment appear in scenario
         x_content_type = ContentType.objects.get_for_model(x)
+        # number of runs of the experiment is the number
+        # of times the same experiment appears in the scenario
         n_runs = sub.scenario.iteminscenario_set.filter(content_type__pk=x_content_type.id,object_id=x.id).count()
         qq=sub.scenario.iteminscenario_set.filter(content_type__pk=x_content_type.id,object_id=x.id).order_by('order')
         all_order_nos = qq.values_list('order',flat=True)
@@ -250,14 +252,6 @@ def SoundPage(request, subject_id):
 
         function_name = x.function
         
-        # initialise data for series of runs
-        try:
-            if ord_no == first_order_no:
-                init_function_name = function_name + '_init'
-                f = getattr(sample_gen, init_function_name)
-                f(subject_id, n_runs=n_runs)
-        except AttributeError:
-            pass
         
         # retrieve data from previous experiment
         try:
@@ -275,6 +269,15 @@ def SoundPage(request, subject_id):
             prev_choice=0
             prev_confidence=0
             confidence_history = []
+            # initialise data for series of runs
+            try:
+                if ord_no == first_order_no:
+                    init_function_name = function_name + '_init'
+                    f = getattr(sample_gen, init_function_name)
+                    f(subject_id, n_runs=n_runs)
+            except AttributeError:
+                pass
+
         
         # if 'trial_no' not in prev_param[-1][0].keys():
         #     prev_param[-1][0]['trial_no'] = sub.trials_done
@@ -313,6 +316,7 @@ def SoundPage(request, subject_id):
         #parameter_list = zip(parameter_names,parameter_vals)
         context = RequestContext(request, {
             'instruction_text': x.instruction_text,
+            'param_list': param_dict,
             'sound_list': sound_data,
             'progress': sub.get_progress(),
             'subject_id': subject_id,

@@ -13,7 +13,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Create the scenario
-        ss = Scenario(description= 'Multiple vibrato matching test',
+        ss = Scenario(description= 'Multiple vibrato matching test '+ str(datetime.datetime.now()),
                       created_date = datetime.datetime.now())
         ss.save()
         
@@ -24,10 +24,10 @@ class Command(BaseCommand):
                      'instruction_text': 'Which sample sounds closer to the reference?',
                      'design': 'soundpage',
                      'function': 'SlopeVibratoRefABC',
-                      'number_of_trials': 5},
+                      'number_of_trials': 2},
                     {'model': 'Repeat',
                      'description': 'Vibrato matching experiment for testing',
-                     'number': 5})
+                     'number': 1})
                      
         count = 0
         for itd in itemdata:
@@ -59,12 +59,23 @@ class Command(BaseCommand):
                     
                     sys.stderr.write('Repeated model %s not found!\n'%thisdesc)
             else:
+                thisdesc = itd['description']
                 itcopy = itd.copy()
                 del itcopy['model']
                 # check if description already exists
                 try:
                     thismodel.objects.get(description=itcopy['description'])
                     itcopy['description'] += '%d'%ss.id
+                    itd['description'] += '%d'%ss.id
+                    sys.stderr.write('model name updated to %s\n'%itd['description'])
+
+                    # update names in repeat models
+                    for itd2 in itemdata:
+                        if (itd2['model'] == 'Repeat' and itd2['description'] == thisdesc):
+                            itd2['description'] = itcopy['description']
+                            sys.stderr.write('repeat model updated to %s\n'%itd['description'])
+
+ 
                 except thismodel.DoesNotExist:
                     pass
                 finally:

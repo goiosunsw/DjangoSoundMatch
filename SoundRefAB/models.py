@@ -76,6 +76,7 @@ class Experiment(models.Model):
                 stpar['confidence'] = st.confidence
                 stpar['trial_id'] = st.id
                 stpar['trial_seq_no'] = st.trial
+                stpar['run_seq_no'] = st.run
                 stpar['tag'] = ''
                 if sam==0:
                     stpar['tag']='ref'
@@ -88,15 +89,13 @@ class Experiment(models.Model):
 
     
     def get_data_from_all_scenario_exps_same_kind(self, subj_pk):
-        s = Subjects.objects.get(pk = subj_pk).scenario
-        x_content_type = ContentType.objects.get_for_model(self)
-        same_exp = sub.scenario.iteminscenario_set.filter(content_type__pk=x_content_type.id,object_id=self.id)
-        all_data = []
-        for exp in same_exp:
-            this_data = exp.get_all_trial_data(subj_pk)
-            if len(this_data)>0:
-                this_data[0]['run_no']=exp.iteminscenario.ord_no
-            all_data.append(this_data)
+        sub =  Subject.objects.get(pk = subj_pk)
+        s = sub.scenario
+        exp = self
+        this_data = exp.get_all_trial_data(subj_pk)
+        #if len(this_data)>0:
+        #    this_data[0]['run_no']=exp.iteminscenario.ord_no
+        return this_data
 
     def analyse_results_for_subj(self, subj_pk):
         try:
@@ -105,7 +104,7 @@ class Experiment(models.Model):
             all_data = self.get_all_trial_data(subj_pk)
             return f(all_data, path=settings.MEDIA_ROOT, url_path=settings.MEDIA_URL)
         except (AttributeError, IndexError):
-            return None
+            return [],[]
             
     def analyse_overall_results(self, subj_pk_list):
         try:
@@ -180,8 +179,8 @@ class Scenario(models.Model):
         
     def experiments_with_analysis(self):
         xcont = ContentType.objects.get_for_model(Experiment)
-        expitems = ItemInScenario.objects.filter(content_type = xcont, scenario_id=self.id)
-        expobjs = [ii.content_object for ii in expitems]
+        exp_ids = ItemInScenario.objects.filter(content_type = xcont, scenario_id=self.id).values_list('object_id',flat=True)
+        expobjs = Experiment.objects.filter(id__in=exp_ids)
         exp_with_analysis = []
         for x in expobjs:
             try:
@@ -384,10 +383,23 @@ class SoundTriplet(models.Model):
             return float(pari.value)
         except ParameterInstance.DoesNotExist:
             return np.nan
+            
+    def get_parameters_by_name(self, name):
+        try:
+            pari = self.parameterinstance_set.filter(name=name)
+            return [float(xx.value) for xx in pari]
+        except ParameterInstance.DoesNotExist:
+            return np.nan
     
     def get_chosen_par(self,name):
+        exp = self.experiment
+        if exp.design == 'soundadjustpage':
+            choice = 1
+        else:
+            choice = self.choice
+        
         try:
-            pari = self.parameterinstance_set.get(position=self.choice, name=name)
+            pari = self.parameterinstance_set.get(position=choice, name=name)
             return float(pari.value)
         except ParameterInstance.DoesNotExist:
             return np.nan

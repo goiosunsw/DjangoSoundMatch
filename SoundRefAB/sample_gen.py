@@ -1,3 +1,54 @@
+#  sample_gen.py
+#  
+#  Copyright 2017 Andre Almeida <goios@goios-UX305UA>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#  
+# ################################### 
+#
+#  This file generates and processes data from the experiments 
+#  A "sound generation method" may be used in one of the basic types 
+#  of experiments. Each generation method consists of 4 functions:
+#
+#  SoundGenerationMethod(subject_id, difficulty_divider=1.0, 
+#                        confidence_history=[], prev_choice=0, 
+#                        prev_param=[], path='.', url_path='/')::
+#     Generates the sound and addidtional data that needs to be stored
+#     in the database. Should return
+#      
+#     * sound_data: location of sound files
+#     * param_data: parameters for the database
+#     * difficulty_divider: difficulty parameter to be passed to next
+#       generation of sounds
+#
+#  SoundGenerationMethod_process(param_dict):
+#     process the results and generate new data for next generation
+#     can return a result_dict
+#
+#  SoundGenerationMethod_init(subject_id, n_runs=3, n_similar=2):
+#     initialise sound samples or other data that may be required
+#     for subsequent experiments
+#
+#  SoundGenerationMethod_analyse
+#   and
+#  SoundGenerationMethod_analyse_overall
+#     produce an analysis page for a subject or all subjects 
+#     for this experiment
+
+
 import vibrato_obj as vo
 import random
 import os
@@ -10,6 +61,9 @@ import data_file_io as dio
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib.pyplot import figure
+
+
 
 def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         prev_param=[], path='.', url_path='/', prev_exp_dict=[]):
@@ -287,7 +341,7 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
     
     # depth ranges
     brightness_lims = np.array([0.05,0.7])
-    brightness_boundaries = np.linspace(*brightness_lims, num=n_diff/2+1)
+    brightness_boundaries = np.linspace(*brightness_lims, num=n_runs/2+1)
     brightness_ranges = np.array([brightness_boundaries[i:i+2].tolist() for i in xrange(len(brightness_boundaries)-1)])
     #brightness_ranges = np.array([[0.05,0.15],[0.15,0.35],[0.35,0.7]])
     loudness_ranges = brightness_ranges * brightness_to_loudness_mult
@@ -296,7 +350,13 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
     central_brightness = np.array([0.3,0.3])
     central_loudness = np.array([0.1,0.1])
     
-    aa = np.empty(n_runs, dtype = [('ref_depth','f8'),('ref_phase','i'),('smpl_depth','f8'),('smpl_phase','i')])
+    # table to be randomized 
+    # setting specific parameter spaces for each run
+    aa = np.empty(n_runs, dtype = [('ref_depth','f8'),
+                                   ('ref_phase','i'),
+                                   ('smpl_depth','f8'),
+                                   ('smpl_phase','i'),
+                                   ('comment_type','i')])
     # ref_depths = np.empty((0,1))
     # ref_phases = np.empty((0,1))
     # smpl_depths = np.empty((0,1))
@@ -305,11 +365,14 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
     
     # generate loudness references
     count = 0
+    print n_runs
+    # 2-loop: one for reference on brightness, on on loud
     for (ph_no,ranges) in enumerate((loudness_ranges, brightness_ranges)):
         n_ranges = ranges.shape[0]
         phase = [1,-1][ph_no]
         # multiplier for sample base depth
         mult = brightness_to_loudness_mult ** phase
+        # loop through different ranges 
         for i in range(n_runs/2):
             # generate different kinds or same?
             isdiff = i<n_diff/2
@@ -322,13 +385,19 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
             aa['smpl_depth'][count] = this_ref_depth * mult if isdiff else this_ref_depth
             aa['smpl_phase'][count] = -phase if isdiff else phase
             count +=1
-            
+    print aa        
     # randomize 
     # randomize sample order
     order = np.arange(len(aa))
     random.shuffle(order)
     
     aa = aa[order]
+    
+    # first half have written comment
+    aa['comment_type'][:n_runs/2]=0
+    # second half rate similarity
+    aa['comment_type'][n_runs/2:]=1
+    print aa
     arec = aa.view(np.recarray)
     dio.store_temp_data_file(arec, subj_no, suffix='AllVib')
     return aa
@@ -358,6 +427,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     # base values
     if prev_param==[]:
         aa = dio.retrieve_temp_data_file(subj_no, suffix='AllVib')
+        #sys.stderr.write('Reading new parameters from datafile.\n')
         try:
             # sys.stderr.write('Using pre-calculated parameters. Values stored for subject %d:\n'%subj_no)
             # sys.stderr.write('{}\t'.format(aa))
@@ -366,6 +436,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
             #last_chosen_amp = aa['smpl_depth'][0]
             last_chosen_amp = .5
             smpl_phase = aa['smpl_phase'][0]
+            comment_type = aa['comment_type'][0]
             # sys.stderr.write('Values used:\n')
             # sys.stderr.write('ref_depth:\t %f\n'%base_amp_depth)
             # sys.stderr.write('ref_phase:\t %f\n'%base_phase)
@@ -377,9 +448,11 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
             base_phase = int(random.random()*2)-1
             last_chosen_amp = random.random()
             smpl_phase = int(random.random()*2)-1
+            comment_type=0
         range_divider=1
         aa = aa[1:]
-        dio.store_temp_data_file(aa, subj_no, suffix='AllVib')
+        arec = aa.view(np.recarray)
+        dio.store_temp_data_file(arec, subj_no, suffix='AllVib')
     else:
         # Last chosen amplitude
         last_chosen_amp = prev_param[-1][prev_choice[-1]]['hdepth']
@@ -388,6 +461,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         base_amp_depth = prev_param[-1][0]['hdepth']
         base_phase = prev_param[-1][0]['vib_slope']
         smpl_phase = prev_param[-1][-1]['vib_slope']
+        comment_type = prev_param[-1][0]['comment_type']
         if confidence_history[-1]>1:
             range_divider *= 1.3
         # if user has not been confident in last answers stop
@@ -414,7 +488,8 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
                'choice': False}
                
     this_pd = {'hdepth': base_amp_depth,
-               'vib_slope': base_phase}
+               'vib_slope': base_phase,
+               'comment_type': comment_type}
     
     if stop:
         this_pd['stop_conf'] = stop_confidence
@@ -487,8 +562,85 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     
     return sound_data, param_data, difficulty_divider
 
-def SlopeVibratoRefABC_analyse_later(param_dict, path='.', url_path='/'):
-    return []
+def SlopeVibratoRefABC_analyse(param_dict, path='.', url_path='/'):
+    param_dict = [xx for xx in param_dict if len(xx)>0]
+    runlist = [xx[0]['run_seq_no'] for xx in param_dict]
+    run_unique = list(set(runlist))
+    ref = np.zeros(len(run_unique))
+    chosen = np.zeros(len(run_unique))
+    error = np.zeros(len(run_unique))
+    matchtype = np.zeros(len(run_unique))
+    for run_no in run_unique:
+        runst = [xx for xx in param_dict if xx[0]['run_seq_no'] == run_no]
+        runidx = run_no-1
+        this_ref = np.zeros(len(runst))
+        this_chosen = np.zeros(len(runst))
+        this_error = np.zeros(len(runst))
+        this_conf = np.zeros(len(runst))
+        for idx,st in enumerate(runst):
+            choice = [xx['tag']=='choice' for xx in st].index(True)
+            alldepth = [xx['hdepth'] for xx in st]
+            this_ref[idx] = alldepth[0]
+            this_chosen[idx] = alldepth[choice]
+            this_conf[idx] = st[0]['confidence']
+            this_error[idx] = max(alldepth) - min(alldepth)
+        
+        if st[0]['vib_slope'] == st[1]['vib_slope']:
+            matchtype[runidx] = 0
+        elif st[0]['vib_slope'] > st[1]['vib_slope']:
+            matchtype[runidx] = 1
+        else:
+            matchtype[runidx] = 2
+        
+        try:
+            last_valid = np.max(np.nonzero(this_conf>1)[0])
+        except ValueError:
+            last_valid = 0
+        ref[runidx] = this_ref[last_valid]
+        chosen[runidx] = this_chosen[last_valid]
+        error[runidx] = this_error[last_valid]/2.
+    
+    results = []
+    graph = []
+    
+    for ii in [0,1,2]:
+        matchidx = np.nonzero(matchtype==ii)[0]
+        if len(matchidx) > 0:
+            idx = np.argsort(ref[matchidx])
+            idxsrt = matchidx[idx]
+        else:
+            idxsrt=[]
+        results.append({'ref': ref[idxsrt],
+                        'chosen': chosen[idxsrt],
+                        'error': error[idxsrt]})
+    
+    legs = ['identical', 'timber vs ampl', 'ampl vs timbre']
+    figbase = 'Analysis_VibratoMatchDepth.png'
+    figfile=os.path.join(path,figbase)
+    figurl = url_path+figbase
+    fig=Figure(figsize=(3,2))
+    #fig=figure(figsize=(3,2))
+    ax=fig.add_subplot(111)
+    ll=[]
+    for rr,leg in zip(results,legs):
+        if len(rr['ref'])>0:
+            ll.append(ax.errorbar(rr['ref'],rr['chosen'],yerr=rr['error'], label=leg))
+        else:
+            legs.remove(leg)
+    
+    ax.plot([0,1],[0,1],'--k')
+    #fig.legend(ll,legs)
+    lgd=ax.legend(loc='middle right', bbox_to_anchor=(1,0.5))
+    #fig.savefig(figfile, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    fig.tight_layout()
+    canvas=FigureCanvas(fig)
+    canvas.print_png(figfile, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    graph.append(figurl)
+    
+    
+    return results, graph
+        
+        
     
 def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):

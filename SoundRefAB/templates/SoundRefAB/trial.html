@@ -20,7 +20,7 @@ function getAnswer() {
 var oldDocumentReady = $(document).ready
 
 $(document).ready(function(){
-    console.log('Here!')
+    // console.log('Here!')
     $('input[name=choice]').data('valid',false);
     $('input[name=choice]').data('invalidAlert',function() {
         alertModal("Please pick a sound!").showAlert();
@@ -89,6 +89,7 @@ $(document).ready(function(){
           </div>
          
       </div>
+      {% if param_list.0.comment_type == 0 %}
       <div class="col-sm-8">
           <div class="panel panel-default">
             <div class="panel-heading">Any comments?</div>
@@ -98,6 +99,18 @@ $(document).ready(function(){
           </div>
          
       </div>
+      {% elif param_list.0.comment_type == 1 %}
+      <div class="col-sm-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Is the fluctuation in the reference and your answer of a different kind?</div>
+            <div class="panel-body">
+                
+                 {% include 'SoundRefAB/similarity_radio.html' %}         
+            </div>
+          </div>
+         
+      </div>
+      {% endif %}
     </div>
     
     {% csrf_token %}
