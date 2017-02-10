@@ -110,7 +110,7 @@ class Command(BaseCommand):
                         itref = itd2
                         content = ContentType.objects.get_for_model(itref['model'])
                         ii = content.get_object_for_this_type(description = itd['description'])
-                
+                        sys.stderr.write('Repeating model "%s" %d times\n'%(thisdesc,itd['number']))
                         for nn in xrange(itd['number']):
                             ll = ItemInScenario(content_type=ContentType.objects.get_for_model(itref['model']), 
                                                 object_id=ii.id,
@@ -127,12 +127,23 @@ class Command(BaseCommand):
                     
                     sys.stderr.write('Repeated model %s not found!\n'%thisdesc)
             else:
+                thisdesc = itd['description']
                 itcopy = itd.copy()
                 del itcopy['model']
                 # check if description already exists
                 try:
                     thismodel.objects.get(description=itcopy['description'])
                     itcopy['description'] += '%d'%ss.id
+                    itd['description'] += '%d'%ss.id
+                    sys.stderr.write('model name updated to %s\n'%itd['description'])
+
+                    # update names in repeat models
+                    for itd2 in itemdata:
+                        if (itd2['model'] == 'Repeat' and itd2['description'] == thisdesc):
+                            itd2['description'] = itcopy['description']
+                            sys.stderr.write('repeat model updated to %s\n'%itd['description'])
+
+ 
                 except thismodel.DoesNotExist:
                     pass
                 finally:
