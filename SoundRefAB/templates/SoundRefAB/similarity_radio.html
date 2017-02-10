@@ -1,0 +1,44 @@
+<script>
+    function getSimilarityVal() {
+        var i, r = document.getElementsByName('similarity');
+        for (i = 0; i < r.length; i++) {
+            if (r[i].checked) return r[i].value;
+        }
+        return '';
+    }
+
+
+    var oldDocumentReady = $(document).ready
+
+    $(document).ready(function(){
+        //console.log('Here!')
+        $('#similarity').data('valid',false);
+        $('#similarity').data('invalidAlert',function() {
+            alertModal("Please check the similarity question!").showAlert();
+            $('#similarity').closest('.panel').removeClass('panel-default').addClass('panel-warning');
+        });
+        $('#similarity').on('change', function(){
+        
+            $(this).closest('.panel').removeClass('panel-warning').addClass('panel-default');
+            $(this).data('valid',true);
+            validatePage();
+        })
+        oldDocumentReady();
+    });
+    
+</script>
+<div id="similarity" class="control-group">
+    <div class="radio">
+      <label class="control-label"><input type="radio" name="comment" value="3"> Same kind</label>
+    </div>
+    <div class="radio">
+      <label class="control-label"><input type="radio" name="comment" value="2"> Possibly the same</label>
+    </div>
+    <div class="radio">
+      <label class="control-label"><input type="radio" name="comment" value="1"> Possibly different</label>
+    </div>
+    <div class="radio">
+      <label class="control-label"><input type="radio" name="comment" value="0"> Definitely different</label>
+    </div>
+</div>
+
