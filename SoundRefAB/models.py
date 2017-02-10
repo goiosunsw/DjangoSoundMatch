@@ -423,7 +423,7 @@ class StringParameterInstance(models.Model):
     a parameter instance or value belongs to a particular experiment
     and a particular parameter model'''
     name = models.CharField(max_length=100, default = '')
-    value = models.CharField('Value', max_length=50, default = '')
+    value = models.CharField('Value', max_length=500, default = '')
     subject = models.ForeignKey(Subject)
     trial = models.ForeignKey(SoundTriplet)
     position = models.IntegerField(default=0)
