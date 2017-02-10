@@ -12,6 +12,7 @@
        $(window).load(function(){
            regenSound({{param_list.0.val0}},"audio0");
            regenSound({{param_list.1.val0}},"audio1");
+           
            waitDlg.hidePleaseWait();
        });
     </script>
@@ -31,7 +32,7 @@
            var dur = {{param_list.0.dur}};
            var freq = {{param_list.0.freq}};
            {{param_list.0.adj_par_name}} = val;
-           var hseq = scvals[Math.round(slope*100)];
+           var hseq = scvals[Math.round(slope*400)];
            document.getElementById(id).src = GeneratePeriodic(hseq,ampl,dur,freq);
            return true;
        }
@@ -87,7 +88,7 @@
                 </div>
                 <div style="float:left;padding-top:12px;padding-left:15px">
                     <input id="adjval" name="adjval" type="range" style="width:400px"
-                    min="0" max="1" step=".01" value="{{param_list.1.val0}}"
+                    min="0" max="1" step=".0025" value="{{param_list.1.val0}}"
                     onchange="sliderChange(this.value);"/>
                 </div>
                 <div style="clear:both"></div>

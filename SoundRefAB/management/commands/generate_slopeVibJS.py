@@ -12,12 +12,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         base_path = os.path.join(settings.STATIC_ROOT,'SoundRefAB')
-        sys.stdout = open(os.path.join(base_path,'slopeAmps.js'),'w')
+        outfile = os.path.join(base_path,'slopeAmps.js')
+        sys.stdout = open(outfile,'w')
+        sys.stderr.write('Writing to '+outfile+'\n')
         
-        nharm=6
+        
+        nharm=16
+        # brightness limits in slider
         vlims=[0.0,0.9]
+        # number of steps in slider
+        n = 400
         
         sh = vo.SlopeHarmonicScaler(nharm=nharm)
-        sh.outputJSArray(vlims=vlims)
+        sh.outputJSArray(vlims=vlims,npoints=n)
+        
+        sys.stdout.close()
             
                      

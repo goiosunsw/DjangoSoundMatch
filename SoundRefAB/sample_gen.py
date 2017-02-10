@@ -748,6 +748,11 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     #default slider position
     default_val=0.0
     
+    # possible frequencies 
+    fvals = [500.,500./1.5]
+    # possible amplitudes
+    avals = [0.5,0.05]
+    
     try:
         nharm = prev_param[-1][0]['nharm']
         slope_list = dio.retrieve_temp_data_file(subj_no)
@@ -755,13 +760,14 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         sys.stderr.write('First trial in BrightnessAdjust\n')
         slope_list = np.linspace(0,.4,ntrials).tolist()
         random.shuffle(slope_list)
+
         dio.erase_temp_data_file(subj_no)
         for pp in prev_param[-1]:
-            pp['ampl']=0.5
+            pp['ampl']=avals[0]
             pp['nharm']=15
             pp['slope']=0.5
             pp['dur']=0.6
-            pp['freq']= 500
+            pp['freq']= fvals[0]
             #pp['trial_no']=0
     
     
@@ -777,11 +783,15 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         random.shuffle(temp_list)
         newslope = temp_list.pop()
         
-        
+    random.shuffle(avals)
+    random.shuffle(fvals)
+
     for thispar in new_param:
         thispar['slope'] = newslope
         thispar['adj_par_name'] = 'slope'
         thispar['val0'] = newslope
+        thispar['ampl'] = avals[0]
+        thispar['freq'] = fvals[0]
     
     new_param[1]['val0'] = default_val
     
