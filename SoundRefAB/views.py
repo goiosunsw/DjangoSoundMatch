@@ -150,7 +150,7 @@ def  NewSubjectView(request, pk=0):
 def  MainView(request, pk=0):
     #scen = Scenario.objects.filter(description__contains='UNSW').last()
     #return HttpResponseRedirect(reverse('srefab:new', args = (scen.id,)))
-    return HttpResponseRedirect(reverse('srefab:index'))
+    return HttpResponseRedirect(reverse('srefab:list'))
 
     
 class SubjectQuestionnaireUpdate(UpdateView):

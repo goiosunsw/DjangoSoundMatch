@@ -341,11 +341,11 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
     
     # depth ranges
     brightness_lims = np.array([0.05,0.7])
-    brightness_boundaries = np.linspace(*brightness_lims, num=n_runs/2+1)
+    brightness_boundaries = np.linspace(*brightness_lims, num=(n_runs+1)/2+1)
     brightness_ranges = np.array([brightness_boundaries[i:i+2].tolist() for i in xrange(len(brightness_boundaries)-1)])
     #brightness_ranges = np.array([[0.05,0.15],[0.15,0.35],[0.35,0.7]])
     loudness_ranges = brightness_ranges * brightness_to_loudness_mult
-    
+   
     # central brightness range
     central_brightness = np.array([0.3,0.3])
     central_loudness = np.array([0.1,0.1])
@@ -362,7 +362,8 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
     # smpl_depths = np.empty((0,1))
     # smpl_phases = np.empty((0,1))
     
-    
+    print brightness_ranges
+    print loudness_ranges 
     # generate loudness references
     count = 0
     print n_runs
@@ -373,7 +374,9 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
         # multiplier for sample base depth
         mult = brightness_to_loudness_mult ** phase
         # loop through different ranges 
-        for i in range(n_runs/2):
+        for i in range(n_ranges):
+            if count>=len(aa):
+                break
             # generate different kinds or same?
             isdiff = i<n_diff/2
             this_range = ranges[i%n_ranges,...]
