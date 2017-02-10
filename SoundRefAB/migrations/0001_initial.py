@@ -16,6 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('text', models.TextField(default=b'')),
+                ('label', models.CharField(default=b'comment', max_length=100)),
             ],
         ),
         migrations.CreateModel(
@@ -25,9 +26,9 @@ class Migration(migrations.Migration):
                 ('description', models.CharField(max_length=200)),
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
                 ('instruction_text', models.CharField(default=b'Please pick a sound', max_length=1000)),
-                ('function', models.CharField(max_length=100, verbose_name=b'Sound generating function', choices=[(b'BrightnessAdjust', b'BrightnessAdjust'), (b'BrightnessAdjust_process', b'BrightnessAdjust_process'), (b'BrightnessIntro', b'BrightnessIntro'), (b'BrightnessIntro_process', b'BrightnessIntro_process'), (b'DescribeVibrato', b'DescribeVibrato'), (b'DescribeVibrato_process', b'DescribeVibrato_process'), (b'LoudnessAdjust', b'LoudnessAdjust'), (b'LoudnessAdjust_process', b'LoudnessAdjust_process'), (b'LoudnessIntro', b'LoudnessIntro'), (b'LoudnessIntro_process', b'LoudnessIntro_process'), (b'MatchVibratoTypes', b'MatchVibratoTypes'), (b'SlopeVibratoRefABC', b'SlopeVibratoRefABC'), (b'SlopeVibratoRefABC_init', b'SlopeVibratoRefABC_init'), (b'SlopeVibratoTripletRefAB', b'SlopeVibratoTripletRefAB'), (b'VibratoTripletRefAB', b'VibratoTripletRefAB')])),
-                ('number_of_trials', models.IntegerField(default=1, verbose_name=b'Number of Trials')),
-                ('design', models.CharField(default=b'soundpage', max_length=100, verbose_name=b'Design class', choices=[(b'soundpage', b'Reference presented with N sounds, single choice'), (b'soundadjustpage', b'Reference presented with single adjustable sound'), (b'intropage', b'Intro page collecting confidence and comment')])),
+                ('function', models.CharField(max_length=100, verbose_name=b'Sound generating function', choices=[(b'BrightnessAdjust', b'BrightnessAdjust'), (b'BrightnessAdjust_analyse', b'BrightnessAdjust_analyse'), (b'BrightnessAdjust_analyse_overall', b'BrightnessAdjust_analyse_overall'), (b'BrightnessAdjust_process', b'BrightnessAdjust_process'), (b'BrightnessIntro', b'BrightnessIntro'), (b'BrightnessIntro_process', b'BrightnessIntro_process'), (b'DescribeVibrato', b'DescribeVibrato'), (b'DescribeVibrato_process', b'DescribeVibrato_process'), (b'LoudnessAdjust', b'LoudnessAdjust'), (b'LoudnessAdjust_analyse', b'LoudnessAdjust_analyse'), (b'LoudnessAdjust_analyse_overall', b'LoudnessAdjust_analyse_overall'), (b'LoudnessAdjust_process', b'LoudnessAdjust_process'), (b'LoudnessIntro', b'LoudnessIntro'), (b'LoudnessIntro_process', b'LoudnessIntro_process'), (b'MatchVibratoTypes', b'MatchVibratoTypes'), (b'SameLoudnessAdjust', b'SameLoudnessAdjust'), (b'SameLoudnessAdjust_analyse', b'SameLoudnessAdjust_analyse'), (b'SameLoudnessAdjust_analyse_overall', b'SameLoudnessAdjust_analyse_overall'), (b'SameLoudnessAdjust_process', b'SameLoudnessAdjust_process'), (b'SlopeVibratoRefABC', b'SlopeVibratoRefABC'), (b'SlopeVibratoRefABC_analyse', b'SlopeVibratoRefABC_analyse'), (b'SlopeVibratoRefABC_init', b'SlopeVibratoRefABC_init'), (b'SlopeVibratoTripletRefAB', b'SlopeVibratoTripletRefAB'), (b'VibratoTripletRefAB', b'VibratoTripletRefAB'), (b'figure', b'figure')])),
+                ('number_of_trials', models.IntegerField(default=1, verbose_name=b'Number of completed trials in current experiment')),
+                ('design', models.CharField(default=b'soundpage', max_length=100, verbose_name=b'Design class', choices=[(b'soundpage', b'Reference presented with N sounds, single choice'), (b'soundadjustpage', b'Reference presented with single adjustable sound'), (b'intropage', b'Intro page collecting confidence and comment'), (b'multicommentpage', b'Page collecting text answers as comments')])),
             ],
         ),
         migrations.CreateModel(
@@ -54,7 +55,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.CharField(max_length=200)),
                 ('created_date', models.DateTimeField(verbose_name=b'date created')),
-                ('template', models.CharField(default=b'', max_length=100, verbose_name=b'Page file', choices=[('pg_brightness_adj_intro.html', 'pg_brightness_adj_intro.html'), ('pg_loudness_adj_intro.html', 'pg_loudness_adj_intro.html'), ('pg_quest_info.html', 'pg_quest_info.html'), ('pg_thanks.html', 'pg_thanks.html'), ('pg_vibrato_explanation.html', 'pg_vibrato_explanation.html'), ('pg_vibrato_intro.html', 'pg_vibrato_intro.html')])),
+                ('template', models.CharField(default=b'', max_length=100, verbose_name=b'Page file', choices=[('pg_loudness_adj_intro.html', 'pg_loudness_adj_intro.html'), ('pg_landing.html', 'pg_landing.html'), ('pg_quest_info.html', 'pg_quest_info.html'), ('pg_same_loudness_adj_intro.html', 'pg_same_loudness_adj_intro.html'), ('pg_vibrato_intro.html', 'pg_vibrato_intro.html'), ('pg_brightness_adj_intro.html', 'pg_brightness_adj_intro.html'), ('pg_welcome.html', 'pg_welcome.html'), ('pg_vibrato_explanation.html', 'pg_vibrato_explanation.html'), ('pg_twice_loudness_adj_intro.html', 'pg_twice_loudness_adj_intro.html'), ('pg_thanks.html', 'pg_thanks.html')])),
             ],
         ),
         migrations.CreateModel(
@@ -91,6 +92,7 @@ class Migration(migrations.Migration):
                 ('confidence', models.IntegerField(default=0)),
                 ('playseq', models.SlugField(default=b'')),
                 ('trial', models.IntegerField(default=0)),
+                ('run', models.IntegerField(default=0)),
                 ('choice', models.IntegerField(default=0)),
                 ('experiment', models.ForeignKey(to='SoundRefAB.Experiment')),
             ],
@@ -122,8 +124,9 @@ class Migration(migrations.Migration):
                 ('difficulty_divider', models.DecimalField(default=1.0, max_digits=10, decimal_places=2)),
                 ('instrument', models.CharField(default=b'', max_length=100, verbose_name=b'Sing or play any instrument? Which?')),
                 ('student_ID', models.CharField(default=b'', max_length=10, verbose_name=b'Student ID')),
-                ('loudspeaker_model', models.CharField(default=b'', max_length=10, verbose_name=b'Model of headphones / speakers (if appliccable)')),
+                ('loudspeaker_model', models.CharField(default=b'', max_length=100, verbose_name=b'Model of headphones / speakers (if appliccable)')),
                 ('vol_change', models.BooleanField(default=False, verbose_name=b'Did you adjust the volume during the experiment?')),
+                ('ip', models.CharField(default=b'', max_length=16, verbose_name=b'Client IP')),
                 ('scenario', models.ForeignKey(to='SoundRefAB.Scenario')),
             ],
         ),
