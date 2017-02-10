@@ -361,7 +361,7 @@ class SoundTriplet(models.Model):
     valid_date = models.DateTimeField('date triplet validated by user',auto_now_add=True)
     confidence = models.IntegerField(default=0)
     subject = models.ForeignKey(Subject)
-    playseq = models.SlugField(default='')
+    playseq = models.SlugField(default='',max_length=500)
     # number of trial for the subject and experiment
     trial = models.IntegerField(default=0)
     run = models.IntegerField(default=0)
