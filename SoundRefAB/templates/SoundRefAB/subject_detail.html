@@ -21,8 +21,10 @@
                 <p><strong>Age:</strong> {{ subject.age }}</p>
                 <p><strong>Experience in music:</strong> {{ subject.get_music_experience_display }}</p>
                 <p><strong>Hearing problems:</strong> {{ subject.get_hearing_prob_display }}</p>
+{% comment %}
                 <p><strong>Listening device:</strong> {{ subject.get_device_display }}</p>
                 <p style="margin-left: 40px"><strong>Model:</strong> {{ subject.loudspeaker_model }}</p>
+{% endcomment %}
                 <p><strong>Instrument played:</strong> {{ subject.instrument }}</p>
                 <p><strong>Student ID:</strong> {{ subject.student_ID }}</p>
                 <p><strong>Client IP:</strong> {{ subject.ip }}</p>
