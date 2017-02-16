@@ -1294,3 +1294,14 @@ def DescribeVibrato(subject_id, difficulty_divider=1.0, confidence_history=[], p
 def DescribeVibrato_process(param_dict):
     pass
     
+def VibratoExtra(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
+                        ntrials = 1, const_par=[],prev_param=[],  prev_exp_dict=[], path='.', url_path='/'):       
+                        
+    param_data = [{'html_template': 'trial_vibrato_comment_extra.html'}]
+    sound_data = [{}]
+    dificulty_divider = 1.
+    
+    return sound_data, param_data, difficulty_divider
+    
+def VibratoExtra_process(param_dict):
+    pass
