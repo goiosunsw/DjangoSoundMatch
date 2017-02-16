@@ -96,14 +96,14 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
     shorder = [1,2]
     random.shuffle(shorder)
     
-    #order = [0]
-    #order.extend(shorder)
+    order = [0]
+    order.extend(shorder)
     thisph = [phase[ntrial%nopt][oo] for oo in order] 
     #thisa = [ampl[ntrial][oo] for oo in order] 
     # reference amplitude index
-    thisa = [random.random(ndepth)]
+    thisa = [random.randint(0,ndepth-1)]
     # choice amplitude index
-    achoice = random.random(ndepth)
+    achoice = random.randint(0,ndepth-1)
     for i in range(len(thisph)-1):
         thisa.append(achoice)
     
