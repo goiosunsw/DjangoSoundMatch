@@ -24,7 +24,7 @@ class Command(BaseCommand):
                      'instruction_text': 'Which sample sounds closer to Tone 1?',
                      'design': 'soundpage',
                      'function': 'MatchVibratoTypes',
-                      'number_of_trials': 5})
+                      'number_of_trials': 5},)
                      
         count = 0
         for itd in itemdata:
