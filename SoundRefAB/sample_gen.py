@@ -72,11 +72,15 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
     
     
     # sound parameters per trial, Ref, S1 S2 inside trial
+    vibrato_freq = [5,7]
     slope_ampl = [0.2,0.3,0.4,0.5]
     loud_ampl = [0.2,0.3,0.4,0.5]
     phase = [[1, 1,-1],[-1, 1,-1]]
     ampl =  [[1, 2, 2],[ 1, 2, 2]]
     base_brightness = 0.5
+    
+    # vibrato frequency
+    vfreq = vibrato_freq[random.randint(0,len(vibrato_freq)-1)]
     
     ndepth = len(slope_ampl)
     nopt = len(ampl)
@@ -114,7 +118,8 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
         else:
             hdepth = slope_ampl[amp]
             
-        this_pd = {'hdepth': hdepth,
+        this_pd = {'vib_freq': vfreq,
+                   'hdepth': hdepth,
                    'vib_slope': ph,
                    'trial_no': ntrial}
         
@@ -127,6 +132,7 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
         if count==0:
             this_sd['name'] = 'Reference'
             this_sd['choice'] = False
+            this_pd['comment_type'] = 0
             
         count += 1   
         
@@ -134,8 +140,10 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
         param_data.append(this_pd)
            
     nharm = 6
-    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm))
-    vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],v_prof=[0.0,0.0,0.5,1.0,0.0])
+    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm),vibfreq=vfreq)
+    vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],
+                   v_prof=[0.0,0.0,0.5,1.0,0.0]
+                   )
     vib.setEnvelope(t_att=0.05,t_rel=0.02)
                
     
@@ -793,7 +801,7 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     except IndexError:
         # something went wrong wit sequence, maybe user has clicked reload
         sys.stderr.write('Couldn''t get a slope value from original list\n')
-        temp_list = np.linspace(0,1,ntrials).tolist()
+        temp_list = np.linspace(0,.4,ntrials).tolist()
         random.shuffle(temp_list)
         newslope = temp_list.pop()
         
@@ -806,8 +814,10 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         thispar['val0'] = newslope
         thispar['ampl'] = avals[0]
         thispar['freq'] = fvals[0]
+        thispar['left'] = newslope
+        thispar['right'] = 0.9
     
-    new_param[1]['val0'] = default_val
+    new_param[1]['val0'] = newslope
     
     # for sd in sound_data:
     #     param_data.append(new_param)

@@ -157,8 +157,8 @@ class SubjectQuestionnaireUpdate(UpdateView):
     template_name='SoundRefAB/subject_form.html'
 
     model = Subject
-    #fields = ['age','music_experience','hearing_prob','device','loudspeaker_model','vol_change','instrument','student_ID','final_comment']
-    fields = ['age','music_experience','hearing_prob','vol_change','instrument','student_ID','final_comment']
+    fields = ['age','music_experience','hearing_prob','device','loudspeaker_model','vol_change','instrument','student_ID','final_comment']
+    #fields = ['age','music_experience','hearing_prob','vol_change','instrument','student_ID','final_comment']
 
     def get_success_url(self):
         return reverse('srefab:next', args = (self.object.pk,))
