@@ -41,7 +41,7 @@ def dBAampl(hamp,f0):
     
     return np.sqrt(sum(hasq))
 
-def SlopeToHmult(slope, nharm, mode='RMS', f0=1000.):
+def SlopeToHmult(slope, nharm, mode='RMS', f0=1000., calfile=None):
     '''Calculate a harmonic sequence for a constant dB slope'''
     
     base = np.exp(slope)
@@ -55,7 +55,7 @@ def SlopeToHmult(slope, nharm, mode='RMS', f0=1000.):
         return ha /np.sqrt(sum(ha*ha))
     if mode=='dBA':     
         return ha /dBAampl(ha,f0)
-    
+   
 
 class SlopeHarmonicScaler(object):
     '''Object for quick calculation of a harmonic for 
@@ -64,7 +64,8 @@ class SlopeHarmonicScaler(object):
     * for val=1, centroid is on last harmonic
     * Centroid variation is produced by a change in spectral slope
     * Spectrum is a linear slope in dB'''
-    def __init__(self, nharm=2, npoints=100, slopelim=4, f0=1000., mode='RMS'):
+    def __init__(self, nharm=2, npoints=100, slopelim=4, f0=1000., 
+                 mode='RMS', harmfile=None):
         self.nharm = nharm
         
         slopes = np.linspace(-slopelim,slopelim,npoints)
@@ -90,8 +91,13 @@ class SlopeHarmonicScaler(object):
         
         self.cent = cent
         self.hamp = hamps
-        
+        if harmfile:
+            self.loadNumpy(harmfile)
+            
+
         self.generateInterpolators()
+        
+
         
         self.vmin = np.min(cent)
         self.vmax = np.max(cent)
@@ -110,13 +116,16 @@ class SlopeHarmonicScaler(object):
         '''
         Save a table of harmonic amplitudes to file
         '''
-        np.save(filename, (self.cent,self.hamp))
+        np.savez(filename, cent=self.cent,hamp=self.hamp)
         
     def loadNumpy(self,filename):
         '''
         Load a table of harmonic amplitudes from file
         '''
-        self.cent, self.hamp = np.load(filename)
+        dd = np.load(filename)
+        self.cent = dd['cent']
+        self.hamp = dd['hamp']
+        self.nharm = self.hamp.shape[1]
         self.generateInterpolators()
         
     def generateInterpolators(self):
@@ -127,7 +136,11 @@ class SlopeHarmonicScaler(object):
         self.fharm=[]
         
         for ii in xrange(self.nharm):
-            ff = interp1d(self.cent, self.hamp[...,ii], kind='cubic')
+            l = self.hamp[0,ii]
+            r = self.hamp[-1,ii]
+            ff = interp1d(self.cent, self.hamp[...,ii], 
+                          kind='cubic', 
+                          bounds_error=False,fill_value=(l,r))
             self.fharm.append(ff)
         
         
@@ -195,12 +208,19 @@ class VibratoProfile(object):
 
 class Vibrato(object):
     '''Generate a sound from vibrato profile'''
-    def __init__(self, harm0=[1.],  sr=44100, f0=500., vibfreq=5.0,norm_mode='RMS'):
+    def __init__(self, harm0=[1.],  sr=44100, f0=500., 
+                 vibfreq=5.0,norm_mode='RMS',
+                 harmfile = None):
         self.sr=sr
         self.f0=f0
         self.h0 = np.array(harm0)
-        self.nharm = len(harm0)
-        self.hs = SlopeHarmonicScaler(self.nharm, f0=self.f0, mode=norm_mode)
+        if harmfile:
+            self.hs = SlopeHarmonicScaler(harmfile=harmfile, f0=self.f0)
+            self.nharm = self.hs.nharm
+        else:
+            
+            self.nharm = len(harm0)
+            self.hs = SlopeHarmonicScaler(self.nharm, f0=self.f0, mode=norm_mode)
         self.vibfreq=vibfreq
         
         self.setProfile()

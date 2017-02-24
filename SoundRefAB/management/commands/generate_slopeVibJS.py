@@ -22,8 +22,9 @@ class Command(BaseCommand):
         vlims=[0.0,0.9]
         # number of steps in slider
         n = 400
+        harmfile='HarmScale_nh15_cal0.3.npy.npz'
         
-        sh = vo.SlopeHarmonicScaler(nharm=nharm)
+        sh = vo.SlopeHarmonicScaler(harmfile=harmfile)
         sh.outputJSArray(vlims=vlims,npoints=n)
         
         sys.stdout.close()

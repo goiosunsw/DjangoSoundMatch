@@ -77,7 +77,7 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
     loud_ampl = [0.2,0.3,0.4,0.5]
     phase = [[1, 1,-1],[-1, 1,-1]]
     ampl =  [[1, 2, 2],[ 1, 2, 2]]
-    base_brightness = 0.5
+    base_brightness = 0.25
     
     # vibrato frequency
     vfreq = vibrato_freq[random.randint(0,len(vibrato_freq)-1)]
@@ -139,8 +139,14 @@ def MatchVibratoTypes(subject_id, difficulty_divider=1.0, confidence_history=[],
         sound_data.append(this_sd)
         param_data.append(this_pd)
            
-    nharm = 6
-    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm),vibfreq=vfreq)
+    harmfile = 'HarmScale_nh15_cal0.3.npy.npz'
+    dd =np.load(harmfile)
+    
+    nharm = dd['hamp'].shape[1]
+    hs = vo.SlopeHarmonicScaler(nharm=nharm,mode='RMS')
+    vib = vo.Vibrato(harmfile=harmfile,
+                     harm0=np.ones(nharm)/float(nharm),
+                     vibfreq=6.0)
     vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],
                    v_prof=[0.0,0.0,0.5,1.0,0.0]
                    )
@@ -441,7 +447,7 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
     max_amp = 1.0
     min_amp = 0.05
     max_slope = 1.0
-    base_brightness = 0.5
+    base_brightness = 0.25
     stop = False
     stop_confidence = 2
     
@@ -559,8 +565,15 @@ def SlopeVibratoRefABC(subject_id, difficulty_divider=1.0, confidence_history=[]
         sound_data.append(this_sd)
         param_data.append(this_pd)
     
-    nharm = 6
-    vib = vo.Vibrato(harm0=np.ones(nharm)/float(nharm),vibfreq=6.0)
+    #nharm = 6
+    harmfile = 'HarmScale_nh15_cal0.3.npy.npz'
+    dd =np.load(harmfile)
+    
+    nharm = dd['hamp'].shape[1]
+    hs = vo.SlopeHarmonicScaler(nharm=nharm,mode='RMS')
+    vib = vo.Vibrato(harmfile=harmfile,
+                     harm0=np.ones(nharm)/float(nharm),
+                     vibfreq=6.0)
     vib.setProfile(t_prof=[0.0,0.3,0.7,1.5,1.6],v_prof=[0.0,0.0,0.5,1.0,0.0])
     vib.setEnvelope(t_att=0.05,t_rel=0.02)
     
