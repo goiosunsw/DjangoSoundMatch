@@ -58,10 +58,10 @@ class Command(BaseCommand):
                       'template': 'pg_twice_loudness_adj_intro.html'},
                      
                      {'model': Experiment,
-                      'description': 'Loudness match experiment',
-                      'instruction_text': 'Adjust tone 2 so that it sounds <span style="color:red; font-weight:bold">as loud</span> as tone 1',
-                      'design': 'soundadjustpage',
-                      'function': 'SameLoudnessAdjust',
+                      'instruction_text': 'Adjust tone 2 so that it sounds <span style="color:red; font-weight:bold">twice as loud</span> as tone 1',
+                       'description': 'Loudness adjust experiment',
+                       'design': 'soundadjustpage',
+                       'function': 'LoudnessAdjust',
                        'number_of_trials': 3},
                       
                     {'model': 'Repeat',
@@ -72,7 +72,7 @@ class Command(BaseCommand):
                       'instruction_text': 'What is brightness?',
                       'design': 'intropage',
                       'function': 'BrightnessIntro',
-                       'number_of_trials': 3},
+                       'number_of_trials': 1},
                      {'model': Experiment,
                       'description': 'Brightness adjust experiment',
                       'instruction_text': 'Adjust tone 2 so that it sounds <span style="color:red; font-weight:bold">twice as bright</span> as tone 1',
