@@ -828,7 +828,7 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         thispar['ampl'] = avals[0]
         thispar['freq'] = fvals[0]
         thispar['left'] = newslope
-        thispar['right'] = 0.9
+        thispar['right'] = 1.0
     
     new_param[1]['val0'] = newslope
     

@@ -490,7 +490,7 @@ def SoundAdjustPage(request, subject_id):
     )
 
 
-    template = loader.get_template('SoundRefAB/trial_adjust.html')
+    template = loader.get_template('SoundRefAB/trial_adjust_lr.html')
     return HttpResponse(template.render(context))
 
     # generate parameters
@@ -503,7 +503,10 @@ def ProcessAdjustPage(request, trial_id):
         except MultiValueDictKeyError as e:
             sys.stderr.write(name+': '+ 'ERROR\n')
     st.choice = 1
-    st.value = float(request.POST['adjval'])
+    val = float(request.POST['adjval'])
+    left= float(request.POST['left'])
+    right= float(request.POST['right'])
+    st.value = val
     st.confidence = int(request.POST['confidence'])
     st.playseq = request.POST.get('playseq','')
     #ampl_list=request.POST['ampl_list']
