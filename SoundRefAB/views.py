@@ -346,7 +346,11 @@ def ProcessPage(request, trial_id):
     st = get_object_or_404(SoundTriplet, pk=trial_id)
     st.choice = int(request.POST['choice'])
     st.confidence = int(request.POST['confidence'])
-    st.playseq = request.POST.get('playseq','')
+    playseq = request.POST.get('playseq','')
+    if len(playseq)<500:
+        st.playseq = playseq
+    else:
+        st.playseq = playseq[:240]+'...'+playseq[-240:]
     st.valid_date = timezone.now()
     st.save()
     sub = st.subject
@@ -508,7 +512,11 @@ def ProcessAdjustPage(request, trial_id):
     right= float(request.POST['right'])
     st.value = val
     st.confidence = int(request.POST['confidence'])
-    st.playseq = request.POST.get('playseq','')
+    playseq = request.POST.get('playseq','')
+    if len(playseq)<500:
+        st.playseq = playseq
+    else:
+        st.playseq = playseq[:240]+'...'+playseq[-240:]
     #ampl_list=request.POST['ampl_list']
     st.valid_date = timezone.now()
     st.save()
