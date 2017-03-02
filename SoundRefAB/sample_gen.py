@@ -734,6 +734,8 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
         thispar['ampl'] = newampl
         thispar['adj_par_name'] = 'ampl'
         thispar['val0'] = newampl
+        thispar['left'] = newampl
+        thispar['right'] = 1.0
     
     new_param[1]['val0'] = default_val
     # for sd in sound_data:
@@ -1145,6 +1147,8 @@ def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[]
         thispar['ampl'] = newampl
         thispar['adj_par_name'] = 'ampl'
         thispar['val0'] = newampl
+        thispar['left'] = 0.0
+        thispar['right'] = 1.0
     
     new_param[1]['val0'] = default_val
     new_param[1]['slope'] = other_slope
