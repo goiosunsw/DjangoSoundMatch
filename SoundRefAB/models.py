@@ -305,6 +305,12 @@ class Subject(models.Model):
     student_ID = models.CharField('Student ID',max_length=10, default='')
     loudspeaker_model = models.CharField('Model of headphones / speakers (if appliccable)',max_length=100, default='')
     vol_change = models.BooleanField('Did you adjust the volume during the experiment?',default=False)
+    vol_change = models.CharField('Did you adjust the volume during the experiment?'
+        ,max_length=1, choices = (
+            ('Y','Yes'),
+            ('N','No'),
+        ) , default = 'N'
+    )
     ip = models.CharField('Client IP',max_length=16, default='')
     
     def one_more_trial(self):

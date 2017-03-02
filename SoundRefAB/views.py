@@ -148,17 +148,17 @@ def  NewSubjectView(request, pk=0):
     return HttpResponseRedirect(reverse('srefab:next', args = (subject_id,)))
 
 def  MainView(request, pk=0):
-    #scen = Scenario.objects.filter(description__contains='UNSW').last()
-    #return HttpResponseRedirect(reverse('srefab:new', args = (scen.id,)))
-    return HttpResponseRedirect(reverse('srefab:list'))
+    scen = Scenario.objects.filter(description__contains='UNSW').last()
+    return HttpResponseRedirect(reverse('srefab:new', args = (scen.id,)))
+    #return HttpResponseRedirect(reverse('srefab:list'))
 
     
 class SubjectQuestionnaireUpdate(UpdateView):
     template_name='SoundRefAB/subject_form.html'
 
     model = Subject
-    fields = ['age','music_experience','hearing_prob','device','loudspeaker_model','vol_change','instrument','student_ID','final_comment']
-    #fields = ['age','music_experience','hearing_prob','vol_change','instrument','student_ID','final_comment']
+    #fields = ['age','music_experience','hearing_prob','device','loudspeaker_model','vol_change','instrument','student_ID','final_comment']
+    fields = ['age','music_experience','hearing_prob','vol_change','instrument','student_ID','final_comment']
 
     def get_success_url(self):
         return reverse('srefab:next', args = (self.object.pk,))

@@ -768,8 +768,22 @@ def LoudnessAdjust_process(param_dict):
     return result_dict
 
 
-def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
-                        ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):
+def HalfBrightAdjust(subject_id, difficulty_divider=1.0, 
+                     confidence_history=[], prev_choice=0, 
+                     ntrials = 1, const_par=[],
+                     prev_param=[], side='higher', 
+                     path='.', url_path='/'):
+    return BrightnessAdjust(subject_id=subject_id, difficulty_divider=difficulty_divider, 
+                     confidence_history=confidence_history, prev_choice=prev_choice, 
+                     ntrials = ntrials, const_par=const_par,
+                     prev_param=prev_param, side='lower', 
+                     path=path, url_path=url_path)
+
+def BrightnessAdjust(subject_id, difficulty_divider=1.0, 
+                     confidence_history=[], prev_choice=0, 
+                     ntrials = 1, const_par=[],
+                     prev_param=[], side='higher', 
+                     path='.', url_path='/'):
                  
     # include an empty string so that store params knows what to store
     ref_sd = {'name': 'Reference',
@@ -795,7 +809,10 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         slope_list = dio.retrieve_temp_data_file(subj_no)
     except (IOError, KeyError, IndexError) as e: 
         sys.stderr.write('First trial in BrightnessAdjust\n')
-        slope_list = np.linspace(0,.4,ntrials).tolist()
+        if side == 'lower':
+            slope_list = np.linspace(.4,.8,ntrials).tolist()
+        else:
+            slope_list = np.linspace(0,.4,ntrials).tolist()
         random.shuffle(slope_list)
 
         dio.erase_temp_data_file(subj_no)
@@ -816,7 +833,12 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     except IndexError:
         # something went wrong wit sequence, maybe user has clicked reload
         sys.stderr.write('Couldn''t get a slope value from original list\n')
-        temp_list = np.linspace(0,.4,ntrials).tolist()
+        if side == 'lower':
+            temp_list = np.linspace(.4,.8,ntrials).tolist()
+        else:
+            temp_list = np.linspace(0,.4,ntrials).tolist()
+
+        
         random.shuffle(temp_list)
         newslope = temp_list.pop()
         
@@ -828,11 +850,18 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
         thispar['adj_par_name'] = 'slope'
         thispar['val0'] = newslope
         thispar['ampl'] = avals[0]
-        thispar['freq'] = fvals[0]
-        thispar['left'] = newslope
-        thispar['right'] = 1.0
-    
-    new_param[1]['val0'] = newslope
+        thispar['freq'] = fvals[0]  
+        if side == 'lower':
+            thispar['left'] = 0.0
+            thispar['right'] = 0.8
+        else: 
+            thispar['left'] = newslope
+            thispar['right'] = 1.0
+            
+    if side=='lower':
+        new_param[1]['val0'] = new_param[1]['right']
+    else:
+        new_param[1]['val0'] = newslope
     
     # for sd in sound_data:
     #     param_data.append(new_param)
@@ -840,6 +869,9 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], 
     dio.store_temp_data_file(slope_list, subj_no)
     
     return sound_data, param_data, difficulty_divider
+
+def HalfBrightAdjust_process(param_dict):
+    return BrightnessAdjust_process(param_dict)
 
 def BrightnessAdjust_process(param_dict):
     '''processes the results from the experiment 
@@ -1308,6 +1340,19 @@ def BrightnessIntro(subject_id, difficulty_divider=1.0, confidence_history=[], p
     
 def BrightnessIntro_process(param_dict):
     pass
+
+def HalfBrightIntro(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
+                        ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):       
+                        
+    param_data = [{'html_template': 'trial_halfbright_intro.html'}]
+    sound_data = [{}]
+    dificulty_divider = 1.
+    
+    return sound_data, param_data, difficulty_divider
+    
+def HalfBrightIntro_process(param_dict):
+    pass
+
 
 def DescribeVibrato(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
                         ntrials = 1, const_par=[],prev_param=[],  prev_exp_dict=[], path='.', url_path='/'):       
