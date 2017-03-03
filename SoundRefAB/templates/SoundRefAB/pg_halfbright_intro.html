@@ -1,0 +1,15 @@
+{% extends 'SoundRefAB/base.html' %}
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'SoundRefAB/style.css' %}">
+
+{% block body_block %}
+<h1>Brightness adjust - 2 </h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<p> In the next page you will be asked again to adjust the brightness of a second tone </p>
+<p> ... but now to <b>half</b> the brightness of the reference instead of twice as before. </p>
+
+<input style="font-size:24;width:100px;height:50px" type="button" class="btn btn-success" name="next" value="Next" id="next" onclick="location.href='{% url 'srefab:next' subject_id %}'"/>
+
+{% endblock %}
