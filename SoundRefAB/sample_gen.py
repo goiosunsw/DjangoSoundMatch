@@ -692,7 +692,7 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
     subj_no = int(subject_id)
     
     #default slider position
-    default_val=0.0
+    default_val=random.random()
     
     try:
         nharm = prev_param[-1][0]['nharm']
@@ -797,7 +797,7 @@ def BrightnessAdjust(subject_id, difficulty_divider=1.0,
     subj_no = int(subject_id)
     
     #default slider position
-    default_val=0.0
+    default_val=random.random()
     
     # possible frequencies 
     fvals = [500.,500./1.5]
@@ -1134,7 +1134,7 @@ def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[]
     subj_no = int(subject_id)
     
     #default slider position
-    default_val=0.0
+    default_val=random.random()
     
     ref_slope=0.2
     other_slope=0.4
