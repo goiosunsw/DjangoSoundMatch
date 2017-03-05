@@ -694,6 +694,10 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
     #default slider position
     default_val=0.0
     
+    # possible frequencies 
+    fvals = [500.,500./1.5]
+    random.shuffle(fvals)
+
     try:
         nharm = prev_param[-1][0]['nharm']
         ampl_list = dio.retrieve_temp_data_file(subj_no)
@@ -732,6 +736,7 @@ def LoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], pr
     
     for thispar in new_param:
         thispar['ampl'] = newampl
+        thispar['freq'] = fvals[0]
         thispar['adj_par_name'] = 'ampl'
         thispar['val0'] = newampl
         thispar['left'] = newampl
@@ -1139,6 +1144,11 @@ def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[]
     ref_slope=0.2
     other_slope=0.4
     
+    # possible frequencies 
+    fvals = [500.,500./1.5]
+    random.shuffle(fvals)
+
+    
     try:
         nharm = prev_param[-1][0]['nharm']
         ampl_list = dio.retrieve_temp_data_file(subj_no)
@@ -1179,6 +1189,7 @@ def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[]
         thispar['ampl'] = newampl
         thispar['adj_par_name'] = 'ampl'
         thispar['val0'] = newampl
+        thispar['freq'] = fvals[0]  
         thispar['left'] = 0.0
         thispar['right'] = 1.0
     

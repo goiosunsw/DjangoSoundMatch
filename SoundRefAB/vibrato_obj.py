@@ -250,8 +250,8 @@ class Vibrato(object):
         
         vibsig = self.prof(t)
         bsig = vibsig * (bmax-bmin)/2. + (bmax+bmin)/2.
-        
         hamp = self.hs(bsig)
+        
         for i in range(1,self.nharm+1):
             # vector of frequency per sample
             fharm = i*self.f0 * (1 + frequency*vibsig);
