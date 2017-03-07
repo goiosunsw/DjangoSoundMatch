@@ -370,7 +370,10 @@ def SlopeVibratoRefABC_init(subject_id, n_runs=3, n_similar=2):
     brightness_ranges = np.array([brightness_boundaries[i:i+2].tolist() for i in xrange(len(brightness_boundaries)-1)])
     #brightness_ranges = np.array([[0.05,0.15],[0.15,0.35],[0.35,0.7]])
     loudness_ranges = brightness_ranges * brightness_to_loudness_mult
-   
+    
+    random.shuffle(brightness_ranges)
+    random.shuffle(loudness_ranges)
+    
     # central brightness range
     central_brightness = np.array([0.3,0.3])
     central_loudness = np.array([0.1,0.1])
