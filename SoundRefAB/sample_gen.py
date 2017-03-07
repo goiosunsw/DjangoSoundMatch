@@ -773,6 +773,7 @@ def LoudnessAdjust_process(param_dict):
     return result_dict
 
 
+
 def HalfBrightAdjust(subject_id, difficulty_divider=1.0, 
                      confidence_history=[], prev_choice=0, 
                      ntrials = 1, const_par=[],
@@ -1123,10 +1124,30 @@ def LoudnessAdjust_analyse_overall(param_dict_all, path='.', url_path='/'):
     
     return res, graph
 
+def SameLoudSameBrightAdjust(subject_id, difficulty_divider=1.0, 
+                       confidence_history=[], prev_choice=0, 
+                       ntrials = 1, const_par=[],prev_param=[], 
+                       path='.', url_path='/', brvals = None):
+    
+    brchoices = [0.2,0.4]
+    thisbr = random.sample(brchoices,1)[0]
+    brvals = [thisbr,thisbr]
+    logamplims= [-0.8,-0.5] 
+    
+    return SameLoudnessAdjust(subject_id=subject_id, difficulty_divider=difficulty_divider, 
+                     confidence_history=confidence_history, prev_choice=prev_choice, 
+                     ntrials = ntrials, const_par=const_par,
+                     prev_param=prev_param, brvals=brvals, 
+                     logamplims = logamplims,
+                     path=path, url_path=url_path)
 
-def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[], prev_choice=0, 
-                        ntrials = 1, const_par=[],prev_param=[], path='.', url_path='/'):
-                 
+def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, 
+                       confidence_history=[], prev_choice=0, 
+                       ntrials = 1, const_par=[],prev_param=[], 
+                       path='.', url_path='/', brvals = [0.2,0.4], 
+                       logamplims=[-1.3,-0.3]):
+    
+    print 'brvals: ',brvals
     # include an empty string so that store params knows what to store
     ref_sd = {'name': 'Reference',
                 'file': '',
@@ -1141,8 +1162,8 @@ def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[]
     #default slider position
     default_val=random.random()
     
-    ref_slope=0.2
-    other_slope=0.4
+    ref_slope=brvals[0]
+    other_slope=brvals[1]
     
     # possible frequencies 
     fvals = [500.,500./1.5]
@@ -1156,10 +1177,10 @@ def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[]
     except (IOError, KeyError, IndexError) as e:
         # first trial
         sys.stderr.write('First trial in SameLoudnessAdjust\n')
-        ampl_list = np.logspace(-1.3,-0.1,ntrials).tolist()
+        ampl_list = np.logspace(logamplims[0],logamplims[-1],ntrials).tolist()
         random.shuffle(ampl_list)
         dio.erase_temp_data_file(subj_no)
-        for pp in prev_param[-1]:
+        for ip,pp in enumerate(prev_param[-1]):
             pp['ampl']=0.5
             pp['nharm']=15
             pp['slope']=ref_slope
@@ -1181,7 +1202,7 @@ def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[]
         # something went wrong wit sequence, maybe user has clicked reload
         #temp_list = np.linspace(0,1,ntrials).tolist()
         sys.stderr.write('Couldn''t get an amplitude value from original list\n')
-        temp_list = np.logspace(-1.3,-0.3,ntrials).tolist()
+        temp_list = np.logspace(logamplims[0],logamplims[-1],ntrials).tolist()
         random.shuffle(temp_list)
         newampl = temp_list.pop()
     
@@ -1195,13 +1216,18 @@ def SameLoudnessAdjust(subject_id, difficulty_divider=1.0, confidence_history=[]
     
     new_param[1]['val0'] = default_val
     new_param[1]['slope'] = other_slope
+    new_param[0]['slope'] = ref_slope
     # for sd in sound_data:
     #     param_data.append(new_param)
     param_data = new_param
     dio.store_temp_data_file(ampl_list, subj_no)
     
     return sound_data, param_data, difficulty_divider
-    
+
+def SameLoudSameBrightAdjust_process(param_dict):
+    return SameLoudnessAdjust_process(param_dict)
+
+
 def SameLoudnessAdjust_process(param_dict):
     '''processes the results from the experiment 
        to get an indication of the 2x brightness value
